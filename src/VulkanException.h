@@ -10,19 +10,26 @@ namespace Vulkan { class VulkanException; }
 /**
  * @brief Generic runtime exception thrown by Vulkan.
  */
-class VulkanException : public std::runtime_error {
+class Vulkan::VulkanException : public std::runtime_error {
 	public:
-		VulkanException(VkResult errorCode, const std::string& description = defaultDescription) : std::runtime_error(description) {
+		VulkanException(const std::string& description = defaultDescription, VkResult errorCode = VK_SUCCESS) : std::runtime_error(description) {
 			this->errorCode = errorCode;
 		}
 
 		const char* what() const noexcept override{
-			const auto description = runtime_error::what();
-			return description != defaultDescription ? "Vulkan runtime error #" + std::to_string(errorCode) + ": " + description;
+			fullDescription = "Vulkan runtime error";
+			if(errorCode != VK_SUCCESS) {
+				fullDescription += " #" + std::to_string(errorCode);
+			}
+			if (const std::string description = std::runtime_error::what(); description != defaultDescription) {
+				fullDescription += ": " + description;
+			}
+			return fullDescription.c_str();
 		}
 
 	private:
 		VkResult errorCode;
+		mutable std::string fullDescription;
 		inline static const std::string defaultDescription = "no_description_provided";
 };
 

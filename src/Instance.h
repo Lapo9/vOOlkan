@@ -14,7 +14,7 @@ namespace Vulkan { class Instance; }
 /**
  * Class used to initialize Vulkan.
  */
-class Instance {
+class Vulkan::Instance {
 	public:
 
 		Instance(const std::string& appName = "") {
@@ -41,7 +41,7 @@ class Instance {
 
 			//actually create the Vulkan instance
 			if (const auto result = vkCreateInstance(&createInfo, nullptr, &instance); result != VK_SUCCESS) {
-				throw VulkanException(result, "Failed to create instance!");
+				throw VulkanException("Failed to create instance!", result);
 			}
 		}
 
@@ -57,6 +57,9 @@ class Instance {
 		Instance& operator=(Instance&) = delete;
 		Instance& operator=(Instance&&) = delete;
 		
+		const VkInstance operator+() const {
+			return instance;
+		}
 
 	private:
 		VkInstance instance;

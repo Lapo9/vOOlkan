@@ -19,12 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClInclude Include="src\classes_to_do.h" />
+    <ClInclude Include="src\Instance.h" />
+    <ClInclude Include="src\PhysicalDevice.h" />
+    <ClInclude Include="src\VulkanException.h" />
+    <ClInclude Include="src\Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Instance.h" />
-    <ClInclude Include="VulkanException.h" />
-    <ClInclude Include="Window.h" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

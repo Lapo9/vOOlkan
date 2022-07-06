@@ -12,7 +12,7 @@ namespace Vulkan { class Window; }
 /**
  * @brief Manages the creation and lifetime of an OS window.
  */
-class Window {
+class Vulkan::Window {
 	public:
 
 		/**
