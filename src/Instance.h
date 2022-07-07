@@ -52,12 +52,12 @@ class Vulkan::Instance {
 			vkDestroyInstance(instance, nullptr);
 		}
 
-		Instance(Instance&) = delete;
+		Instance(const Instance&) = delete;
 		Instance(Instance&&) = delete;
-		Instance& operator=(Instance&) = delete;
+		Instance& operator=(const Instance&) = delete;
 		Instance& operator=(Instance&&) = delete;
 		
-		const VkInstance operator+() const {
+		const VkInstance& operator+() const {
 			return instance;
 		}
 
