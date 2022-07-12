@@ -7,7 +7,7 @@
 #include "LogicalDevice.h"
 
 
-namespace Vulkan { class Queue; }
+namespace Vulkan { class Queue; enum class QueueFamily; }
 
 /**
  * @brief A Queue is an abstraction over the VkQueue Vulkan object. A Queue is where commands from the CPU to the GPU are sent.

@@ -10,10 +10,16 @@
 #include "Instance.h"
 #include "WindowSurface.h"
 #include "VulkanException.h"
-#include "Swapchain.h"
 
 
 namespace Vulkan { class PhysicalDevice; enum class QueueFamily; }
+
+/**
+ * @brief Types of queue families.
+ */
+enum class Vulkan::QueueFamily {
+	GRAPHICS, PRESENTATION
+};
 
 /**
  * @brief Represents the GPU (or any other device) that will be used with Vulkan to perform computer graphics.
@@ -172,14 +178,6 @@ class Vulkan::PhysicalDevice {
 		VkPhysicalDevice gpu = VK_NULL_HANDLE;
 		std::map<QueueFamily, int> queueFamiliesIndices; //the indices of the graphics and presentation families (they can be the same)
 		const std::vector<const char*> requiredDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME }; //list of required extensions for the device
-};
-
-
-/**
- * @brief Types of queue families.
- */
-enum class Vulkan::QueueFamily {
-	GRAPHICS, PRESENTATION
 };
 
 #endif

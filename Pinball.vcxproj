@@ -25,6 +25,7 @@
     <ClInclude Include="src\Instance.h" />
     <ClInclude Include="src\LogicalDevice.h" />
     <ClInclude Include="src\PhysicalDevice.h" />
+    <ClInclude Include="src\Pinball.h" />
     <ClInclude Include="src\Queue.h" />
     <ClInclude Include="src\Swapchain.h" />
     <ClInclude Include="src\SwapchainCapabilities.h" />
@@ -113,7 +114,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>P:\SDKs\graphics\tinyobjloader;P:\SDKs\graphics\tinygltf;P:\SDKs\graphics\stb;P:\SDKs\graphics\glm;P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\include;P:\SDKs\VulkanSDK\1.3.204.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -131,7 +132,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>P:\SDKs\graphics\tinyobjloader;P:\SDKs\graphics\tinygltf;P:\SDKs\graphics\stb;P:\SDKs\graphics\glm;P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\include;P:\SDKs\VulkanSDK\1.3.204.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -149,7 +150,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>P:\SDKs\graphics\tinyobjloader;P:\SDKs\graphics\tinygltf;P:\SDKs\graphics\stb;P:\SDKs\graphics\glm;P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\include;P:\SDKs\VulkanSDK\1.3.204.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -167,7 +168,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>P:\SDKs\graphics\tinyobjloader;P:\SDKs\graphics\tinygltf;P:\SDKs\graphics\stb;P:\SDKs\graphics\glm;P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\include;P:\SDKs\VulkanSDK\1.3.204.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

@@ -9,7 +9,7 @@
 #include "PhysicalDevice.h"
 
 
-namespace Vulkan { class LogicalDevice; }
+namespace Vulkan { class LogicalDevice; class Queue; } //FROMHERE Queue cannot be forward declared
 
 /**
  * @brief A logical device is an abstraction of the physical GPU which we can mainly use to send commands.

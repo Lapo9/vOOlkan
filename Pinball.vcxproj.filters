@@ -60,6 +60,9 @@
     <ClInclude Include="src\ImageView.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Pinball.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

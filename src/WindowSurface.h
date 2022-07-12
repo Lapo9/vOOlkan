@@ -16,7 +16,7 @@ namespace Vulkan { class WindowSurface; }
 class Vulkan::WindowSurface {
 	public:
 
-		WindowSurface(Instance vulkanInstance, Window window) : vulkanInstance{ vulkanInstance } {
+		WindowSurface(const Instance& vulkanInstance, const Window& window) : vulkanInstance{ vulkanInstance } {
 			if (auto result = glfwCreateWindowSurface(+vulkanInstance, +window, nullptr, &surface); result != VK_SUCCESS) {
 				throw VulkanException("Failed to create window surface!", result);
 			}
