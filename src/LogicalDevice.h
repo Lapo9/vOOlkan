@@ -18,7 +18,7 @@ class Vulkan::LogicalDevice {
 			std::vector<VkDeviceQueueCreateInfo> queueCreateInfos; //array where to save the structs to create the queues
 
 			//for each queue family (graphics and presentation) create the concrete queue
-			for (float queuePriority = 1.0f; const auto & queueFamilyIndex : queueFamiliesIndices) {
+			for (float queuePriority = 1.0f; const auto& queueFamilyIndex : queueFamiliesIndices) {
 				//struct to create a queue
 				VkDeviceQueueCreateInfo queueCreateInfo{};
 				queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -29,7 +29,7 @@ class Vulkan::LogicalDevice {
 			}
 
 			
-			VkPhysicalDeviceFeatures deviceFeatures{}; // advanced features we need (nothing at the moment)
+			VkPhysicalDeviceFeatures deviceFeatures{}; //advanced features we need (nothing at the moment)
 			//struct containing info for the creation of the logical device based on the choosen physical device
 			VkDeviceCreateInfo createInfo{};
 			createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -44,7 +44,10 @@ class Vulkan::LogicalDevice {
 				throw VulkanException("Failed to create logical device!", result);
 			}
 
-			//FROMHERE save the queues somewhere
+			//save the queues so they are accessible later on
+			for (const auto& queueFamilyIndex : queueFamiliesIndices) {
+				queues.emplace(queueFamilyIndex.first, Queue(this, queueFamilyIndex)); //create and insert the Queue object into the list of queues
+			}
 		}
 
 		~LogicalDevice() {
@@ -56,12 +59,31 @@ class Vulkan::LogicalDevice {
 		LogicalDevice& operator=(const LogicalDevice&) = delete;
 		LogicalDevice& operator=(LogicalDevice&&) = delete;
 
-		const VkDevice& operator+() {
+
+		/**
+		 * @brief Returns a const reference to the underlying Vulkan VkDevice object.
+		 * 
+		 * @return The underlying Vulkan VkDevice object
+		 */
+		const VkDevice& operator+() const {
 			return virtualGpu;
 		}
 
+
+		/**
+		 * @brief Returns the queue of the specified queue family.
+		 * 
+		 * @param queueFamily The queue family of the queue to return.
+		 * @return The queue of the specified queue family.
+		 */
+		const Queue& operator[](QueueFamily queueFamily) {
+			return queues[queueFamily];
+		}
+
+
 	private:
 		VkDevice virtualGpu;
+		std::map<QueueFamily, Queue> queues; //the queues we created
 		const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME }; //FIXTHIS we must move this to the PhysicalDevice class
 };
 

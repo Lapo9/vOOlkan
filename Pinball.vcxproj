@@ -23,6 +23,7 @@
     <ClInclude Include="src\Instance.h" />
     <ClInclude Include="src\LogicalDevice.h" />
     <ClInclude Include="src\PhysicalDevice.h" />
+    <ClInclude Include="src\Queue.h" />
     <ClInclude Include="src\VulkanException.h" />
     <ClInclude Include="src\Window.h" />
   </ItemGroup>

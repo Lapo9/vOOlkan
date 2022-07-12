@@ -11,7 +11,7 @@
 #include "classes_to_do.h" //REMOVE when done
 
 
-namespace Vulkan { class PhysicalDevice; }
+namespace Vulkan { class PhysicalDevice; enum class QueueFamily; }
 
 /**
  * @brief Represents the GPU (or any other device) that will be used with Vulkan to perform computer graphics.
@@ -34,14 +34,6 @@ class Vulkan::PhysicalDevice {
 		const VkPhysicalDevice& operator+() const {
 			return gpu;
 		}
-
-
-		/**
-		 * @brief Types of queue families.
-		 */
-		enum class QueueFamily {
-			GRAPHICS, PRESENTATION
-		};
 
 
 		/**
@@ -147,6 +139,14 @@ class Vulkan::PhysicalDevice {
 
 		VkPhysicalDevice gpu = VK_NULL_HANDLE;
 		std::map<QueueFamily, int> queueFamiliesIndices; //the indices of the graphics and presentation families (they can be the same)
+};
+
+
+/**
+ * @brief Types of queue families.
+ */
+enum class Vulkan::QueueFamily {
+	GRAPHICS, PRESENTATION
 };
 
 #endif
