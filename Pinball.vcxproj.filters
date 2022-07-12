@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\SwapchainOptions">
+      <UniqueIdentifier>{7eeca137-7e83-44d4-a3ce-e5a8f539838c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Instance.h">
@@ -35,6 +38,21 @@
     </ClInclude>
     <ClInclude Include="src\Queue.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\WindowSurface.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Swapchain.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SwapchainCapabilities.h">
+      <Filter>Source Files\SwapchainOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SwapchainPresentMode.h">
+      <Filter>Source Files\SwapchainOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SwapchainSurfaceFormat.h">
+      <Filter>Source Files\SwapchainOptions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

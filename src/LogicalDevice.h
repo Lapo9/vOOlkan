@@ -36,8 +36,8 @@ class Vulkan::LogicalDevice {
 			createInfo.queueCreateInfoCount = queueCreateInfos.size();
 			createInfo.pQueueCreateInfos = queueCreateInfos.data();
 			createInfo.pEnabledFeatures = &deviceFeatures;
-			createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-			createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+			createInfo.enabledExtensionCount = physicalGpu.getRequiredDeviceExtensions().size();
+			createInfo.ppEnabledExtensionNames = physicalGpu.getRequiredDeviceExtensions().data();
 
 			//actually create the virtual GPU
 			if (VkResult result = vkCreateDevice(+physicalGpu, &createInfo, nullptr, &virtualGpu); result != VK_SUCCESS) {
@@ -46,7 +46,7 @@ class Vulkan::LogicalDevice {
 
 			//save the queues so they are accessible later on
 			for (const auto& queueFamilyIndex : queueFamiliesIndices) {
-				queues.emplace(queueFamilyIndex.first, Queue(this, queueFamilyIndex)); //create and insert the Queue object into the list of queues
+				queues.emplace(queueFamilyIndex.first, Queue(*this, queueFamilyIndex)); //create and insert the Queue object into the list of queues
 			}
 		}
 
@@ -84,7 +84,7 @@ class Vulkan::LogicalDevice {
 	private:
 		VkDevice virtualGpu;
 		std::map<QueueFamily, Queue> queues; //the queues we created
-		const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME }; //FIXTHIS we must move this to the PhysicalDevice class
+		
 };
 
 

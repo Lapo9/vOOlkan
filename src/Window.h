@@ -38,7 +38,7 @@ class Vulkan::Window {
 		 * Returns the underlying Vulkan object for the window.
 		 * @return The underlying Vulkan object for the window.
 		 */
-		const GLFWwindow* operator+() const {
+		GLFWwindow* operator+() const {
 			return window.get();
 		}
 

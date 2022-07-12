@@ -24,6 +24,11 @@
     <ClInclude Include="src\LogicalDevice.h" />
     <ClInclude Include="src\PhysicalDevice.h" />
     <ClInclude Include="src\Queue.h" />
+    <ClInclude Include="src\Swapchain.h" />
+    <ClInclude Include="src\SwapchainCapabilities.h" />
+    <ClInclude Include="src\SwapchainPresentMode.h" />
+    <ClInclude Include="src\SwapchainSurfaceFormat.h" />
+    <ClInclude Include="src\WindowSurface.h" />
     <ClInclude Include="src\VulkanException.h" />
     <ClInclude Include="src\Window.h" />
   </ItemGroup>
