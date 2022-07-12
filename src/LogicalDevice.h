@@ -11,6 +11,9 @@
 
 namespace Vulkan { class LogicalDevice; }
 
+/**
+ * @brief A logical device is an abstraction of the physical GPU which we can mainly use to send commands.
+ */
 class Vulkan::LogicalDevice {
 	public:
 		LogicalDevice(const PhysicalDevice& physicalGpu) {

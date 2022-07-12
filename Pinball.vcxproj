@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\classes_to_do.h" />
+    <ClInclude Include="src\Image.h" />
+    <ClInclude Include="src\ImageView.h" />
     <ClInclude Include="src\Instance.h" />
     <ClInclude Include="src\LogicalDevice.h" />
     <ClInclude Include="src\PhysicalDevice.h" />

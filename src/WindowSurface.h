@@ -10,6 +10,9 @@
 
 namespace Vulkan { class WindowSurface; }
 
+/**
+ * @brief A window surface is the connection between Vulkan and the OS windows environment.
+ */
 class Vulkan::WindowSurface {
 	public:
 

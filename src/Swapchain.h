@@ -13,7 +13,7 @@
 #include "SwapchainPresentMode.h"
 #include "SwapchainSurfaceFormat.h"
 #include "VulkanException.h"
-#include "classes_to_do.h"
+#include "Image.h"
 
 
 namespace Vulkan { class Swapchain; }
@@ -71,6 +71,9 @@ class Vulkan::Swapchain {
 			if (auto result = vkCreateSwapchainKHR(+virtualGpu, &createInfo, nullptr, &swapchain); result != VK_SUCCESS) {
 				throw VulkanException("Failed to create swap chain!", result);
 			}
+
+			//save the images of the swap chain to be able to access them later on
+			saveSwapchainImages();
 		}
 
 		~Swapchain() {
@@ -92,6 +95,15 @@ class Vulkan::Swapchain {
 		}
 
 
+		const SwapchainOptions::SurfaceFormat& getImageFormat() {
+			return swapchainSurfaceFormat;
+		}
+
+		const SwapchainOptions::Capabilities& getSwapchainCapabilities() {
+			return swapchainCapabilities;
+		}
+
+
 		/**
 		 * @brief Checks whether there exist a swapchain for this physiscal GPU and windows surface.
 		 * 
@@ -104,6 +116,21 @@ class Vulkan::Swapchain {
 		}
 
 	private:
+
+		//Saves the images of the swap chain to be able to access them later on
+		void saveSwapchainImages() {
+			std::vector<VkImage> tmpImages;
+			uint32_t imageCount;
+			vkGetSwapchainImagesKHR(+virtualGpu, swapchain, &imageCount, nullptr);
+			tmpImages.resize(imageCount);
+			vkGetSwapchainImagesKHR(+virtualGpu, swapchain, &imageCount, tmpImages.data());
+
+			for (const auto& image : tmpImages) {
+				images.emplace_back(image, swapchainSurfaceFormat);
+			}
+		}
+
+
 		VkSwapchainKHR swapchain;
 		SwapchainOptions::Capabilities swapchainCapabilities;
 		SwapchainOptions::SurfaceFormat swapchainSurfaceFormat;

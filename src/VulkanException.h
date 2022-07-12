@@ -8,7 +8,7 @@
 namespace Vulkan { class VulkanException; }
 
 /**
- * @brief Generic runtime exception thrown by Vulkan.
+ * @brief Generic runtime exception thrown by Vulkan-related functions.
  */
 class Vulkan::VulkanException : public std::runtime_error {
 	public:

@@ -11,6 +11,9 @@
 
 namespace Vulkan::SwapchainOptions { class Capabilities; }
 
+/**
+ * @brief The capabilities of a swapchain define some important properties of the images in the swapchain, such as their resolution.
+ */
 class Vulkan::SwapchainOptions::Capabilities {
 	public:
 

@@ -10,6 +10,9 @@
 
 namespace Vulkan::SwapchainOptions { class SurfaceFormat; }
 
+/**
+ * @brief The surface format defines the properties of the image where we will draw, such as the color space.
+ */
 class Vulkan::SwapchainOptions::SurfaceFormat {
 	public:
 

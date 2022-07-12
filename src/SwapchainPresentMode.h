@@ -11,6 +11,10 @@
 
 namespace Vulkan::SwapchainOptions { class PresentMode; }
 
+/**
+ * @brief The present mode defines how the images of the swapchain are sent to the screen.
+ * @details An object of this class will qury which present modes are available based on the GPU and window surface, and will chose the best one.
+ */
 class Vulkan::SwapchainOptions::PresentMode {
 	public:
 

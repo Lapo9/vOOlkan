@@ -54,6 +54,12 @@
     <ClInclude Include="src\SwapchainSurfaceFormat.h">
       <Filter>Source Files\SwapchainOptions</Filter>
     </ClInclude>
+    <ClInclude Include="src\Image.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ImageView.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

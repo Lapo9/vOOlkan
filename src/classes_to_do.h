@@ -4,8 +4,7 @@
 //REMOVE when these classes are done
 
 namespace Vulkan {
-	class Image;
-	class ImageWiew;
+
 }
 
 #endif
