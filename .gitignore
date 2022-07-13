@@ -1,5 +1,5 @@
 *.user
 .vs/
 out/
-docs/*.bkp
-docs/*.dtmp
+.bkp
+.dtmp
