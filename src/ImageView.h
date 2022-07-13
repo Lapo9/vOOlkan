@@ -18,9 +18,9 @@ public:
 
 	//FIXTHIS why do we need the copy ctor?
 	ImageView(const ImageView&) = default;
-	ImageView(ImageView&&) = default;
+	ImageView(ImageView&&) = delete;
 	ImageView& operator=(const ImageView&) = delete;
-	ImageView& operator=(ImageView&&) = default;
+	ImageView& operator=(ImageView&&) = delete;
 
 	const VkImageView& operator+() const;
 
