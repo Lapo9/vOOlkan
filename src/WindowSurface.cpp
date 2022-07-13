@@ -8,9 +8,9 @@
 
 Vulkan::WindowSurface::WindowSurface(const Instance& vulkanInstance, const Window& window) : vulkanInstance{ vulkanInstance } {
 	if (auto result = glfwCreateWindowSurface(+vulkanInstance, +window, nullptr, &surface); result != VK_SUCCESS) {
-		const char* descr;
-		auto err = glfwGetError(&descr);
-		throw VulkanException("Failed to create window surface!", result);
+		std::string hint = result == -3 ? "Make sure to call glfwInit() before any call to any other GLFW function."
+			: result == -7 ? "Make sure the Window is created before the Vulkan Instance" : "";
+		throw VulkanException("Failed to create window surface!", result, hint);
 	}
 
 	std::cout << "\n+ WindowSurface created";

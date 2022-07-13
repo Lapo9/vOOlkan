@@ -12,25 +12,30 @@ namespace Vulkan { class VulkanException; }
  */
 class Vulkan::VulkanException : public std::runtime_error {
 	public:
-		VulkanException(const std::string& description = defaultDescription, VkResult errorCode = VK_SUCCESS) : std::runtime_error(description) {
-			this->errorCode = errorCode;
+		VulkanException(const std::string& description = "", VkResult errorCode = VK_SUCCESS, const std::string& hint = "") : 
+			std::runtime_error(description), 
+			errorCode{ errorCode }, 
+			hint{ hint } {
 		}
 
 		const char* what() const noexcept override{
 			fullDescription = "\n- Vulkan runtime error";
 			if(errorCode != VK_SUCCESS) {
-				fullDescription += " #" + std::to_string(errorCode);
+				fullDescription += "\n\tcode: " + std::to_string(errorCode);
 			}
-			if (const std::string description = std::runtime_error::what(); description != defaultDescription) {
-				fullDescription += ": " + description;
+			if (const std::string description = std::runtime_error::what(); description != "") {
+				fullDescription += "\n\tdescription: " + description;
+			}
+			if (hint != "") {
+				fullDescription += "\n\thint: " + hint;
 			}
 			return fullDescription.c_str();
 		}
 
 	private:
 		VkResult errorCode;
+		std::string hint;
 		mutable std::string fullDescription;
-		inline static const std::string defaultDescription = "no_description_provided";
 };
 
 
