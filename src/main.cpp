@@ -5,8 +5,8 @@
 
 int main() {
 	try {
-		Vulkan::Instance vulkanInstance{ "test app" };
 		Vulkan::Window window{ 500, 300, "Test app title" };
+		Vulkan::Instance vulkanInstance{ "test app" };
 		Vulkan::WindowSurface windowSurface{ vulkanInstance, window };
 		Vulkan::PhysicalDevice realGpu{ vulkanInstance, windowSurface };
 		Vulkan::LogicalDevice virtualGpu{ realGpu };

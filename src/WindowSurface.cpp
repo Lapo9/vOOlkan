@@ -8,6 +8,8 @@
 
 Vulkan::WindowSurface::WindowSurface(const Instance& vulkanInstance, const Window& window) : vulkanInstance{ vulkanInstance } {
 	if (auto result = glfwCreateWindowSurface(+vulkanInstance, +window, nullptr, &surface); result != VK_SUCCESS) {
+		const char* descr;
+		auto err = glfwGetError(&descr);
 		throw VulkanException("Failed to create window surface!", result);
 	}
 

@@ -25,6 +25,7 @@ Vulkan::Instance::Instance(const std::string& appName) {
 	createInfo.pApplicationInfo = &appInfo;
 	createInfo.enabledExtensionCount = glfwExtensionCount;
 	createInfo.ppEnabledExtensionNames = glfwExtensions;
+	createInfo.enabledLayerCount = 0;
 
 	//actually create the Vulkan instance
 	if (const auto result = vkCreateInstance(&createInfo, nullptr, &instance); result != VK_SUCCESS) {

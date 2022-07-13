@@ -23,14 +23,15 @@ Vulkan::LogicalDevice::LogicalDevice(const PhysicalDevice& physicalGpu) {
 
 
 	VkPhysicalDeviceFeatures deviceFeatures{}; //advanced features we need (nothing at the moment)
+	auto requiredDeviceExtensions = physicalGpu.getRequiredDeviceExtensions();
 	//struct containing info for the creation of the logical device based on the choosen physical device
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.pEnabledFeatures = &deviceFeatures;
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(physicalGpu.getRequiredDeviceExtensions().size());
-	createInfo.ppEnabledExtensionNames = physicalGpu.getRequiredDeviceExtensions().data();
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
+	createInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
 
 	//actually create the virtual GPU
 	if (VkResult result = vkCreateDevice(+physicalGpu, &createInfo, nullptr, &virtualGpu); result != VK_SUCCESS) {
