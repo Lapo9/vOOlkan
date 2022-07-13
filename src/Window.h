@@ -49,7 +49,8 @@ class Vulkan::Window {
 			glfwDestroyWindow(window);
 		}
 
-		std::unique_ptr<GLFWwindow, decltype(deleteWindow)> window = nullptr;
+
+		std::unique_ptr<GLFWwindow, decltype(deleteWindow)> window;
 };
 
 #endif

@@ -4,11 +4,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include "Instance.h"
-#include "Window.h"
 
-
-namespace Vulkan { class WindowSurface; }
+namespace Vulkan { class WindowSurface; class Window; class Instance; }
 
 /**
  * @brief A window surface is the connection between Vulkan and the OS windows environment.
@@ -16,15 +13,9 @@ namespace Vulkan { class WindowSurface; }
 class Vulkan::WindowSurface {
 	public:
 
-		WindowSurface(const Instance& vulkanInstance, const Window& window) : vulkanInstance{ vulkanInstance } {
-			if (auto result = glfwCreateWindowSurface(+vulkanInstance, +window, nullptr, &surface); result != VK_SUCCESS) {
-				throw VulkanException("Failed to create window surface!", result);
-			}
-		}
+		WindowSurface(const Instance& vulkanInstance, const Window& window);
 
-		~WindowSurface() {
-			vkDestroySurfaceKHR(+vulkanInstance, surface, nullptr);
-		}
+		~WindowSurface();
 
 		WindowSurface(const WindowSurface&) = delete;
 		WindowSurface(WindowSurface&&) = delete;
@@ -37,9 +28,7 @@ class Vulkan::WindowSurface {
 		 *
 		 * @return The underlying VkSurfaceKHR object.
 		 */
-		const VkSurfaceKHR& operator+() const {
-			return surface;
-		}
+		const VkSurfaceKHR& operator+() const;
 
 	private:
 		VkSurfaceKHR surface;

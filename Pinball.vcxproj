@@ -27,6 +27,7 @@
     <ClInclude Include="src\PhysicalDevice.h" />
     <ClInclude Include="src\Pinball.h" />
     <ClInclude Include="src\Queue.h" />
+    <ClInclude Include="src\QueueFamily.h" />
     <ClInclude Include="src\Swapchain.h" />
     <ClInclude Include="src\SwapchainCapabilities.h" />
     <ClInclude Include="src\SwapchainPresentMode.h" />
@@ -36,7 +37,18 @@
     <ClInclude Include="src\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Image.cpp" />
+    <ClCompile Include="src\ImageView.cpp" />
+    <ClCompile Include="src\Instance.cpp" />
+    <ClCompile Include="src\LogicalDevice.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\PhysicalDevice.cpp" />
+    <ClCompile Include="src\Queue.cpp" />
+    <ClCompile Include="src\Swapchain.cpp" />
+    <ClCompile Include="src\SwapchainCapabilities.cpp" />
+    <ClCompile Include="src\SwapchainPresentMode.cpp" />
+    <ClCompile Include="src\SwapchainSurfaceFormat.cpp" />
+    <ClCompile Include="src\WindowSurface.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

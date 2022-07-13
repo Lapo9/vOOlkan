@@ -5,11 +5,8 @@
 #include <vector>
 #include <functional>
 
-#include "PhysicalDevice.h"
-#include "WindowSurface.h"
 
-
-namespace Vulkan::SwapchainOptions { class PresentMode; }
+namespace Vulkan { class PhysicalDevice; class WindowSurface; namespace SwapchainOptions { class PresentMode; } }
 
 /**
  * @brief The present mode defines how the images of the swapchain are sent to the screen.
@@ -26,22 +23,7 @@ class Vulkan::SwapchainOptions::PresentMode {
 		 * @param windowSurface The OS window surface.
 		 * @param chooseBestFormat Optional function to choose the best present mode among the ones available.
 		*/
-		PresentMode(const PhysicalDevice& realGpu, const WindowSurface& windowSurface, std::function<VkPresentModeKHR(const std::vector<VkPresentModeKHR>&)> chooseBestPresentMode = chooseBestPresentMode) {
-			//obtain all of the available present modes
-			std::vector<VkPresentModeKHR> presentModes;
-			uint32_t presentModeCount;
-			vkGetPhysicalDeviceSurfacePresentModesKHR(+realGpu, +windowSurface, &presentModeCount, nullptr);
-			if (presentModeCount != 0) {
-				presentModes.resize(presentModeCount);
-				vkGetPhysicalDeviceSurfacePresentModesKHR(+realGpu, +windowSurface, &presentModeCount, presentModes.data());
-			}
-			else {
-				throw VulkanException("No present modes for the swapchain available");
-			}
-
-			//choose the best present mode
-			presentMode = chooseBestPresentMode(presentModes);
-		}
+		PresentMode(const PhysicalDevice& realGpu, const WindowSurface& windowSurface, std::function<VkPresentModeKHR(const std::vector<VkPresentModeKHR>&)> chooseBestPresentMode = chooseBestPresentMode);
 
 
 		/**
@@ -49,9 +31,7 @@ class Vulkan::SwapchainOptions::PresentMode {
 		 *
 		 * @return The underlying VkPresentModeKHR.
 		 */
-		const VkPresentModeKHR& operator+() const {
-			return presentMode;
-		}
+		const VkPresentModeKHR& operator+() const;
 
 
 		/**
@@ -61,24 +41,12 @@ class Vulkan::SwapchainOptions::PresentMode {
 		 * @param windowSurface The window surface.
 		 * @return Whether there is an available present mode for this pair of GPU and window surface.
 		 */
-		static bool isThereAnAvailablePresentMode(const PhysicalDevice& realGpu, const WindowSurface& windowSurface) {
-			uint32_t presentModeCount;
-			vkGetPhysicalDeviceSurfacePresentModesKHR(+realGpu, +windowSurface, &presentModeCount, nullptr);
-			return presentModeCount != 0;
-		}
+		static bool isThereAnAvailablePresentMode(const PhysicalDevice& realGpu, const WindowSurface& windowSurface);
 
 	private:
 
 		//chooses the best present mode among the ones available
-		static VkPresentModeKHR chooseBestPresentMode(const std::vector<VkPresentModeKHR>& presentModes) {
-			for (const auto& presentMode : presentModes) {
-				if (presentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-					return presentMode;
-				}
-			}
-
-			return VK_PRESENT_MODE_FIFO_KHR; //if no present mode with VK_PRESENT_MODE_MAILBOX_KHR has been fount, return the first present mode
-		}
+		static VkPresentModeKHR chooseBestPresentMode(const std::vector<VkPresentModeKHR>& presentModes);
 
 		VkPresentModeKHR presentMode;
 };

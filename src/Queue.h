@@ -4,10 +4,8 @@
 #include <vulkan/vulkan.h>
 #include <utility>
 
-#include "LogicalDevice.h"
 
-
-namespace Vulkan { class Queue; enum class QueueFamily; }
+namespace Vulkan { class Queue; class LogicalDevice; enum class QueueFamily; }
 
 /**
  * @brief A Queue is an abstraction over the VkQueue Vulkan object. A Queue is where commands from the CPU to the GPU are sent.
@@ -22,9 +20,7 @@ class Vulkan::Queue {
 		 * @param virtualGpu The LogicalDevice to extract the Queue from.
 		 * @param queueFamilyIndex The Family of the Queue to extract
 		 */
-		Queue(const LogicalDevice& virtualGpu, std::pair<QueueFamily, int> queueFamilyIndex) : family{ queueFamilyIndex.first } {
-			vkGetDeviceQueue(+virtualGpu, queueFamilyIndex.second, 0, &queue); //get the queue from the device
-		}
+		Queue(const LogicalDevice& virtualGpu, std::pair<QueueFamily, int> queueFamilyIndex);
 
 
 		/**
@@ -32,18 +28,14 @@ class Vulkan::Queue {
 		 * 
 		 * @return The underlying VkQueue object.
 		 */
-		const VkQueue& operator+() const {
-			return queue;
-		}
+		const VkQueue& operator+() const;
 
 		/**
 		 * @brief Returns the family of the queue.
 		 * 
 		 * @return The family of the queue.
 		 */
-		QueueFamily getFamily() {
-			return family;
-		}
+		QueueFamily getFamily();
 
 
 		//TODO functions to add commands to the queue
