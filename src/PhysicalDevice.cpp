@@ -5,9 +5,12 @@
 #include "QueueFamily.h"
 #include "VulkanException.h"
 
+#include <iostream>
+
 
 Vulkan::PhysicalDevice::PhysicalDevice(const Instance& vulkanInstance, const WindowSurface& surface) {
 	pickBestDevice(vulkanInstance, surface);
+	std::cout << "\n+ PhysicalDevice created";
 }
 
 

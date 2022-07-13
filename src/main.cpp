@@ -16,4 +16,5 @@ int main() {
 		std::cout << ve.what();
 	}
 
+	std::cout << "\n\n";
 }

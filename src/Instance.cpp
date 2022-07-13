@@ -1,6 +1,8 @@
 #include "Instance.h"
 #include "VulkanException.h"
 
+#include <iostream>
+
 
 Vulkan::Instance::Instance(const std::string& appName) {
 	//struct containing info about our application
@@ -28,6 +30,8 @@ Vulkan::Instance::Instance(const std::string& appName) {
 	if (const auto result = vkCreateInstance(&createInfo, nullptr, &instance); result != VK_SUCCESS) {
 		throw VulkanException("Failed to create instance!", result);
 	}
+
+	std::cout << "\n+ Instance created";
 }
 
 

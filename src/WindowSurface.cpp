@@ -3,11 +3,15 @@
 #include "Instance.h"
 #include "VulkanException.h"
 
+#include <iostream>
+
 
 Vulkan::WindowSurface::WindowSurface(const Instance& vulkanInstance, const Window& window) : vulkanInstance{ vulkanInstance } {
 	if (auto result = glfwCreateWindowSurface(+vulkanInstance, +window, nullptr, &surface); result != VK_SUCCESS) {
 		throw VulkanException("Failed to create window surface!", result);
 	}
+
+	std::cout << "\n+ WindowSurface created";
 }
 
 

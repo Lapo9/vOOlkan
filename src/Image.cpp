@@ -3,8 +3,11 @@
 #include "ImageView.h"
 #include "VulkanException.h"
 
+#include <iostream>
+
 
 Vulkan::Image::Image(const VkImage& image, const SwapchainOptions::SurfaceFormat& format) : image{ image }, format{ format } {
+	std::cout << "\n+ Image created";
 }
 
 

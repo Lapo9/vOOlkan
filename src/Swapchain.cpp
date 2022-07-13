@@ -9,6 +9,8 @@
 #include "QueueFamily.h"
 #include "VulkanException.h"
 
+#include <iostream>
+
 
 Vulkan::Swapchain::Swapchain(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const WindowSurface& windowSurface, const Window& window) :
 	swapchainCapabilities{ realGpu, windowSurface },
@@ -52,6 +54,8 @@ Vulkan::Swapchain::Swapchain(const PhysicalDevice& realGpu, const LogicalDevice&
 
 	//save the images of the swap chain to be able to access them later on
 	saveSwapchainImages();
+
+	std::cout << "\n+ Swapchain created";
 }
 
 

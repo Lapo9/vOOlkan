@@ -3,6 +3,8 @@
 #include "Queue.h"
 #include "VulkanException.h"
 
+#include <iostream>
+
 
 Vulkan::LogicalDevice::LogicalDevice(const PhysicalDevice& physicalGpu) {
 	const auto queueFamiliesIndices = physicalGpu.getQueueFamiliesIndices(); //indices of the queues families for the graphics and presentation queues
@@ -41,6 +43,8 @@ Vulkan::LogicalDevice::LogicalDevice(const PhysicalDevice& physicalGpu) {
 			std::forward_as_tuple(queueFamilyIndex.first), 
 			std::forward_as_tuple(*this, queueFamilyIndex)); //create and insert the Queue object into the list of queues
 	}
+
+	std::cout << "\n+ LogicalDevice created";
 }
 
 

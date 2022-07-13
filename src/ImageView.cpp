@@ -4,6 +4,8 @@
 #include "SwapchainSurfaceFormat.h"
 #include "VulkanException.h"
 
+#include <iostream>
+
 
 Vulkan::ImageView::ImageView(const Image& image, const LogicalDevice& virtualGpu) : virtualGpu{ virtualGpu } {
 	//struct to create an image view for this image
@@ -26,6 +28,8 @@ Vulkan::ImageView::ImageView(const Image& image, const LogicalDevice& virtualGpu
 	if (auto result = vkCreateImageView(+virtualGpu, &createInfo, nullptr, &imageView); result != VK_SUCCESS) {
 		throw VulkanException("Failed to create image view!", result);
 	}
+
+	std::cout << "\n+ ImageView created";
 }
 
 
