@@ -48,6 +48,7 @@
     <ClCompile Include="src\SwapchainCapabilities.cpp" />
     <ClCompile Include="src\SwapchainPresentMode.cpp" />
     <ClCompile Include="src\SwapchainSurfaceFormat.cpp" />
+    <ClCompile Include="src\Window.cpp" />
     <ClCompile Include="src\WindowSurface.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

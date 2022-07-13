@@ -23,11 +23,7 @@ class Vulkan::Window {
 		 * @param height Height of the window.
 		 * @param title Title of the window.
 		 */
-		Window(int width, int height, const std::string& title = "Vulkan window") {
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-			glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); //TODO make it resizable
-			window = std::unique_ptr<GLFWwindow, decltype(deleteWindow)>(glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr), &Window::deleteWindow);
-		}
+		Window(int width, int height, const std::string& title = "Vulkan window");
 
 		Window(Window&) = delete;
 		Window(Window&&) = delete;
@@ -38,19 +34,15 @@ class Vulkan::Window {
 		 * Returns the underlying Vulkan object for the window.
 		 * @return The underlying Vulkan object for the window.
 		 */
-		GLFWwindow* operator+() const {
-			return window.get();
-		}
+		GLFWwindow* operator+() const;
 
 	private:
 
 		// Frees up the resources of the window.
-		void deleteWindow(GLFWwindow* window) {
-			glfwDestroyWindow(window);
-		}
+		static void deleteWindow(GLFWwindow* window);
 
 
-		std::unique_ptr<GLFWwindow, decltype(deleteWindow)> window;
+		std::unique_ptr<GLFWwindow, decltype(&deleteWindow)> window;
 };
 
 #endif
