@@ -37,7 +37,9 @@ Vulkan::LogicalDevice::LogicalDevice(const PhysicalDevice& physicalGpu) {
 
 	//save the queues so they are accessible later on
 	for (const auto& queueFamilyIndex : queueFamiliesIndices) {
-		queues.emplace(queueFamilyIndex.first, Queue(*this, queueFamilyIndex)); //create and insert the Queue object into the list of queues
+		queues.emplace(std::piecewise_construct, 
+			std::forward_as_tuple(queueFamilyIndex.first), 
+			std::forward_as_tuple(*this, queueFamilyIndex)); //create and insert the Queue object into the list of queues
 	}
 }
 
@@ -56,5 +58,5 @@ const VkDevice& Vulkan::LogicalDevice::operator+() const {
 
 
 const Vulkan::Queue& Vulkan::LogicalDevice::operator[](QueueFamily queueFamily) {
-	return queues[queueFamily];
+	return queues.find(queueFamily)->second;
 }

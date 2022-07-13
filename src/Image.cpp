@@ -22,19 +22,20 @@ const Vulkan::SwapchainOptions::SurfaceFormat& Vulkan::Image::getFormat() const 
 Vulkan::ImageView& Vulkan::Image::generateImageView(std::string tag, const LogicalDevice& virtualGpu) {
 	auto res = views.emplace(std::piecewise_construct,
 		std::forward_as_tuple(tag),
-		std::forward_as_tuple(image, virtualGpu));
+		std::forward_as_tuple(*this, virtualGpu));
 
 	if (!res.second) {
 		throw VulkanException("Cannot create an image view with tag " + tag + " because the tag has been already used");
 	}
-	return views[tag];
+	return res.first->second;
 }
 
 
 
 Vulkan::ImageView& Vulkan::Image::operator[](std::string tag) {
-	if (views.find(tag) == views.end()) {
+	auto result = views.find(tag);
+	if (result == views.end()) {
 		throw VulkanException("Image view with tag " + tag + " doesn't exist");
 	}
-	return views[tag];
+	return result->second;
 }

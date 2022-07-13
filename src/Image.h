@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 
+#include "ImageView.h"
 
 namespace Vulkan { class Image; class LogicalDevice; class ImageView; namespace SwapchainOptions { class SurfaceFormat; } }
 

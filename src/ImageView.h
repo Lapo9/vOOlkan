@@ -16,10 +16,11 @@ public:
 
 	~ImageView();
 
-	ImageView(const ImageView&) = delete;
-	ImageView(ImageView&&) = delete;
+	//FIXTHIS why do we need the copy ctor?
+	ImageView(const ImageView&) = default;
+	ImageView(ImageView&&) = default;
 	ImageView& operator=(const ImageView&) = delete;
-	ImageView& operator=(ImageView&&) = delete;
+	ImageView& operator=(ImageView&&) = default;
 
 	const VkImageView& operator+() const;
 
