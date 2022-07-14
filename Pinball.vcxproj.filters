@@ -16,6 +16,12 @@
     <Filter Include="Source Files\SwapchainOptions">
       <UniqueIdentifier>{7eeca137-7e83-44d4-a3ce-e5a8f539838c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\PipelineOptions">
+      <UniqueIdentifier>{c931d8a0-bc2f-447a-a59b-f2094c639058}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PipelineOptions\RenderPassOptions">
+      <UniqueIdentifier>{a5612a91-8cb5-4244-83f1-c3a01bec7000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Instance.h">
@@ -66,6 +72,9 @@
     <ClInclude Include="src\QueueFamily.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Attachment.h">
+      <Filter>Source Files\PipelineOptions\RenderPassOptions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -106,6 +115,9 @@
     </ClCompile>
     <ClCompile Include="src\Window.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Attachment.cpp">
+      <Filter>Source Files\PipelineOptions\RenderPassOptions</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Attachment.h" />
     <ClInclude Include="src\classes_to_do.h" />
     <ClInclude Include="src\Image.h" />
     <ClInclude Include="src\ImageView.h" />
@@ -37,6 +38,7 @@
     <ClInclude Include="src\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Attachment.cpp" />
     <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\ImageView.cpp" />
     <ClCompile Include="src\Instance.cpp" />

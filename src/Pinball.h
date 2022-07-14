@@ -1,6 +1,7 @@
 #ifndef PINBALL_PINBALL
 #define PINBALL_PINBALL
 
+#include "Attachment.h"
 #include "Image.h"
 #include "ImageView.h"
 #include "Instance.h"
