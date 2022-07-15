@@ -9,6 +9,7 @@
 #include "PhysicalDevice.h"
 #include "Queue.h"
 #include "RenderPass.h"
+#include "Shader.h"
 #include "Subpass.h"
 #include "Swapchain.h"
 #include "SwapchainCapabilities.h"

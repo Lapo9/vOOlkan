@@ -57,6 +57,10 @@ class Vulkan::PipelineOptions::RenderPass {
 			}
 		}
 
+		RenderPass(const RenderPass&) = delete;
+		RenderPass(RenderPass&&) = delete;
+		RenderPass& operator=(const RenderPass&) = delete;
+		RenderPass& operator=(RenderPass&&) = delete;
 
 		~RenderPass() {
 			vkDestroyRenderPass(+virtualGpu, renderPass, nullptr);

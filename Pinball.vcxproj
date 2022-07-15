@@ -30,11 +30,13 @@
     <ClInclude Include="src\Queue.h" />
     <ClInclude Include="src\QueueFamily.h" />
     <ClInclude Include="src\RenderPass.h" />
+    <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Subpass.h" />
     <ClInclude Include="src\Swapchain.h" />
     <ClInclude Include="src\SwapchainCapabilities.h" />
     <ClInclude Include="src\SwapchainPresentMode.h" />
     <ClInclude Include="src\SwapchainSurfaceFormat.h" />
+    <ClInclude Include="src\VertexInput.h" />
     <ClInclude Include="src\WindowSurface.h" />
     <ClInclude Include="src\VulkanException.h" />
     <ClInclude Include="src\Window.h" />
@@ -47,6 +49,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\PhysicalDevice.cpp" />
     <ClCompile Include="src\Queue.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Swapchain.cpp" />
     <ClCompile Include="src\SwapchainCapabilities.cpp" />
     <ClCompile Include="src\SwapchainPresentMode.cpp" />

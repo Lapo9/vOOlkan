@@ -12,10 +12,22 @@ namespace Vulkan { class VulkanException; }
  */
 class Vulkan::VulkanException : public std::runtime_error {
 	public:
-		VulkanException(const std::string& description = "", VkResult errorCode = VK_SUCCESS, const std::string& hint = "") : 
+		VulkanException(const std::string& description, VkResult errorCode, const std::string& hint = "") :
 			std::runtime_error(description), 
 			errorCode{ errorCode }, 
 			hint{ hint } {
+		}
+
+		VulkanException(const std::string& description, const std::string& hint) :
+			std::runtime_error(description),
+			errorCode{ VK_SUCCESS },
+			hint{ hint } {
+		}
+
+		VulkanException(const std::string& description) :
+			std::runtime_error(description),
+			errorCode{ VK_SUCCESS },
+			hint{ "" } {
 		}
 
 		const char* what() const noexcept override{

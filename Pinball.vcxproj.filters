@@ -81,6 +81,12 @@
     <ClInclude Include="src\RenderPass.h">
       <Filter>Source Files\PipelineOptions</Filter>
     </ClInclude>
+    <ClInclude Include="src\Shader.h">
+      <Filter>Source Files\PipelineOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VertexInput.h">
+      <Filter>Source Files\PipelineOptions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -121,6 +127,9 @@
     </ClCompile>
     <ClCompile Include="src\Window.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader.cpp">
+      <Filter>Source Files\PipelineOptions</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
