@@ -12,18 +12,20 @@ int main() {
 		Vulkan::LogicalDevice virtualGpu{ realGpu };
 		Vulkan::Swapchain swapchain{ realGpu, virtualGpu, windowSurface, window };
 
-		Vulkan::PipelineOptions::RenderPassOptions::Attachment a{};
-		Vulkan::PipelineOptions::RenderPassOptions::Attachment b{};
-		Vulkan::PipelineOptions::RenderPassOptions::Attachment c{};
+		Vulkan::PipelineOptions::RenderPassOptions::Attachment a1{}; std::pair pa1{ a1, VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR };
+		Vulkan::PipelineOptions::RenderPassOptions::Attachment a2{}; std::pair pa2{ a2, VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR };
+		Vulkan::PipelineOptions::RenderPassOptions::Attachment a3{}; std::pair pa3{ a3, VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR };
 
-		std::pair pa{ a, VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR };
-		std::pair pb{ b, VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR };
-		std::pair pc{ c, VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR };
+		auto [attachments, boundAttachments] = Vulkan::PipelineOptions::RenderPassOptions::Attachment::prepareAttachmentsArray(pa1, a2, std::pair{ a3, VkImageLayout::VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR });
 
-		auto z = Vulkan::PipelineOptions::RenderPassOptions::Attachment::prepareAttachmentsArray(pa, pb, c);
+		Vulkan::PipelineOptions::RenderPassOptions::Subpass s1(VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, boundAttachments[0], std::pair{ boundAttachments[1], true });
+		Vulkan::PipelineOptions::RenderPassOptions::Subpass s2(VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, std::pair{ boundAttachments[2], true }, boundAttachments[0]);
+
+		//Vulkan::PipelineOptions::RenderPass renderPass{}
+
 		std::cout << "\n";
-	}
-	catch (const Vulkan::VulkanException& ve) {
+
+	} catch (const Vulkan::VulkanException& ve) {
 		std::cout << ve.what();
 	}
 
