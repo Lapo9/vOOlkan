@@ -16,12 +16,12 @@ int main() {
 		Vulkan::PipelineOptions::RenderPassOptions::Attachment a2{}; std::pair pa2{ a2, VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR };
 		Vulkan::PipelineOptions::RenderPassOptions::Attachment a3{}; std::pair pa3{ a3, VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR };
 
-		auto [attachments, boundAttachments] = Vulkan::PipelineOptions::RenderPassOptions::Attachment::prepareAttachmentsArray(pa1, a2, std::pair{ a3, VkImageLayout::VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR });
+		auto boundAttachments = Vulkan::PipelineOptions::RenderPassOptions::Attachment::prepareAttachments(pa1, a2, std::pair{ a3, VkImageLayout::VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR });
 
 		Vulkan::PipelineOptions::RenderPassOptions::Subpass s1(VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, boundAttachments[0], std::pair{ boundAttachments[1], true });
 		Vulkan::PipelineOptions::RenderPassOptions::Subpass s2(VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, std::pair{ boundAttachments[2], true }, boundAttachments[0]);
 
-		Vulkan::PipelineOptions::RenderPass renderPass{ virtualGpu, attachments, s1,s2 };
+		Vulkan::PipelineOptions::RenderPass renderPass{ virtualGpu, boundAttachments, s1,s2 };
 
 		std::cout << "\n";
 	} catch (const Vulkan::VulkanException& ve) {

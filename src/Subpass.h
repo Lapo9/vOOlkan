@@ -20,11 +20,25 @@ namespace Vulkan::PipelineOptions::RenderPassOptions {
 	using AttachmentReferenceTuple = std::tuple<std::vector<VkAttachmentReference>, std::vector<VkAttachmentReference>, std::vector<VkAttachmentReference>, std::vector<uint32_t>>;
 }
 
+
+/**
+ * @brief A Subpass is a step of a RenderPass.
+ * @details Each Subpass has a subset of the attachments (the render targets) of its father RenderPass.
+ *			These attachments are divided into 3 categories based on their properties (and therefore their future use): input, color, depth/stencil. Moreover there can be specified a set of attachments to leave untouched durin this subpass.
+ */
 class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 	public:
 
+		/**
+		 * @brief Creates a Subpass with the specified attachments.
+		 * @details The attachments must be present in the father RenderPass, and their index must be correct. This is ensured if the BoundAttachment(s) are part of: res = Attachment::prepareAttachments, and res is used to build the father RenderPass.
+		 * 
+		 * @param bindPoint How this subpass will be used.
+		 * @param ...boundAttachments The attachments that this render Subpass will use.
+		 * @tparam BA The ...boundAttachments can be either standard BoundAttachment(s) or std::pair<BoundAttachment, bool>. The pair is used to specify whether the attachment should be left untouched during this render subpass (by default it is false).
+		 */
 		template<IsBoundAttachment... BA>
-		Subpass(VkPipelineBindPoint bindPoint , const BA&... boundAttachments) : subpass{} {
+		Subpass(VkPipelineBindPoint bindPoint = VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, const BA&... boundAttachments) : subpass{} {
 			//put each assignment in the correct array
 			std::tie(inputRefs, colorRefs, depthStencilRefs, preserveRefs) = buildAttachmentsTypesArrays(boundAttachments...);
 			
@@ -40,9 +54,19 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 		}
 
 
+		/**
+		 * @brief Creates a Subpass starting from the underlying Vulkan object.
+		 * 
+		 * @param baseSubpass The underlying Vulkan object.
+		 */
 		Subpass(VkSubpassDescription baseSubpass) : subpass{ baseSubpass } {}
 
 
+		/**
+		 * @brief Returns the underlying Vulkan VkSubpassDescription.
+		 * 
+		 * @return  The underlying Vulkan VkSubpassDescription.
+		 */
 		const VkSubpassDescription& operator+() {
 			return subpass;
 		}
@@ -86,20 +110,25 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 		}
 
 
+		//These 2 functions are used to create standard pairs of bound attachments and whether they should be left untouched during this render subpass
 		static std::pair<Attachment::BoundAttachment, bool> parseBoundAttachment(const Attachment::BoundAttachment& boundAttachment) {
-			return { boundAttachment, false };
+			return { boundAttachment, false }; //by deafult the attachment is not part of the preserve set
 		}
 
+		//These 2 functions are used to create standard pairs of bound attachments and whether they should be left untouched during this render subpass
 		static std::pair<Attachment::BoundAttachment, bool> parseBoundAttachment(const std::pair<Attachment::BoundAttachment, bool>& boundAttachment) {
 			return { boundAttachment.first, boundAttachment.second };
 		}
 
 
 		VkSubpassDescription subpass;
+
+		//arrays containing the references to each AttachmentType of attachment
 		std::vector<VkAttachmentReference> inputRefs;
 		std::vector<VkAttachmentReference> colorRefs;
 		std::vector<VkAttachmentReference> depthStencilRefs;
-		std::vector<uint32_t> preserveRefs;
+
+		std::vector<uint32_t> preserveRefs; //contains the indexes of the attachments to leave untouched during this render pass
 };
 
 #endif
