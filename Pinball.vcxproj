@@ -29,6 +29,7 @@
     <ClInclude Include="src\Pinball.h" />
     <ClInclude Include="src\Queue.h" />
     <ClInclude Include="src\QueueFamily.h" />
+    <ClInclude Include="src\Subpass.h" />
     <ClInclude Include="src\Swapchain.h" />
     <ClInclude Include="src\SwapchainCapabilities.h" />
     <ClInclude Include="src\SwapchainPresentMode.h" />
@@ -38,7 +39,6 @@
     <ClInclude Include="src\Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Attachment.cpp" />
     <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\ImageView.cpp" />
     <ClCompile Include="src\Instance.cpp" />

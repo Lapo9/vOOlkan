@@ -21,6 +21,7 @@ int main() {
 		std::pair pc{ c, VkImageLayout::VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR };
 
 		auto z = Vulkan::PipelineOptions::RenderPassOptions::Attachment::prepareAttachmentsArray(pa, pb, c);
+		std::cout << "\n";
 	}
 	catch (const Vulkan::VulkanException& ve) {
 		std::cout << ve.what();

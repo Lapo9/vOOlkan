@@ -75,6 +75,9 @@
     <ClInclude Include="src\Attachment.h">
       <Filter>Source Files\PipelineOptions\RenderPassOptions</Filter>
     </ClInclude>
+    <ClInclude Include="src\Subpass.h">
+      <Filter>Source Files\PipelineOptions\RenderPassOptions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -115,9 +118,6 @@
     </ClCompile>
     <ClCompile Include="src\Window.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Attachment.cpp">
-      <Filter>Source Files\PipelineOptions\RenderPassOptions</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
