@@ -21,10 +21,9 @@ int main() {
 		Vulkan::PipelineOptions::RenderPassOptions::Subpass s1(VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, boundAttachments[0], std::pair{ boundAttachments[1], true });
 		Vulkan::PipelineOptions::RenderPassOptions::Subpass s2(VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, std::pair{ boundAttachments[2], true }, boundAttachments[0]);
 
-		//Vulkan::PipelineOptions::RenderPass renderPass{}
+		Vulkan::PipelineOptions::RenderPass renderPass{ virtualGpu, attachments, s1,s2 };
 
 		std::cout << "\n";
-
 	} catch (const Vulkan::VulkanException& ve) {
 		std::cout << ve.what();
 	}

@@ -26,17 +26,17 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 		template<IsBoundAttachment... BA>
 		Subpass(VkPipelineBindPoint bindPoint , const BA&... boundAttachments) : subpass{} {
 			//put each assignment in the correct array
-			auto [inputs, colors, depthStencils, preserves] = buildAttachmentsTypesArrays(boundAttachments...);
+			std::tie(inputRefs, colorRefs, depthStencilRefs, preserveRefs) = buildAttachmentsTypesArrays(boundAttachments...);
 			
 			//create the structure
 			subpass.pipelineBindPoint = VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS; //bindPoint;
-			subpass.inputAttachmentCount = inputs.size();
-			subpass.pInputAttachments = inputs.empty() ? NULL : inputs.data();
-			subpass.colorAttachmentCount = colors.size();
-			subpass.pColorAttachments = colors.empty() ? NULL : colors.data();;
-			subpass.pDepthStencilAttachment = depthStencils.empty() ? NULL : depthStencils.data();;
-			subpass.preserveAttachmentCount = preserves.size();
-			subpass.pPreserveAttachments = preserves.empty() ? NULL : preserves.data();
+			subpass.inputAttachmentCount = inputRefs.size();
+			subpass.pInputAttachments = inputRefs.empty() ? nullptr : inputRefs.data();
+			subpass.colorAttachmentCount = colorRefs.size();
+			subpass.pColorAttachments = colorRefs.empty() ? nullptr : colorRefs.data();;
+			subpass.pDepthStencilAttachment = depthStencilRefs.empty() ? nullptr : depthStencilRefs.data();;
+			subpass.preserveAttachmentCount = preserveRefs.size();
+			subpass.pPreserveAttachments = preserveRefs.empty() ? nullptr : preserveRefs.data();
 		}
 
 
@@ -96,6 +96,10 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 
 
 		VkSubpassDescription subpass;
+		std::vector<VkAttachmentReference> inputRefs;
+		std::vector<VkAttachmentReference> colorRefs;
+		std::vector<VkAttachmentReference> depthStencilRefs;
+		std::vector<uint32_t> preserveRefs;
 };
 
 #endif
