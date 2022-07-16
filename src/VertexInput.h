@@ -51,12 +51,15 @@ namespace Vulkan::PipelineOptions {
 
 		std::array<ComponentProperties, componentsAmount> componentsProperties;
 		size_t stride;
+		int sizeOfVertex;
+		int arrayDimension = 0; //how many "complete" elements are in the array
 
 
 		/**
 		 * @brief Extracts the properties of a component and adds them to the array.
 		 * @details This function should only be called by the ctor, indeed this function keeps track of how many time it has been called, so that she knows where to add the element into the array.
 		 *			This function is able to extract the properties of a component thanks to template automatic argument deduction.
+		 *			This function assumes that the actual values of the vertex components are saved inside the Vertex class in the same order as this function receives them, in contiguous positions, without any member variable preceeding them.
 		 * 
 		 * @param The component to extract the properties from.
 		 * @tparam Vec the glm::vec<n, Typem packing> which is the component.
@@ -64,13 +67,11 @@ namespace Vulkan::PipelineOptions {
 		 * @tparam Type Type of each coordinate of the component (generally int, float, double).
 		 * @tparam packing 
 		 */
-		template<template<int, typename, glm::qualifier> class Vec, int n, typename Type, glm::qualifier packing> //TODO add requires(isGlmVec(Vec{})) BUT doesn't work
-		constexpr void addComponent(Vec<n, Type, packing>) {
-			static int arrayDimension = 0; //how many "complete" elements are in the array
-
+		template<template<int, typename, glm::qualifier> class Vec, int n, typename Type, glm::qualifier packing> requires(isGlmVec(Vec<n, Type, packing>{}))
+		void addComponent(Vec<n, Type, packing>) {
 			componentsProperties.at(arrayDimension) = ComponentProperties{ n, sizeof(Type), stride }; //the offset of this component is equivalent to the current stride
 			componentsProperties.at(arrayDimension).format = findRightFormat<Type, n>(); //calculate the VkFormat (no arguments are passed because it is only important the Type and coordinates amount to calculate the format)
-			stride += sizeof(Type) * n; //increase the stride, namely the dimension of this Vertex
+			stride += sizeOfVertex * n; //increase the stride, namely the dimension of this Vertex
 			arrayDimension++;
 		}
 
@@ -88,7 +89,7 @@ namespace Vulkan::PipelineOptions {
 
 			//add the RxxGxxBxxAxx part
 			for (int i = 1; i <= scalarAmount; ++i) {
-				format += length + RGBA(i);
+				format += RGBA(i) + length;
 			}
 			format += "_";
 
@@ -177,18 +178,18 @@ namespace Vulkan::PipelineOptions {
 
 
 	public:
-
 		/**
 		 * @brief Extract all of the properties from this Vertex.
 		 * @details Check that each component is indeed a GlmVec via the requires clause.
 		 * 
+		 * @param sizeOfVertex The size of the Vertex from where this function has been called. It is important to know the size of the Vertex in order to calculate the stride.
 		 * @param ...components Each component of this vertex.
 		 */
 		template<typename... Vec> requires (isGlmVec(Vec{}) && ...)
-			constexpr VertexProperties(Vec... components) : stride{ 0 } {
+			VertexProperties(int sizeOfVertex = -1, Vec... components) : stride{ 0 }, sizeOfVertex{ sizeOfVertex }, componentsProperties{} {
 			(addComponent(components), ...); //for each component, extract its properties
 		}
-
+		
 
 		/**
 		 * @brief Returns the properties of the specified component.
@@ -196,8 +197,20 @@ namespace Vulkan::PipelineOptions {
 		 * @param i The component index to return the properties.
 		 * @return The properties of the specified component.
 		 */
-		const std::array<ComponentProperties, componentsAmount>& operator[](unsigned int i) {
-			return componentsProperties.at[i];
+		const ComponentProperties& operator[](unsigned int i) {
+			return componentsProperties.at(i);
+		}
+
+
+		/**
+		 * @brief Returns whether the object has been initialized or not.
+		 * @details If the object has been default initialized, then sizeOfVertex is negative. 
+		 * It is so because this class should only be used inside the Vertex class as a static member, so, when it is first initialized, it is impossible (or, at least, unconvenient) to know the Vertex size.
+		 * 
+		 * @return Whether the object has been initialized or not.
+		 */
+		bool isInitialized() const {
+			return sizeOfVertex > 0;
 		}
 	};
 
@@ -218,8 +231,10 @@ namespace Vulkan::PipelineOptions {
 		 * 
 		 * @param ...vertexComponents All of the components of this vertex.
 		 */
-		Vertex(Vec... vertexComponents) : vertexComponents{ vertexComponents... }, vertexProperties{ vertexComponents... } {
-			
+		Vertex(Vec... vertexComponents) : vertexComponents{ vertexComponents... } {
+			if (!vertexProperties.isInitialized()) {
+				vertexProperties = VertexProperties<sizeof...(Vec)>{ sizeof(this), vertexComponents... };
+			}
 		}
 
 		/**
@@ -238,14 +253,16 @@ namespace Vulkan::PipelineOptions {
 			for (int i = 0; i < sizeof...(Vec); ++i) {
 				attributeDescriptions[i].binding = binding;
 				attributeDescriptions[i].location = i;
-				attributeDescriptions[i].format = VK_FORMAT_R32G32_SFLOAT;
+				attributeDescriptions[i].format = vertexProperties[i].format;
 				attributeDescriptions[i].offset = vertexProperties[i].offset;
 			}
+
+			return { bindingDescription, attributeDescriptions };
 		}
 
 	private:
 		std::tuple<Vec...> vertexComponents;
-		VertexProperties<sizeof...(Vec)> vertexProperties;
+		inline static VertexProperties<sizeof...(Vec)> vertexProperties;
 	};
 }
 

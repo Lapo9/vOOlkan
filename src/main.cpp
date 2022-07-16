@@ -29,6 +29,8 @@ int main() {
 			{{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 		};
 
+		auto [binding, attributes] = MyVertex::getDescriptors(0);
+
 		std::cout << "\n";
 	} catch (const Vulkan::VulkanException& ve) {
 		std::cout << ve.what();
