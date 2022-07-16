@@ -15,6 +15,7 @@
 #include "SwapchainCapabilities.h"
 #include "SwapchainPresentMode.h"
 #include "SwapchainSurfaceFormat.h"
+#include "VertexInput.h"
 #include "VulkanException.h"
 #include "Window.h"
 #include "WindowSurface.h"

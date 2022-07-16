@@ -23,6 +23,12 @@ int main() {
 
 		Vulkan::PipelineOptions::RenderPass renderPass{ virtualGpu, boundAttachments, s1,s2 };
 
+		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec2>;
+		std::vector<MyVertex> v1s{
+			{{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+			{{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+		};
+
 		std::cout << "\n";
 	} catch (const Vulkan::VulkanException& ve) {
 		std::cout << ve.what();
