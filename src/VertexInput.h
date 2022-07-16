@@ -13,6 +13,10 @@
 
 namespace Vulkan::PipelineOptions {
 
+	/** 
+	 * @brief Returns true if 1 <= n <= 4, Type is a fundalental typeand Vec<n, Type, packing> is a glm::vec<...>.
+	 * @details It is mandatory to have a function (and not a concept with its requires clause, because n, Type and packing must be automatically deducted by the compiler.
+	 */
 	template<template<int, typename, glm::qualifier> class Vec, int n, typename Type, glm::qualifier packing>
 	constexpr bool isGlmVec(Vec<n, Type, packing>) {
 		return n > 0 && n <= 4 &&
@@ -21,10 +25,23 @@ namespace Vulkan::PipelineOptions {
 	}
 
 
-
+	/** 
+	 * @brief This class is used to obtain the basic properties of a vertex, used to create bindings for the Vulkan pipeline.
+	 * @details This properties are:
+	 * - stride: basically the bytes occupied by a single vertex. e.g. { {int, int, int}, {double, double} } has stride 3*4 + 2*8 = 28.
+	 * - for each component of the vertex:
+	 *	- scalar amount: the amount of "coordinates" that make up the component. e.g. { {x, y, z}, {u, v} } has one component with 3 and one with 2.
+	 *	- scalar size: the size of one single coordinate. e.g. { {int, int, int}, {double, double} } has one component with size 32/8=4 and one with size 64/8=8.
+	 *	- format: a VkFormat for the component which depends on the scalar amount and size. e.g. {float, float, float} has VK_FORMAT_R32G32B32_SFLOAT.
+	 *	- offset: the offset in bytes of the first element of the component w.r.t. the starting position of its Vertex. e.g. { {int, int, int}, {double, double} } has offsets 0 and 3*4=12.
+	 */
 	template<int componentsAmount>
 	class VertexProperties {
 	private:
+
+		/**
+		 * @brief Properties of a single component. Look at VertexProperties description.
+		 */
 		struct ComponentProperties {
 			unsigned int scalarAmount;
 			size_t scalarSize;
@@ -34,23 +51,42 @@ namespace Vulkan::PipelineOptions {
 
 		std::array<ComponentProperties, componentsAmount> componentsProperties;
 		size_t stride;
-		int arrayDimension; //how many "complete" elements are in the array
 
 
-		template<template<int, typename, glm::qualifier> class Vec, int n, typename Type, glm::qualifier packing>
+		/**
+		 * @brief Extracts the properties of a component and adds them to the array.
+		 * @details This function should only be called by the ctor, indeed this function keeps track of how many time it has been called, so that she knows where to add the element into the array.
+		 *			This function is able to extract the properties of a component thanks to template automatic argument deduction.
+		 * 
+		 * @param The component to extract the properties from.
+		 * @tparam Vec the glm::vec<n, Typem packing> which is the component.
+		 * @tparam n Number of coordinates of the component.
+		 * @tparam Type Type of each coordinate of the component (generally int, float, double).
+		 * @tparam packing 
+		 */
+		template<template<int, typename, glm::qualifier> class Vec, int n, typename Type, glm::qualifier packing> //TODO add requires(isGlmVec(Vec{})) BUT doesn't work
 		constexpr void addComponent(Vec<n, Type, packing>) {
-			componentsProperties.at(arrayDimension) = ComponentProperties{ n, sizeof(Type), stride };
-			componentsProperties.at(arrayDimension).format = findRightFormat<Type, n>();
-			stride += sizeof(Type) * n;
+			static int arrayDimension = 0; //how many "complete" elements are in the array
+
+			componentsProperties.at(arrayDimension) = ComponentProperties{ n, sizeof(Type), stride }; //the offset of this component is equivalent to the current stride
+			componentsProperties.at(arrayDimension).format = findRightFormat<Type, n>(); //calculate the VkFormat (no arguments are passed because it is only important the Type and coordinates amount to calculate the format)
+			stride += sizeof(Type) * n; //increase the stride, namely the dimension of this Vertex
 			arrayDimension++;
 		}
 
 
+		/**
+		 * @brief Given the Type and the amount of coordinates of a component, it returns the right VkFormat.
+		 * 
+		 * @return The right VkFormat for the specifies type of component.
+		 */
 		template<typename Type, int scalarAmount>
 		static VkFormat findRightFormat() {
+			//build the string which match the enum value name, then lookup a map containing <string, enum>
 			std::string format = "VK_FORMAT_";
-			std::string length = std::to_string(sizeof(Type) * 8);
+			std::string length = std::to_string(sizeof(Type) * 8); //length of the underying type, in bits
 
+			//add the RxxGxxBxxAxx part
 			for (int i = 1; i <= scalarAmount; ++i) {
 				format += length + RGBA(i);
 			}
@@ -60,7 +96,7 @@ namespace Vulkan::PipelineOptions {
 				std::is_unsigned_v<Type> ? "UINT" : "SINT";
 			format += type;
 
-
+			//from the string now get the enum value
 			std::map<std::string, VkFormat> formats = {
 				{"VK_FORMAT_R16_UINTx",					VK_FORMAT_R16_UINT},
 				{"VK_FORMAT_R16_SINT",				VK_FORMAT_R16_SINT},
@@ -116,6 +152,9 @@ namespace Vulkan::PipelineOptions {
 		}
 
 
+		/**
+		 * @brief 1=R, 2=G, 3=B, 4=A.
+		 */
 		static std::string RGBA(int i) {
 			switch (i) {
 			case 1:
@@ -139,12 +178,24 @@ namespace Vulkan::PipelineOptions {
 
 	public:
 
+		/**
+		 * @brief Extract all of the properties from this Vertex.
+		 * @details Check that each component is indeed a GlmVec via the requires clause.
+		 * 
+		 * @param ...components Each component of this vertex.
+		 */
 		template<typename... Vec> requires (isGlmVec(Vec{}) && ...)
-			constexpr VertexProperties(Vec... components) : stride{ 0 }, arrayDimension{ 0 } {
-			(addComponent(components), ...);
+			constexpr VertexProperties(Vec... components) : stride{ 0 } {
+			(addComponent(components), ...); //for each component, extract its properties
 		}
 
 
+		/**
+		 * @brief Returns the properties of the specified component.
+		 * 
+		 * @param i The component index to return the properties.
+		 * @return The properties of the specified component.
+		 */
 		const std::array<ComponentProperties, componentsAmount>& operator[](unsigned int i) {
 			return componentsProperties.at[i];
 		}
@@ -153,21 +204,37 @@ namespace Vulkan::PipelineOptions {
 
 	
 
+	/**
+	 * @brief This class represents a vertex, which is made up of many components, such as space coordinates, texture coordinates, color, normals, ...
+	 * @details This class should be used to define the type of the vertex via a using directive, e.g.:
+	 * @code using MyVertexType = Vertex<glm::vec3, glm::vec2>; MyVertexType v1 = {{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}};
+	 * @tparam Vec... Each Vec is a component of the vertex. A Vec must be a glm::vec<n, Type, packing>, and this is checked at compile time thanks to automatic template argument deduction.
+	 */
 	template<typename... Vec> requires (isGlmVec(Vec{}) && ...)
 	class Vertex {
 	public:
+		/**
+		 * @brief Creates a new vertex.
+		 * 
+		 * @param ...vertexComponents All of the components of this vertex.
+		 */
 		Vertex(Vec... vertexComponents) : vertexComponents{ vertexComponents... }, vertexProperties{ vertexComponents... } {
 			
 		}
 
-
+		/**
+		 * @brief Returns the descriptors for this type of vertex, namely VkVertexInputBindingDescription and VkVertexInputAttributeDescription.
+		 * 
+		 * @param binding Vulkan pipeline binding location.
+		 * @return The Vertex descriptor with the specified binding, and all of the descriptors for each component of the Vertex.
+		 */
 		static std::pair<VkVertexInputBindingDescription, std::array<VkVertexInputAttributeDescription, sizeof...(Vec)>> getDescriptors(unsigned int binding) {
 			VkVertexInputBindingDescription bindingDescription{};
 			bindingDescription.binding = binding;
 			bindingDescription.stride = sizeof(Vertex);
 			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-			std::array<VkVertexInputAttributeDescription, sizeof...(Vec)> attributeDescriptions;
+			std::array<VkVertexInputAttributeDescription, sizeof...(Vec)> attributeDescriptions; //the array must have as many elements as the number of components
 			for (int i = 0; i < sizeof...(Vec); ++i) {
 				attributeDescriptions[i].binding = binding;
 				attributeDescriptions[i].location = i;
