@@ -2,12 +2,16 @@
 #define PINBALL_PINBALL
 
 #include "Attachment.h"
+#include "DepthStencil.h"
 #include "Image.h"
 #include "ImageView.h"
+#include "InputAssembly.h"
 #include "Instance.h"
 #include "LogicalDevice.h"
+#include "Multisampler.h"
 #include "PhysicalDevice.h"
 #include "Queue.h"
+#include "Rasterizer.h"
 #include "RenderPass.h"
 #include "Shader.h"
 #include "Subpass.h"

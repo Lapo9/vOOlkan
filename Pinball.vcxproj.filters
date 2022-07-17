@@ -87,6 +87,21 @@
     <ClInclude Include="src\VertexInput.h">
       <Filter>Source Files\PipelineOptions</Filter>
     </ClInclude>
+    <ClInclude Include="src\InputAssembly.h">
+      <Filter>Source Files\PipelineOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rasterizer.h">
+      <Filter>Source Files\PipelineOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Multisampler.h">
+      <Filter>Source Files\PipelineOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DepthStencil.h">
+      <Filter>Source Files\PipelineOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ColorBlender.h">
+      <Filter>Source Files\PipelineOptions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

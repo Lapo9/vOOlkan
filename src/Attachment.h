@@ -4,6 +4,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
+#include "ColorBlender.h"
 #include "VulkanException.h"
 
 
@@ -12,7 +13,10 @@ namespace Vulkan::PipelineOptions::RenderPassOptions {
 
 	template<typename T>
 	concept IsAttachment = requires(T t) {
-		std::same_as<T, Attachment> || std::same_as < T, std::pair<Attachment, VkImageLayout>>;
+		std::same_as<T, Attachment> ||
+			std::same_as < T, std::pair<Attachment, VkImageLayout>> ||
+			std::same_as < T, std::pair<Attachment, ColorBlender>>// && t.first.getType() == AttachmentType::COLOR) ||
+			|| std::same_as < T, std::tuple<Attachment, VkImageLayout, ColorBlender>>;// && std::get<0>(t).getType() == AttachmentType::COLOR);
 	};
 
 }
@@ -109,6 +113,7 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 		 * @brief A BoundAttachment is an Attachment which ir ready to be used in a RenderPass and render Subpass. This basically means that a BoundAttachment is an attachment with a valid index (named VkAttachmentReference.attachment).
 		 * @details The index is stored in the VkAttachmentReference object, which is a struct used by a render subpass to reference a specific attachment of its render pass.
 		 *			In addition to the index the VkAttachmentReference object stores a VkImageLayout.
+		 *			If it is a color attachment, then also the color blending mode is specified.
 		 */
 		class BoundAttachment {
 		public:
@@ -119,7 +124,10 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 			 * @param index The index with which this attachment will be referenced by a render Subpass.
 			 * @param layout How the subpass will treat this attachment.
 			 */
-			BoundAttachment(const Attachment& attachment, int index, VkImageLayout layout) : attachment{ attachment.attachment }, attachmentReference{}, type{ attachment.type } {
+			BoundAttachment(const Attachment& attachment, int index, VkImageLayout layout, ColorBlender colorBlender) : 
+				attachment{ attachment.attachment }, 
+				attachmentReference{}, type{ attachment.type },
+				colorBlender{ colorBlender } {
 				attachmentReference.attachment = index;
 				attachmentReference.layout = layout;
 			}
@@ -162,10 +170,24 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 				return attachmentReference;
 			}
 
+
+			/**
+			 * @brief If this attachment is a color attachment, it returns the color blender.
+			 * 
+			 * @return If this attachment is a color attachment, it returns the color blender.
+			 */
+			ColorBlender getColorBlendingMode() const {
+				if (type == AttachmentType::COLOR) {
+					return colorBlender;
+				}
+				throw VulkanException{ "This attachment is not a color attachment, therefore it hasn't got the color blender" };
+			}
+
 		private:
 			VkAttachmentDescription attachment;
 			VkAttachmentReference attachmentReference;
 			AttachmentType type;
+			ColorBlender colorBlender;
 		};
 
 
@@ -182,12 +204,12 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 			std::vector<BoundAttachment> boundAttachments; //array with the attachments which must have a complete VkAttachmentReference
 			
 			//Put in the vector the attachment and layout to bind toghether. The right overload is called based on the type of the attachment argument (pair<Attachment, layout> or Attachment).
-			std::vector<std::pair<Attachment, VkImageLayout>> attachmentLayoutPairs; 		
-			(attachmentLayoutPairs.push_back(parseAttachment(attachments)), ...);
+			std::vector<std::tuple<Attachment, VkImageLayout, ColorBlender>> attachmentLayoutColorBlenderTriplets; 		
+			(attachmentLayoutColorBlenderTriplets.push_back(parseAttachment(attachments)), ...);
 
 			//for each pair in the vector, add it to the array to return
-			for (const auto& alp : attachmentLayoutPairs) {
-				boundAttachments.emplace_back(alp.first, boundAttachments.size(), alp.second); //add the BoundAttachment to the array to return
+			for (const auto& alp : attachmentLayoutColorBlenderTriplets) {
+				boundAttachments.emplace_back(std::get<0>(alp), boundAttachments.size(), std::get<1>(alp), std::get<2>(alp)); //add the BoundAttachment to the array to return
 			}
 
 			return boundAttachments;
@@ -196,14 +218,30 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 
 	private:
 
-		//These 2 functions are used to return the attachment and its respective layout, which are then used in prepareAttachments(...) to build the array to create a subpass.
-		static std::pair<Attachment, VkImageLayout> parseAttachment(const std::pair<Attachment, VkImageLayout>& attachment) {
-			return attachment;
+		//These 4 functions are used to return the attachment and its respective layout, which are then used in prepareAttachments(...) to build the array to create a subpass.
+		static std::tuple<Attachment, VkImageLayout, ColorBlender> parseAttachment(const std::pair<Attachment, VkImageLayout>& attachment) {
+			if (attachment.first.type == AttachmentType::COLOR) {
+				return { attachment.first, attachment.second, ColorBlender{ColorBlendMode::STANDARD} };
+			}
+			return { attachment.first, attachment.second, ColorBlender{} };
 		}
 
-		//These 2 functions are used to return the attachment and its respective layout, which are then used in prepareAttachments(...) to build the array to create a subpass.
-		static std::pair<Attachment, VkImageLayout> parseAttachment(const Attachment& attachment) {
-			return std::pair{ attachment, attachment.attachmentReferenceLayout };
+		//These 4 functions are used to return the attachment and its respective layout, which are then used in prepareAttachments(...) to build the array to create a subpass.
+		static std::tuple<Attachment, VkImageLayout, ColorBlender> parseAttachment(const Attachment& attachment) {
+			if (attachment.type == AttachmentType::COLOR) {
+				return { attachment, attachment.attachmentReferenceLayout, ColorBlender{ColorBlendMode::STANDARD} };
+			}
+			return { attachment, attachment.attachmentReferenceLayout, ColorBlender{} };
+		}
+
+		//These 4 functions are used to return the attachment and its respective layout, which are then used in prepareAttachments(...) to build the array to create a subpass.
+		static std::tuple<Attachment, VkImageLayout, ColorBlender> parseAttachment(const std::pair<Attachment, ColorBlender>& attachment) {
+			return { attachment.first, attachment.first.attachmentReferenceLayout, attachment.second };
+		}
+
+		//These 4 functions are used to return the attachment and its respective layout, which are then used in prepareAttachments(...) to build the array to create a subpass.
+		static std::tuple<Attachment, VkImageLayout, ColorBlender> parseAttachment(const std::tuple<Attachment, VkImageLayout, ColorBlender>& attachment) {
+			return attachment;
 		}
 
 

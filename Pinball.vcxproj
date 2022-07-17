@@ -21,14 +21,19 @@
   <ItemGroup>
     <ClInclude Include="src\Attachment.h" />
     <ClInclude Include="src\classes_to_do.h" />
+    <ClInclude Include="src\ColorBlender.h" />
+    <ClInclude Include="src\DepthStencil.h" />
     <ClInclude Include="src\Image.h" />
     <ClInclude Include="src\ImageView.h" />
+    <ClInclude Include="src\InputAssembly.h" />
     <ClInclude Include="src\Instance.h" />
     <ClInclude Include="src\LogicalDevice.h" />
+    <ClInclude Include="src\Multisampler.h" />
     <ClInclude Include="src\PhysicalDevice.h" />
     <ClInclude Include="src\Pinball.h" />
     <ClInclude Include="src\Queue.h" />
     <ClInclude Include="src\QueueFamily.h" />
+    <ClInclude Include="src\Rasterizer.h" />
     <ClInclude Include="src\RenderPass.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Subpass.h" />

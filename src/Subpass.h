@@ -6,6 +6,7 @@
 #include <tuple>
 
 #include "Attachment.h"
+#include "ColorBlender.h"
 #include "VulkanException.h"
 
 
@@ -16,8 +17,6 @@ namespace Vulkan::PipelineOptions::RenderPassOptions {
 	concept IsBoundAttachment = requires(T t) {
 		std::same_as<T, Attachment::BoundAttachment> || std::same_as<T, std::pair<Attachment::BoundAttachment, bool>>;
 	};
-
-	using AttachmentReferenceTuple = std::tuple<std::vector<VkAttachmentReference>, std::vector<VkAttachmentReference>, std::vector<VkAttachmentReference>, std::vector<uint32_t>>;
 }
 
 
@@ -40,7 +39,7 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 		template<IsBoundAttachment... BA>
 		Subpass(VkPipelineBindPoint bindPoint = VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, const BA&... boundAttachments) : subpass{} {
 			//put each assignment in the correct array
-			std::tie(inputRefs, colorRefs, depthStencilRefs, preserveRefs) = buildAttachmentsTypesArrays(boundAttachments...);
+			buildAttachmentsTypesArrays(boundAttachments...);
 			
 			//create the structure
 			subpass.pipelineBindPoint = VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS; //bindPoint;
@@ -71,13 +70,22 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 			return subpass;
 		}
 
+
+		/**
+		 * @brief Returns as many VkPipelineColorBlendAttachmentState as the number of color attachments used in this subpass.
+		 * @details These structures are used in ColorBlender to describe how this subpass should write to each attachment. e.g. it can be specified that the new image must overwrite the old image on the render target, or that it should mix the colors with the old image.
+		 * 
+		 * @return  .
+		 */
+		const std::vector<ColorBlender>& getColorBlendingDescriptors() const {
+			return colorBlenders;
+		}
+
 	private:
 
 		//given the BoundAttachment(s), it extract their references and put them into 3 arrays, based on the type of the Attachment: input ref, color ref, depth/stencil ref
 		template<IsBoundAttachment... BA>
-		static AttachmentReferenceTuple buildAttachmentsTypesArrays(const BA&... boundAttachments) {
-			AttachmentReferenceTuple result;
-
+		void buildAttachmentsTypesArrays(const BA&... boundAttachments) {
 			//create a vector containing the BoundAttachment and a bool (true if that bound attachment should be added to the preserve array)
 			std::vector<std::pair<Attachment::BoundAttachment, bool>> parsedBoundAttachments;
 			(parsedBoundAttachments.push_back(parseBoundAttachment(boundAttachments)), ...);
@@ -87,13 +95,14 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 				//add it to the correct array: <input, color, depth/stencil>
 				switch (boundAttachment.first.getType()) {
 				case AttachmentType::INPUT:
-					std::get<0>(result).push_back(boundAttachment.first.getAttachmentReference());
+					inputRefs.push_back(boundAttachment.first.getAttachmentReference());
 					break;
 				case AttachmentType::COLOR:
-					std::get<1>(result).push_back(boundAttachment.first.getAttachmentReference());
+					colorRefs.push_back(boundAttachment.first.getAttachmentReference());
+					colorBlenders.push_back(boundAttachment.first.getColorBlendingMode());
 					break;
 				case AttachmentType::DEPTH_STENCIL:
-					std::get<2>(result).push_back(boundAttachment.first.getAttachmentReference());
+					depthStencilRefs.push_back(boundAttachment.first.getAttachmentReference());
 					break;
 				default:
 					throw VulkanException("BoundAttachment type not valid");
@@ -102,11 +111,9 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 
 				//if the BoundAttachment should be preserved, add its index (VkAttachmentReference.attachment) to the preserve array
 				if (boundAttachment.second) {
-					std::get<3>(result).push_back(boundAttachment.first.getAttachmentReferenceIndex());
+					preserveRefs.push_back(boundAttachment.first.getAttachmentReferenceIndex());
 				}
 			}
-
-			return result;
 		}
 
 
@@ -129,6 +136,8 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 		std::vector<VkAttachmentReference> depthStencilRefs;
 
 		std::vector<uint32_t> preserveRefs; //contains the indexes of the attachments to leave untouched during this render pass
+
+		std::vector<ColorBlender> colorBlenders; //the blend mode for each color attachment
 };
 
 #endif
