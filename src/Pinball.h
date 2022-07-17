@@ -11,6 +11,8 @@
 #include "LogicalDevice.h"
 #include "Multisampler.h"
 #include "PhysicalDevice.h"
+#include "PipelineColorBlendingModes.h"
+#include "PipelineLayout.h"
 #include "Queue.h"
 #include "Rasterizer.h"
 #include "RenderPass.h"

@@ -102,6 +102,12 @@
     <ClInclude Include="src\AttachmentColorBlendingMode.h">
       <Filter>Source Files\PipelineOptions\RenderPassOptions</Filter>
     </ClInclude>
+    <ClInclude Include="src\PipelineColorBlendingModes.h">
+      <Filter>Source Files\PipelineOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PipelineLayout.h">
+      <Filter>Source Files\PipelineOptions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -144,6 +150,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Shader.cpp">
+      <Filter>Source Files\PipelineOptions</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PipelineLayout.cpp">
       <Filter>Source Files\PipelineOptions</Filter>
     </ClCompile>
   </ItemGroup>

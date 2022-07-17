@@ -72,13 +72,16 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 
 
 		/**
-		 * @brief Returns as many VkPipelineColorBlendAttachmentState as the number of color attachments used in this subpass.
-		 * @details These structures are used in AttachmentColorBlendingMode to describe how this subpass should write to each attachment. e.g. it can be specified that the new image must overwrite the old image on the render target, or that it should mix the colors with the old image.
+		 * @brief Returns the VkPipelineColorBlendAttachmentState descriptors of the color attachments of this subpass.
 		 * 
-		 * @return  .
+		 * @return The VkPipelineColorBlendAttachmentState descriptors of the color attachments of this subpass..
 		 */
-		const std::vector<AttachmentColorBlendingMode>& getColorBlendingDescriptors() const {
-			return colorBlendingModes;
+		const std::vector<VkPipelineColorBlendAttachmentState>& getColorBlendingDescriptors() const {
+			std::vector<VkPipelineColorBlendAttachmentState> result;
+			for (const auto& acbm : colorBlendingModes) {
+				result.push_back(+acbm);
+			}
+			return result;
 		}
 
 	private:

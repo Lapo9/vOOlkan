@@ -31,6 +31,8 @@
     <ClInclude Include="src\Multisampler.h" />
     <ClInclude Include="src\PhysicalDevice.h" />
     <ClInclude Include="src\Pinball.h" />
+    <ClInclude Include="src\PipelineColorBlendingModes.h" />
+    <ClInclude Include="src\PipelineLayout.h" />
     <ClInclude Include="src\Queue.h" />
     <ClInclude Include="src\QueueFamily.h" />
     <ClInclude Include="src\Rasterizer.h" />
@@ -53,6 +55,7 @@
     <ClCompile Include="src\LogicalDevice.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\PhysicalDevice.cpp" />
+    <ClCompile Include="src\PipelineLayout.cpp" />
     <ClCompile Include="src\Queue.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Swapchain.cpp" />
