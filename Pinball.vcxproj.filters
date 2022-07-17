@@ -100,7 +100,7 @@
       <Filter>Source Files\PipelineOptions</Filter>
     </ClInclude>
     <ClInclude Include="src\ColorBlender.h">
-      <Filter>Source Files\PipelineOptions</Filter>
+      <Filter>Source Files\PipelineOptions\RenderPassOptions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

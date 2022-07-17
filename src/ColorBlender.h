@@ -4,10 +4,10 @@
 #include <vulkan/vulkan.h>
 
 
-namespace Vulkan::PipelineOptions { class ColorBlender; enum class ColorBlendMode; }
+namespace Vulkan::PipelineOptions::RenderPassOptions { class ColorBlender; enum class ColorBlendMode; }
 
 
-enum class Vulkan::PipelineOptions::ColorBlendMode {
+enum class Vulkan::PipelineOptions::RenderPassOptions::ColorBlendMode {
 	INVALID, STANDARD //TODO add other modes
 };
 
@@ -17,7 +17,7 @@ enum class Vulkan::PipelineOptions::ColorBlendMode {
  * @details For example it is possible to specify to override the old color attachment's values, or to mix them.
  * Each ColorBlender is therefore associated with an attachment in a Subpass.
  */
-class Vulkan::PipelineOptions::ColorBlender {
+class Vulkan::PipelineOptions::RenderPassOptions::ColorBlender {
 public:
 
 	ColorBlender(ColorBlendMode predefinedMode= ColorBlendMode::INVALID) : colorBlender{} {
