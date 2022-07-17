@@ -194,9 +194,10 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 		/**
 		 * @brief Prepares the attachments to be used into a RenderPass and its render Subpass(es), fixing a position for each attachment and assigning this position to the relative BoundAttachment.
 		 * @details vector<BoundAttachment> is the array containing attachments with a complete VkAttachmentReference. This means that the index (VkAttachmentReference.attachment) is set based on the position of the attachments in the argument list.
+		 *			Moreover a color BoundAttachment has also a specified color blending mode. A color BoundAttachment is any attachment where BoundAttachment::getType() == COLOR.
 		 * 
 		 * @param ...attachments Attachment(s) to generate the array of BoundAttachment(s) from. The order defines the fixed indexes of each BoundAttachment.
-		 * @tparam A Each argument can be either an Attachment or a std::pair<Attachment, VkImageLayout>. The pair is used to pass a different VkAttachmentReference.layout to the BoundAttachment ctor than the one specified during attachment creation (the default one).
+		 * @tparam A Each argument can be either an Attachment, std::pair<Attachment, VkImageLayout>, std::tuple<Attachment, VkImageLayout, ColorBlender>, std::pair<Attachment, ColorBlender>. The first pair and tuple are used to pass a different VkAttachmentReference.layout to the BoundAttachment ctor than the one specified during attachment creation (the default one). The ColorBlender, when specified, defines the blending mode for the BoundAttachment.
 		 * @return The array of BoundAttachment(s).
 		 */
 		template<IsAttachment... A>

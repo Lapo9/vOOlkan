@@ -8,7 +8,7 @@ namespace Vulkan::PipelineOptions { class ColorBlender; enum class ColorBlendMod
 
 
 enum class Vulkan::PipelineOptions::ColorBlendMode {
-	INVALID, STANDARD //TODO add othe modes
+	INVALID, STANDARD //TODO add other modes
 };
 
 
