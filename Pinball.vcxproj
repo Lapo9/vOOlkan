@@ -23,6 +23,7 @@
     <ClInclude Include="src\classes_to_do.h" />
     <ClInclude Include="src\AttachmentColorBlendingMode.h" />
     <ClInclude Include="src\DepthStencil.h" />
+    <ClInclude Include="src\DynamicState.h" />
     <ClInclude Include="src\Image.h" />
     <ClInclude Include="src\ImageView.h" />
     <ClInclude Include="src\InputAssembly.h" />

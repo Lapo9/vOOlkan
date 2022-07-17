@@ -108,6 +108,9 @@
     <ClInclude Include="src\PipelineLayout.h">
       <Filter>Source Files\PipelineOptions</Filter>
     </ClInclude>
+    <ClInclude Include="src\DynamicState.h">
+      <Filter>Source Files\PipelineOptions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
