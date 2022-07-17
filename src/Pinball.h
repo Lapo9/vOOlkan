@@ -2,7 +2,7 @@
 #define PINBALL_PINBALL
 
 #include "Attachment.h"
-#include "ColorBlender.h"
+#include "AttachmentColorBlendingMode.h"
 #include "DepthStencil.h"
 #include "Image.h"
 #include "ImageView.h"

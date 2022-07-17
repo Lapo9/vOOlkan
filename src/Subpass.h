@@ -6,7 +6,7 @@
 #include <tuple>
 
 #include "Attachment.h"
-#include "ColorBlender.h"
+#include "AttachmentColorBlendingMode.h"
 #include "VulkanException.h"
 
 
@@ -73,11 +73,11 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 
 		/**
 		 * @brief Returns as many VkPipelineColorBlendAttachmentState as the number of color attachments used in this subpass.
-		 * @details These structures are used in ColorBlender to describe how this subpass should write to each attachment. e.g. it can be specified that the new image must overwrite the old image on the render target, or that it should mix the colors with the old image.
+		 * @details These structures are used in AttachmentColorBlendingMode to describe how this subpass should write to each attachment. e.g. it can be specified that the new image must overwrite the old image on the render target, or that it should mix the colors with the old image.
 		 * 
 		 * @return  .
 		 */
-		const std::vector<ColorBlender>& getColorBlendingDescriptors() const {
+		const std::vector<AttachmentColorBlendingMode>& getColorBlendingDescriptors() const {
 			return colorBlenders;
 		}
 
@@ -137,7 +137,7 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 
 		std::vector<uint32_t> preserveRefs; //contains the indexes of the attachments to leave untouched during this render pass
 
-		std::vector<ColorBlender> colorBlenders; //the blend mode for each color attachment
+		std::vector<AttachmentColorBlendingMode> colorBlenders; //the blend mode for each color attachment
 };
 
 #endif

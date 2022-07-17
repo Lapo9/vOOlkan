@@ -99,7 +99,7 @@
     <ClInclude Include="src\DepthStencil.h">
       <Filter>Source Files\PipelineOptions</Filter>
     </ClInclude>
-    <ClInclude Include="src\ColorBlender.h">
+    <ClInclude Include="src\AttachmentColorBlendingMode.h">
       <Filter>Source Files\PipelineOptions\RenderPassOptions</Filter>
     </ClInclude>
   </ItemGroup>

@@ -4,25 +4,25 @@
 #include <vulkan/vulkan.h>
 
 
-namespace Vulkan::PipelineOptions::RenderPassOptions { class ColorBlender; enum class ColorBlendMode; }
+namespace Vulkan::PipelineOptions::RenderPassOptions { class AttachmentColorBlendingMode; enum class PredefinedColorBlendingModes; }
 
 
-enum class Vulkan::PipelineOptions::RenderPassOptions::ColorBlendMode {
+enum class Vulkan::PipelineOptions::RenderPassOptions::PredefinedColorBlendingModes {
 	INVALID, STANDARD //TODO add other modes
 };
 
 
 /**
- * @brief A ColorBlender describes how a render Subpass will write to a color attachment.
+ * @brief A AttachmentColorBlendingMode describes how a render Subpass will write to a color attachment.
  * @details For example it is possible to specify to override the old color attachment's values, or to mix them.
- * Each ColorBlender is therefore associated with an attachment in a Subpass.
+ * Each AttachmentColorBlendingMode is therefore associated with an attachment in a Subpass.
  */
-class Vulkan::PipelineOptions::RenderPassOptions::ColorBlender {
+class Vulkan::PipelineOptions::RenderPassOptions::AttachmentColorBlendingMode {
 public:
 
-	ColorBlender(ColorBlendMode predefinedMode= ColorBlendMode::INVALID) : colorBlender{} {
+	AttachmentColorBlendingMode(PredefinedColorBlendingModes predefinedMode= PredefinedColorBlendingModes::INVALID) : colorBlender{} {
 		switch (predefinedMode) {
-		case ColorBlendMode::STANDARD:
+		case PredefinedColorBlendingModes::STANDARD:
 			colorBlender.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 			colorBlender.blendEnable = VK_FALSE;
 			colorBlender.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
@@ -45,7 +45,7 @@ public:
 	}
 
 
-	ColorBlender(VkPipelineColorBlendAttachmentState baseColorBlender) : colorBlender{ baseColorBlender } {}
+	AttachmentColorBlendingMode(VkPipelineColorBlendAttachmentState baseColorBlender) : colorBlender{ baseColorBlender } {}
 
 
 	const VkPipelineColorBlendAttachmentState& operator+() const {
