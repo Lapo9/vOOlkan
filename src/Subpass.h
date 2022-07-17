@@ -78,7 +78,7 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 		 * @return  .
 		 */
 		const std::vector<AttachmentColorBlendingMode>& getColorBlendingDescriptors() const {
-			return colorBlenders;
+			return colorBlendingModes;
 		}
 
 	private:
@@ -99,7 +99,7 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 					break;
 				case AttachmentType::COLOR:
 					colorRefs.push_back(boundAttachment.first.getAttachmentReference());
-					colorBlenders.push_back(boundAttachment.first.getColorBlendingMode());
+					colorBlendingModes.push_back(boundAttachment.first.getColorBlendingMode());
 					break;
 				case AttachmentType::DEPTH_STENCIL:
 					depthStencilRefs.push_back(boundAttachment.first.getAttachmentReference());
@@ -137,7 +137,7 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 
 		std::vector<uint32_t> preserveRefs; //contains the indexes of the attachments to leave untouched during this render pass
 
-		std::vector<AttachmentColorBlendingMode> colorBlenders; //the blend mode for each color attachment
+		std::vector<AttachmentColorBlendingMode> colorBlendingModes; //the blend mode for each color attachment
 };
 
 #endif

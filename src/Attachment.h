@@ -124,10 +124,10 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 			 * @param index The index with which this attachment will be referenced by a render Subpass.
 			 * @param layout How the subpass will treat this attachment.
 			 */
-			BoundAttachment(const Attachment& attachment, int index, VkImageLayout layout, AttachmentColorBlendingMode colorBlender) : 
+			BoundAttachment(const Attachment& attachment, int index, VkImageLayout layout, AttachmentColorBlendingMode colorBlendingMode) : 
 				attachment{ attachment.attachment }, 
 				attachmentReference{}, type{ attachment.type },
-				colorBlender{ colorBlender } {
+				colorBlendingMode{ colorBlendingMode } {
 				attachmentReference.attachment = index;
 				attachmentReference.layout = layout;
 			}
@@ -172,22 +172,22 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 
 
 			/**
-			 * @brief If this attachment is a color attachment, it returns the color blender.
+			 * @brief If this attachment is a color attachment, it returns the color blending mode.
 			 * 
-			 * @return If this attachment is a color attachment, it returns the color blender.
+			 * @return If this attachment is a color attachment, it returns the color blending mode.
 			 */
 			AttachmentColorBlendingMode getColorBlendingMode() const {
 				if (type == AttachmentType::COLOR) {
-					return colorBlender;
+					return colorBlendingMode;
 				}
-				throw VulkanException{ "This attachment is not a color attachment, therefore it hasn't got the color blender" };
+				throw VulkanException{ "This attachment is not a color attachment, therefore it hasn't got the color blending mode" };
 			}
 
 		private:
 			VkAttachmentDescription attachment;
 			VkAttachmentReference attachmentReference;
 			AttachmentType type;
-			AttachmentColorBlendingMode colorBlender;
+			AttachmentColorBlendingMode colorBlendingMode;
 		};
 
 
@@ -205,11 +205,11 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 			std::vector<BoundAttachment> boundAttachments; //array with the attachments which must have a complete VkAttachmentReference
 			
 			//Put in the vector the attachment and layout to bind toghether. The right overload is called based on the type of the attachment argument (pair<Attachment, layout> or Attachment).
-			std::vector<std::tuple<Attachment, VkImageLayout, AttachmentColorBlendingMode>> attachmentLayoutColorBlenderTriplets; 		
-			(attachmentLayoutColorBlenderTriplets.push_back(parseAttachment(attachments)), ...);
+			std::vector<std::tuple<Attachment, VkImageLayout, AttachmentColorBlendingMode>> attachmentLayoutColorBlendingModeTriplets; 		
+			(attachmentLayoutColorBlendingModeTriplets.push_back(parseAttachment(attachments)), ...);
 
 			//for each pair in the vector, add it to the array to return
-			for (const auto& alp : attachmentLayoutColorBlenderTriplets) {
+			for (const auto& alp : attachmentLayoutColorBlendingModeTriplets) {
 				boundAttachments.emplace_back(std::get<0>(alp), boundAttachments.size(), std::get<1>(alp), std::get<2>(alp)); //add the BoundAttachment to the array to return
 			}
 
