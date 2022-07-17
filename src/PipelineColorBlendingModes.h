@@ -12,7 +12,7 @@ namespace Vulkan::PipelineOptions { class PipelineColorBlendingModes; }
  */
 class Vulkan::PipelineOptions::PipelineColorBlendingModes {
 public:
-	PipelineColorBlendingModes(const RenderPassOptions::Subpass& subpass, float blendCostantR, float blendCostantG, float blendCostantB, float blendCostantA) : pipelineColorBlendingModes{} {
+	PipelineColorBlendingModes(const RenderPassOptions::Subpass& subpass, float blendCostantR = 0.0f, float blendCostantG = 0.0f, float blendCostantB = 0.0f, float blendCostantA = 0.0f) : pipelineColorBlendingModes{} {
 		pipelineColorBlendingModes.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		pipelineColorBlendingModes.logicOpEnable = VK_FALSE;
 		pipelineColorBlendingModes.logicOp = VK_LOGIC_OP_COPY;

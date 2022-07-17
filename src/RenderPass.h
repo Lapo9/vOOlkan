@@ -38,10 +38,11 @@ class Vulkan::PipelineOptions::RenderPass {
 				attachmentDescriptions.push_back(+attachment);
 			}
 
-			//create the VkSubpassDescription array
+			//create the VkSubpassDescription array and save the subpasses in the vector
 			std::vector<VkSubpassDescription> subpassesDescriptions;
-			([&subpassesDescriptions](RenderPassOptions::Subpass subpass) {
+			([&subpassesDescriptions, this](RenderPassOptions::Subpass subpass) {
 				subpassesDescriptions.push_back(+subpass);
+				this->subpasses.push_back(subpass);
 				}(subpasses), ...);
 
 			//struct with the options for this render pass
@@ -76,9 +77,20 @@ class Vulkan::PipelineOptions::RenderPass {
 			return renderPass;
 		}
 
+
+		/**
+		 * @brief Returns the subpasses of this render pass.
+		 * 
+		 * @return The subpasses of this render pass.
+		 */
+		RenderPassOptions::Subpass getSubpass(unsigned int i) const {
+			return subpasses[i];
+		}
+
 	private:
 		VkRenderPass renderPass;
 		const LogicalDevice& virtualGpu;
+		std::vector<RenderPassOptions::Subpass> subpasses;
 };
 
 

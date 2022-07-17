@@ -32,6 +32,7 @@
     <ClInclude Include="src\Multisampler.h" />
     <ClInclude Include="src\PhysicalDevice.h" />
     <ClInclude Include="src\Pinball.h" />
+    <ClInclude Include="src\Pipeline.h" />
     <ClInclude Include="src\PipelineColorBlendingModes.h" />
     <ClInclude Include="src\PipelineLayout.h" />
     <ClInclude Include="src\Queue.h" />
