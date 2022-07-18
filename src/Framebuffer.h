@@ -5,6 +5,7 @@
 #include <concepts>
 #include <vector>
 #include <utility>
+#include <deque>
 
 #include "ImageView.h"
 #include "LogicalDevice.h"
@@ -68,8 +69,8 @@ public:
 	 * @return A framebuffer vector containing framebuffers made up of each image in the swapchain + otherAttachments.
 	 */
 	template<std::same_as<ImageView>... IV>
-	static std::vector<Framebuffer> generateFramebufferForEachSwapchainImageView(const LogicalDevice& virtualGpu, const PipelineOptions::RenderPass& renderPass, const Swapchain& swapchain, IV... otherAttachments) {
-		std::vector<Framebuffer> framebuffers;
+	static std::deque<Framebuffer> generateFramebufferForEachSwapchainImageView(const LogicalDevice& virtualGpu, const PipelineOptions::RenderPass& renderPass, const Swapchain& swapchain, IV... otherAttachments) {
+		std::deque<Framebuffer> framebuffers; //FIXTHIS we use a deque because the vector resizes itself, and by doing so it calls the destructor of Framebuffer, which, for some obscure reason fails!
 
 		auto& images = swapchain.getImages();
 		for (const auto& image : images) {
