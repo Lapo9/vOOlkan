@@ -31,7 +31,7 @@ class Vulkan::VulkanException : public std::runtime_error {
 		}
 
 		const char* what() const noexcept override{
-			fullDescription = "\n- Vulkan runtime error";
+			fullDescription = "\n? Vulkan runtime error";
 			if(errorCode != VK_SUCCESS) {
 				fullDescription += "\n\tcode: " + std::to_string(errorCode);
 			}

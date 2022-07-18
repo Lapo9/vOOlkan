@@ -36,6 +36,7 @@ Vulkan::ImageView::ImageView(const Image& image, const LogicalDevice& virtualGpu
 
 Vulkan::ImageView::~ImageView() {
 	vkDestroyImageView(+virtualGpu, imageView, nullptr);
+	std::cout << "\n- ImageView destroyed";
 }
 
 

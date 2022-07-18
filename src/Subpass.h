@@ -76,7 +76,7 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 		 * 
 		 * @return The VkPipelineColorBlendAttachmentState descriptors of the color attachments of this subpass..
 		 */
-		const std::vector<VkPipelineColorBlendAttachmentState>& getColorBlendingDescriptors() const {
+		std::vector<VkPipelineColorBlendAttachmentState> getColorBlendingDescriptors() const {
 			std::vector<VkPipelineColorBlendAttachmentState> result;
 			for (const auto& acbm : colorBlendingModes) {
 				result.push_back(+acbm);

@@ -16,8 +16,12 @@ namespace Vulkan { class Image; class LogicalDevice; class ImageView; namespace 
 class Vulkan::Image {
 	public:
 
-		Image(const VkImage& image, const SwapchainOptions::SurfaceFormat& format);
+		Image(const VkImage& image, const LogicalDevice& virtualGpu, const SwapchainOptions::SurfaceFormat& format);
 
+		Image(const Image&) = delete;
+		Image(Image&&) = default;
+		Image& operator=(const Image&) = delete;
+		Image& operator=(Image&&) = default;
 
 		const VkImage& operator+() const;
 
@@ -36,7 +40,15 @@ class Vulkan::Image {
 		 * @param virtualGpu The LogicalGpu of the Vulkan application.
 		 * @return The newly created image view.
 		 */
-		ImageView& generateImageView(std::string tag, const LogicalDevice& virtualGpu);
+		const ImageView& generateImageView(std::string tag, const LogicalDevice& virtualGpu);
+
+
+		/**
+		 * @brief Eliminates the specified image view.
+		 * 
+		 * @param tag The image view to eliminate.
+		 */
+		void eliminateImageView(std::string tag);
 
 
 		/**
@@ -46,7 +58,15 @@ class Vulkan::Image {
 		 * @param tag The tag of the image view to retrieve.
 		 * @return The image view associated with the tag.
 		 */
-		ImageView& operator[](std::string tag);
+		const ImageView& operator[](std::string tag) const;
+
+
+		/**
+		 * @brief Returns all the image views of this image.
+		 * 
+		 * @return All the image views of this image.
+		 */
+		const std::map<std::string, ImageView>& getImageViews() const;
 
 	private:
 		VkImage image;

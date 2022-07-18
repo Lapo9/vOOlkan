@@ -61,6 +61,7 @@ Vulkan::Swapchain::Swapchain(const PhysicalDevice& realGpu, const LogicalDevice&
 
 Vulkan::Swapchain::~Swapchain() {
 	vkDestroySwapchainKHR(+virtualGpu, swapchain, nullptr);
+	std::cout << "\n- Swapchain destroyed";
 }
 
 
@@ -78,6 +79,16 @@ const Vulkan::SwapchainOptions::Capabilities& Vulkan::Swapchain::getSwapchainCap
 }
 
 
+const std::vector<Vulkan::Image>& Vulkan::Swapchain::getImages() const {
+	return images;
+}
+
+
+std::pair<unsigned int, unsigned int> Vulkan::Swapchain::getResolution() const {
+	return { (+swapchainCapabilities).currentExtent.width, (+swapchainCapabilities).currentExtent.height };
+}
+
+
 bool Vulkan::Swapchain::isSwapchainSupported(const PhysicalDevice& realGpu, const WindowSurface& windowSurface) {
 	return SwapchainOptions::SurfaceFormat::isThereAnAvailableSurfaceFormat(realGpu, windowSurface) && SwapchainOptions::PresentMode::isThereAnAvailablePresentMode(realGpu, windowSurface);
 }
@@ -91,6 +102,6 @@ void Vulkan::Swapchain::saveSwapchainImages() {
 	vkGetSwapchainImagesKHR(+virtualGpu, swapchain, &imageCount, tmpImages.data());
 
 	for (const auto& image : tmpImages) {
-		images.emplace_back(image, swapchainSurfaceFormat);
+		images.emplace_back(image, virtualGpu, swapchainSurfaceFormat);
 	}
 }

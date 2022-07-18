@@ -5,6 +5,7 @@
 #include "AttachmentColorBlendingMode.h"
 #include "DepthStencil.h"
 #include "DynamicState.h"
+#include "Framebuffer.h"
 #include "Image.h"
 #include "ImageView.h"
 #include "InputAssembly.h"

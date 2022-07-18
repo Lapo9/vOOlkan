@@ -57,6 +57,13 @@ int main() {
 		//pipeline
 		Vulkan::Pipeline pipeline{ virtualGpu, renderPass, 0, std::vector{&vertexShader, &fragmentShader},vertexTypesDescriptor, pipelineLayout, inputAssembly, rasterizer, multisampler, depthStencil, dynamicState};
 
+
+		//create the framebuffers
+		auto framebuffers = Vulkan::Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain);
+
+		//Vulkan::Framebuffer f1{ virtualGpu, renderPass, std::pair{100,100} };
+		//f1.~Framebuffer();
+
 		std::cout << "\n";
 	} catch (const Vulkan::VulkanException& ve) {
 		std::cout << ve.what();

@@ -32,9 +32,9 @@ class Vulkan::Swapchain {
 		~Swapchain();
 
 		Swapchain(const Swapchain&) = delete;
-		Swapchain(Swapchain&&) = delete;
+		Swapchain(Swapchain&&) = default;
 		Swapchain& operator=(const Swapchain&) = delete;
-		Swapchain& operator=(Swapchain&&) = delete;
+		Swapchain& operator=(Swapchain&&) = default;
 
 		/**
 		 * @brief Returns the underlying VkSwapchainKHR object.
@@ -47,6 +47,22 @@ class Vulkan::Swapchain {
 		const SwapchainOptions::SurfaceFormat& getImageFormat();
 
 		const SwapchainOptions::Capabilities& getSwapchainCapabilities();
+
+		/**
+		 * @brief Returns the images of this swapchain.
+		 * 
+		 * @return The images of this swapchain.
+		 */
+		const std::vector<Image>& getImages() const;
+
+
+		/**
+		 * @brief Returns the width and height of the images in this swapchain.
+		 * 
+		 * @return The width and height of the images in this swapchain.
+		 */
+		std::pair<unsigned int, unsigned int> getResolution() const;
+		
 
 
 		/**

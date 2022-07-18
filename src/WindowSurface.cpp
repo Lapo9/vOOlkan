@@ -20,6 +20,7 @@ Vulkan::WindowSurface::WindowSurface(const Instance& vulkanInstance, const Windo
 
 Vulkan::WindowSurface::~WindowSurface() {
 	vkDestroySurfaceKHR(+vulkanInstance, surface, nullptr);
+	std::cout << "\n- WindowSurface destroyed";
 }
 
 

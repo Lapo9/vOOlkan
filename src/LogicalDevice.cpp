@@ -52,6 +52,7 @@ Vulkan::LogicalDevice::LogicalDevice(const PhysicalDevice& physicalGpu) {
 
 Vulkan::LogicalDevice::~LogicalDevice() {
 	vkDestroyDevice(virtualGpu, nullptr);
+	std::cout << "\n- LogicalDevice destroyed";
 }
 
 
