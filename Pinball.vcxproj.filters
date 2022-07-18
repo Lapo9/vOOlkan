@@ -117,6 +117,12 @@
     <ClInclude Include="src\Framebuffer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\CommandBufferPool.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CommandBuffer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -163,6 +169,9 @@
     </ClCompile>
     <ClCompile Include="src\PipelineLayout.cpp">
       <Filter>Source Files\PipelineOptions</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CommandBufferPool.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

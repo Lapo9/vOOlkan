@@ -63,6 +63,6 @@ const VkDevice& Vulkan::LogicalDevice::operator+() const {
 
 
 
-const Vulkan::Queue& Vulkan::LogicalDevice::operator[](QueueFamily queueFamily) {
+const Vulkan::Queue& Vulkan::LogicalDevice::operator[](QueueFamily queueFamily) const {
 	return queues.find(queueFamily)->second;
 }

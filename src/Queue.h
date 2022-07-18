@@ -35,7 +35,14 @@ class Vulkan::Queue {
 		 * 
 		 * @return The family of the queue.
 		 */
-		QueueFamily getFamily();
+		QueueFamily getFamily() const;
+
+		/**
+		 * @brief Returns the physical GPU queue family index for this queue.
+		 * 
+		 * @return The physical GPU queue family index for this queue.
+		 */
+		int getFamilyIndex() const;
 
 
 		//TODO functions to add commands to the queue
@@ -43,6 +50,7 @@ class Vulkan::Queue {
 	private:
 		VkQueue queue;
 		QueueFamily family;
+		int queueFamilyIndex;
 };
 
 #endif

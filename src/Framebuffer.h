@@ -23,7 +23,7 @@ class Vulkan::Framebuffer {
 public:
 	
 	template<std::same_as<ImageView>... IV>
-	Framebuffer(const LogicalDevice& virtualGpu, const PipelineOptions::RenderPass& renderPass, std::pair<unsigned int, unsigned int> resolution, const IV&... imageViews) : virtualGpu{ virtualGpu } {
+	Framebuffer(const LogicalDevice& virtualGpu, const PipelineOptions::RenderPass& renderPass, std::pair<unsigned int, unsigned int> resolution, const IV&... imageViews) : virtualGpu{ virtualGpu }, resolution{ resolution } {
 		std::vector<VkImageView> attachments;
 		(attachments.push_back(+imageViews), ...);
 
@@ -59,6 +59,11 @@ public:
 	}
 
 
+	std::pair<unsigned int, unsigned int> getResolution() const {
+		return resolution;
+	}
+
+
 	/**
 	 * @brief Creates a framebuffer for each image view in the specified swapchain. It also attaches the specified other attachments to the same framebuffer.
 	 * 
@@ -86,6 +91,7 @@ public:
 private:
 	VkFramebuffer framebuffer;
 	const LogicalDevice& virtualGpu;
+	std::pair<unsigned int, unsigned int> resolution;
 };
 
 

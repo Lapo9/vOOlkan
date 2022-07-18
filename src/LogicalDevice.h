@@ -38,7 +38,7 @@ class Vulkan::LogicalDevice {
 		 * @param queueFamily The queue family of the queue to return.
 		 * @return The queue of the specified queue family.
 		 */
-		const Queue& operator[](QueueFamily queueFamily);
+		const Queue& operator[](QueueFamily queueFamily) const;
 
 
 	private:
