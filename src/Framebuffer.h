@@ -38,6 +38,8 @@ public:
 		if (VkResult result = vkCreateFramebuffer(+virtualGpu, &framebufferInfo, nullptr, &framebuffer); result != VK_SUCCESS) {
 			throw VulkanException("Failed to create framebuffer!");
 		}
+
+		std::cout << "\n+ Framebuffer created";
 	}
 
 	Framebuffer(const Framebuffer&) = delete;
@@ -47,6 +49,7 @@ public:
 
 	~Framebuffer() {
 		vkDestroyFramebuffer(+virtualGpu, framebuffer, nullptr);
+		std::cout << "\n- Framebuffer destroyed";
 	}
 
 
