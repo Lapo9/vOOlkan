@@ -43,6 +43,7 @@ class Vulkan::Window {
 
 
 		std::unique_ptr<GLFWwindow, decltype(&deleteWindow)> window;
+		std::string title;
 };
 
 #endif

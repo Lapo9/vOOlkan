@@ -9,7 +9,7 @@ namespace Vulkan::PipelineOptions { class DepthStencil; }
 //TODO actually fill this class
 class Vulkan::PipelineOptions::DepthStencil {
 public:
-	//TODO add creation options
+
 	DepthStencil() : depthStencil{} {
 		
 	}

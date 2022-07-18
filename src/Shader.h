@@ -49,6 +49,7 @@ class Vulkan::PipelineOptions::Shader {
 		VkShaderModule shaderModule;
 		VkPipelineShaderStageCreateInfo shaderStageInfo;
 		const LogicalDevice& virtualGpu;
+		std::string entrypoint;
 };
 
 #endif

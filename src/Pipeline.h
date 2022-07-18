@@ -20,6 +20,7 @@
 #include "Shader.h"
 #include "Subpass.h"
 #include "VertexInput.h"
+#include "Viewport.h"
 
 
 namespace Vulkan { class Pipeline; }
@@ -32,24 +33,25 @@ public:
 		const LogicalDevice& virtualGpu,
 		const PipelineOptions::RenderPass& renderPass,
 		int subpassIndex,
-		const std::vector<PipelineOptions::Shader>& shaders,	
+		const std::vector<PipelineOptions::Shader*>& shaders,	
 		const PipelineOptions::PipelineVertexArrays& vertexArraysDescriptor,
-		const PipelineOptions::PipelineLayout pipelineLayout,
+		const PipelineOptions::PipelineLayout& pipelineLayout,
 		const PipelineOptions::InputAssembly& inputAssembly = PipelineOptions::InputAssembly{},
 		const PipelineOptions::Rasterizer& rasterizer = PipelineOptions::Rasterizer{},
 		const PipelineOptions::Multisampler& multisampler = PipelineOptions::Multisampler{},
 		const PipelineOptions::DepthStencil& depthStencil = PipelineOptions::DepthStencil{},
-		const PipelineOptions::DynamicState& dynamicState = PipelineOptions::DynamicState{}
-		//TODO viewportState
+		const PipelineOptions::DynamicState& dynamicState = PipelineOptions::DynamicState{},
+		const PipelineOptions::Viewport& viewport = PipelineOptions::Viewport{}
 	) : virtualGpu{ virtualGpu } {
 		//create the array of VkPipelineShaderStageCreateInfo starting from the shaders
 		std::vector<VkPipelineShaderStageCreateInfo> shadersDescriptors;
 		for (const auto& shader : shaders) {
-			shadersDescriptors.push_back(+shader);
+			shadersDescriptors.push_back(+*shader);
 		}
 
 		//create the PipelineColorBlendingModes object starting from the subpass
 		PipelineOptions::PipelineColorBlendingModes pipelineColorBlendingModes{ renderPass.getSubpass(subpassIndex) };
+
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -57,10 +59,10 @@ public:
 		pipelineInfo.pStages = shadersDescriptors.data();
 		pipelineInfo.pVertexInputState = &+vertexArraysDescriptor;
 		pipelineInfo.pInputAssemblyState = &+inputAssembly;
-		pipelineInfo.pViewportState = nullptr;
+		pipelineInfo.pViewportState = &+viewport;
 		pipelineInfo.pRasterizationState = &+rasterizer;
 		pipelineInfo.pMultisampleState = &+multisampler;
-		pipelineInfo.pDepthStencilState = &+depthStencil;
+		pipelineInfo.pDepthStencilState = nullptr; //TODO &+depthStencil;
 		pipelineInfo.pColorBlendState = &+pipelineColorBlendingModes;
 		pipelineInfo.pDynamicState = &+dynamicState;
 		pipelineInfo.layout = +pipelineLayout;

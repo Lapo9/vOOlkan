@@ -3,7 +3,7 @@
 #include "VulkanException.h"
 
 
-Vulkan::PipelineOptions::Shader::Shader(const LogicalDevice& virtualGpu, std::string spirvFileName, VkShaderStageFlagBits shaderType, std::string entrypoint) : virtualGpu{ virtualGpu }, shaderStageInfo{} {
+Vulkan::PipelineOptions::Shader::Shader(const LogicalDevice& virtualGpu, std::string spirvFileName, VkShaderStageFlagBits shaderType, std::string entrypoint) : virtualGpu{ virtualGpu }, shaderStageInfo{}, entrypoint{ entrypoint } {
 	auto code = readSpirvFile(spirvFileName); //the code of the shader in SPIR-V format
 
 	//struct to create the shader module
@@ -20,7 +20,7 @@ Vulkan::PipelineOptions::Shader::Shader(const LogicalDevice& virtualGpu, std::st
 	shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shaderStageInfo.stage = shaderType;
 	shaderStageInfo.module = shaderModule;
-	shaderStageInfo.pName = entrypoint.c_str();
+	shaderStageInfo.pName = this->entrypoint.c_str();
 }
 
 

@@ -46,13 +46,16 @@ int main() {
 		Vulkan::PipelineOptions::Multisampler multisampler{};
 		Vulkan::PipelineOptions::DepthStencil depthStencil{};
 		Vulkan::PipelineOptions::DynamicState dynamicState{};
-		Vulkan::PipelineOptions::InputAssembly inputAssemply{};
+		Vulkan::PipelineOptions::InputAssembly inputAssembly{};
 		Vulkan::PipelineOptions::PipelineLayout pipelineLayout{virtualGpu};
-		Vulkan::PipelineOptions::Rasterizer{};
+		Vulkan::PipelineOptions::Rasterizer rasterizer{};
 
 		//shaders
-		//FROMHERE build a functioning pipeline to test things
+		Vulkan::PipelineOptions::Shader vertexShader{ virtualGpu, "shaders/TestVert.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT };
+		Vulkan::PipelineOptions::Shader fragmentShader{ virtualGpu, "shaders/TestFrag.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT };
 
+		//pipeline
+		Vulkan::Pipeline pipeline{ virtualGpu, renderPass, 0, std::vector{&vertexShader, &fragmentShader},vertexTypesDescriptor, pipelineLayout, inputAssembly, rasterizer, multisampler, depthStencil, dynamicState};
 
 		std::cout << "\n";
 	} catch (const Vulkan::VulkanException& ve) {

@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Attachment.h" />
-    <ClInclude Include="src\classes_to_do.h" />
     <ClInclude Include="src\AttachmentColorBlendingMode.h" />
     <ClInclude Include="src\DepthStencil.h" />
     <ClInclude Include="src\DynamicState.h" />
@@ -46,6 +45,7 @@
     <ClInclude Include="src\SwapchainPresentMode.h" />
     <ClInclude Include="src\SwapchainSurfaceFormat.h" />
     <ClInclude Include="src\VertexInput.h" />
+    <ClInclude Include="src\Viewport.h" />
     <ClInclude Include="src\WindowSurface.h" />
     <ClInclude Include="src\VulkanException.h" />
     <ClInclude Include="src\Window.h" />

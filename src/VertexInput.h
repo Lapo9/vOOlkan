@@ -301,6 +301,7 @@ namespace Vulkan::PipelineOptions {
 			}
 
 			//fill the descriptor
+			vertexArraysDescriptor.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 			vertexArraysDescriptor.vertexBindingDescriptionCount = bindingDescriptors.size();
 			vertexArraysDescriptor.pVertexBindingDescriptions = bindingDescriptors.data();
 			vertexArraysDescriptor.vertexAttributeDescriptionCount = attributeDescriptors.size();
