@@ -61,6 +61,11 @@ int main() {
 		//create the framebuffers
 		auto framebuffers = Vulkan::Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain);
 
+		Vulkan::CommandBufferPool commandBufferPool{ virtualGpu };
+
+		uint32_t a = 1;
+		Vulkan::CommandBuffer commandBuffer{ virtualGpu, commandBufferPool, renderPass, framebuffers[0], pipeline, std::tuple{vkCmdDraw, a, a, a, a}, std::tuple{vkCmdDraw, a, a, a, a}};
+		//Vulkan::CommandBuffer commandBuffer{ vkCmdDraw };
 
 		std::cout << "\n";
 	} catch (const Vulkan::VulkanException& ve) {

@@ -25,6 +25,7 @@
     <ClInclude Include="src\CommandBufferPool.h" />
     <ClInclude Include="src\DepthStencil.h" />
     <ClInclude Include="src\DynamicState.h" />
+    <ClInclude Include="src\Drawer.h" />
     <ClInclude Include="src\Framebuffer.h" />
     <ClInclude Include="src\Image.h" />
     <ClInclude Include="src\ImageView.h" />

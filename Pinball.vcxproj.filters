@@ -123,6 +123,9 @@
     <ClInclude Include="src\CommandBuffer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Drawer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

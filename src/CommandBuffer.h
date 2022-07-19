@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <utility>
+#include <concepts>
 
 #include "CommandBufferPool.h"
 #include "LogicalDevice.h"
@@ -16,19 +17,40 @@
 
 namespace Vulkan { class CommandBuffer; }
 
+
 class Vulkan::CommandBuffer {
 public:
 	CommandBuffer(const LogicalDevice& virtualGpu, const CommandBufferPool& commandBufferPool) : virtualGpu{ virtualGpu } {
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = +commandBufferPool;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = 1;
-
-		if (VkResult result = vkAllocateCommandBuffers(+virtualGpu, &allocInfo, &commandBuffer); result != VK_SUCCESS) {
-			throw VulkanException("Failed to allocate command buffers!", result);
-		}
+		allocateCommandBuffer(virtualGpu, commandBufferPool);
 	}
+
+
+	/**
+	 * @brief Create a framebuffer and register the specified commands.
+	 * @details Other than the commands registered, the framebuffer will also have the commands added by the reset and endCommand functions.
+	 * 
+	 * @param virtualGpu The LogicalDevice where to execute this command buffer when needed.
+	 * @param commandBufferPool The pool from which obtain the empty command buffer.
+	 * @param renderPass The RenderPass that will be used by this command.
+	 * @param framebuffer The Framebuffer that will be used by this command.
+	 * @param pipeline The Pipeline that will be used by thi command.
+	 * @param ...commands Commands to register in this command buffer. Each command is made up of the Vulkan function + its arguments. The functions will be called in order and the arguments will be perfectly forwarded.
+	 * @tparam ...Args The types of the arguments to pass to each Vulkan function.
+	 * @tparam ...Command The tuples, each containing the Vulkan function and its arguments (of type ...Args).
+	 */
+	template<typename... Args, template<typename...> class... Command> requires (std::same_as<Command<int>, std::tuple<int>> && ...)
+	CommandBuffer(const LogicalDevice& virtualGpu, const CommandBufferPool& commandBufferPool, const PipelineOptions::RenderPass& renderPass, const Framebuffer& framebuffer, const Pipeline& pipeline, Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) : virtualGpu{virtualGpu} {
+		allocateCommandBuffer(virtualGpu, commandBufferPool);
+		//reset(renderPass, framebuffer, pipeline); FROMHERE
+
+		//this is tricky... call the function addCommand and pass as arguments (perfect forwarding) the objects in the each tuple received as argument
+		(std::apply([this]<typename... Args>(Args&&... args) {
+			this->addCommand(std::forward<Args>(args)...);
+			}, commands), ...);
+
+	}
+
+
 
 	
 	const VkCommandBuffer& operator+() {
@@ -89,14 +111,25 @@ public:
 
 	/**
 	 * @brief Adds a command to the command buffer.
+	 * @details We differentiate ...Args and ...Params because of the perfect forwarding. 
+	 *			Basically ...Params are the parameters that the function (the first parameter) wants to receive, whereas ...Args are the actual arguments that will be forwarded to this function.
+	 *			It can be that the function wants an int, but the argument is deduced as an int&: without this split the overload resolution would fail:
+	 *			Imagine:
+	 *			@code template<typename ...T> void foo(void(*command)(T...), T&&... args)
+	 *			And:
+	 *			@code void bar(int x)
+	 *			Then:
+	 *			@code int a = 9; foo(bar, a);
+	 *			would fail, because T = int& (deduced from a), but bar is void(*)(int). Therefore T = int& and T = int, which is impossible.
 	 * 
 	 * @param command The operation to add.
 	 * @param ...args The argumets to perform the specified operation.
 	 * @tparam ...Args The types of the arguments to perform the specified operation.
+	 * @tparam ...Params The types of the arguments to perform the specified operation.
 	 */
-	template<typename... Args>
-	void addCommand(std::function<void(VkCommandBuffer, Args...)> command, Args&&... args) {
-		command(commandBuffer, std::forward(args)...);
+	template<typename... Args, typename... Params>
+	void addCommand(void(*command)(VkCommandBuffer, Params...), Args&&... args) {
+		//command(commandBuffer, std::forward(args)...); FROMHERE
 	}
 
 
@@ -109,8 +142,23 @@ public:
 	}
 
 private:
+
+	void allocateCommandBuffer(const LogicalDevice& virtualGpu, const CommandBufferPool& commandBufferPool) {
+		VkCommandBufferAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool = +commandBufferPool;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount = 1;
+
+		if (VkResult result = vkAllocateCommandBuffers(+virtualGpu, &allocInfo, &commandBuffer); result != VK_SUCCESS) {
+			throw VulkanException("Failed to allocate command buffers!", result);
+		}
+	}
+
+
 	VkCommandBuffer commandBuffer;
 	const LogicalDevice& virtualGpu;
 };
+
 
 #endif
