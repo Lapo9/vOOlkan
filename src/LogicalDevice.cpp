@@ -4,19 +4,26 @@
 #include "VulkanException.h"
 
 #include <iostream>
+#include <algorithm>
+#include <set>
 
 
 Vulkan::LogicalDevice::LogicalDevice(const PhysicalDevice& physicalGpu) {
 	const auto queueFamiliesIndices = physicalGpu.getQueueFamiliesIndices(); //indices of the queues families for the graphics and presentation queues
+	//keep only unique indices (i.e. if for example graphics and presentation queues use the same family, only one queue needs to be created)
+	std::set<int> uniqueQueueFamiliesIndices;
+	for (const auto& queueFamilyIndex : queueFamiliesIndices) {
+		uniqueQueueFamiliesIndices.insert(queueFamilyIndex.second);
+	}
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos; //array where to save the structs to create the queues
 
 	//for each queue family (graphics and presentation) create the concrete queue
-	for (float queuePriority = 1.0f; const auto & queueFamilyIndex : queueFamiliesIndices) {
+	for (float queuePriority = 1.0f; const auto & queueFamilyIndex : uniqueQueueFamiliesIndices) {
 		//struct to create a queue
 		VkDeviceQueueCreateInfo queueCreateInfo{};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queueCreateInfo.queueFamilyIndex = queueFamilyIndex.second;
-		queueCreateInfo.queueCount = 1;
+		queueCreateInfo.queueFamilyIndex = queueFamilyIndex;
+		queueCreateInfo.queueCount = uniqueQueueFamiliesIndices.size();
 		queueCreateInfo.pQueuePriorities = &queuePriority;
 		queueCreateInfos.push_back(queueCreateInfo); //add the struct to the list
 	}

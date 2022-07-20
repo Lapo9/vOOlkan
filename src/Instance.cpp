@@ -2,6 +2,7 @@
 #include "VulkanException.h"
 
 #include <iostream>
+#include <vector>
 
 
 Vulkan::Instance::Instance(const std::string& appName) {
@@ -25,7 +26,26 @@ Vulkan::Instance::Instance(const std::string& appName) {
 	createInfo.pApplicationInfo = &appInfo;
 	createInfo.enabledExtensionCount = glfwExtensionCount;
 	createInfo.ppEnabledExtensionNames = glfwExtensions;
-	createInfo.enabledLayerCount = 0;
+
+	//validation layers 
+	//TODO improve
+	const std::vector<const char*> validationLayers = {
+	"VK_LAYER_KHRONOS_validation"
+	};
+
+	#ifdef NDEBUG
+	const bool enableValidationLayers = false;
+	#else
+	const bool enableValidationLayers = true;
+	#endif
+	if (enableValidationLayers) {
+		checkValidationLayerSupport(validationLayers);
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		createInfo.ppEnabledLayerNames = validationLayers.data();
+	}
+	else {
+		createInfo.enabledLayerCount = 0;
+	}
 
 	//actually create the Vulkan instance
 	if (const auto result = vkCreateInstance(&createInfo, nullptr, &instance); result != VK_SUCCESS) {
@@ -46,4 +66,31 @@ Vulkan::Instance::~Instance() {
 
 const VkInstance& Vulkan::Instance::operator+() const {
 	return instance;
+}
+
+
+
+void Vulkan::Instance::checkValidationLayerSupport(std::vector<const char*> validationLayers) {
+	uint32_t layerCount;
+	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+	std::vector<VkLayerProperties> availableLayers(layerCount);
+	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+	for (const char* layerName : validationLayers) {
+		bool layerFound = false;
+
+		for (const auto& layerProperties : availableLayers) {
+			if (strcmp(layerName, layerProperties.layerName) == 0) {
+				layerFound = true;
+				break;
+			}
+		}
+
+		if (!layerFound) {
+			throw VulkanException("Not all validation layers are supported");
+		}
+	}
+
+	
 }

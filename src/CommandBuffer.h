@@ -41,7 +41,7 @@ public:
 	template<typename... Args, template<typename...> class... Command> requires (std::same_as<Command<int>, std::tuple<int>> && ...)
 	CommandBuffer(const LogicalDevice& virtualGpu, const CommandBufferPool& commandBufferPool, const PipelineOptions::RenderPass& renderPass, const Framebuffer& framebuffer, const Pipeline& pipeline, Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) : virtualGpu{virtualGpu} {
 		allocateCommandBuffer(virtualGpu, commandBufferPool);
-		//reset(renderPass, framebuffer, pipeline); FROMHERE
+		reset(renderPass, framebuffer, pipeline);
 
 		//this is tricky... call the function addCommand and pass as arguments (perfect forwarding) the objects in the each tuple received as argument
 		(std::apply([this]<typename... Args>(Args&&... args) {
@@ -129,7 +129,7 @@ public:
 	 */
 	template<typename... Args, typename... Params>
 	void addCommand(void(*command)(VkCommandBuffer, Params...), Args&&... args) {
-		//command(commandBuffer, std::forward(args)...); FROMHERE
+		//command(commandBuffer, std::forward(args)...); 
 	}
 
 

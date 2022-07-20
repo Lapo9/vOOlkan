@@ -55,6 +55,7 @@ public:
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineInfo.pNext = nullptr;
 		pipelineInfo.stageCount = shadersDescriptors.size();
 		pipelineInfo.pStages = shadersDescriptors.data();
 		pipelineInfo.pVertexInputState = &+vertexArraysDescriptor;
@@ -85,7 +86,9 @@ public:
 		vkDestroyPipeline(+virtualGpu, pipeline, nullptr);
 	}
 
-	const VkPipeline& operator+() const;
+	const VkPipeline& operator+() const {
+		return pipeline;
+	}
 
 private:
 	VkPipeline pipeline;

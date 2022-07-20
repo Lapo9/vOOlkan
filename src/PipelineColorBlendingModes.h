@@ -13,11 +13,13 @@ namespace Vulkan::PipelineOptions { class PipelineColorBlendingModes; }
 class Vulkan::PipelineOptions::PipelineColorBlendingModes {
 public:
 	PipelineColorBlendingModes(const RenderPassOptions::Subpass& subpass, float blendCostantR = 0.0f, float blendCostantG = 0.0f, float blendCostantB = 0.0f, float blendCostantA = 0.0f) : pipelineColorBlendingModes{} {
+		colorBlendingDescriptors = subpass.getColorBlendingDescriptors();
+		
 		pipelineColorBlendingModes.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		pipelineColorBlendingModes.logicOpEnable = VK_FALSE;
 		pipelineColorBlendingModes.logicOp = VK_LOGIC_OP_COPY;
 		pipelineColorBlendingModes.attachmentCount = subpass.getColorBlendingDescriptors().size();
-		pipelineColorBlendingModes.pAttachments = subpass.getColorBlendingDescriptors().data();
+		pipelineColorBlendingModes.pAttachments = colorBlendingDescriptors.data();
 		pipelineColorBlendingModes.blendConstants[0] = blendCostantR;
 		pipelineColorBlendingModes.blendConstants[1] = blendCostantG;
 		pipelineColorBlendingModes.blendConstants[2] = blendCostantB;
@@ -30,6 +32,7 @@ public:
 
 private:
 	VkPipelineColorBlendStateCreateInfo pipelineColorBlendingModes;
+	std::vector<VkPipelineColorBlendAttachmentState> colorBlendingDescriptors;
 };
 
 #endif

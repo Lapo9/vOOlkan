@@ -15,7 +15,7 @@ namespace Vulkan::PipelineOptions::RenderPassOptions {
 
 	template<typename T>
 	concept IsBoundAttachment = requires(T t) {
-		std::same_as<T, Attachment::BoundAttachment> || std::same_as<T, std::pair<Attachment::BoundAttachment, bool>>;
+		std::same_as<T, AttachmentDescription::BoundAttachmentDescription> || std::same_as<T, std::pair<AttachmentDescription::BoundAttachmentDescription, bool>>;
 	};
 }
 
@@ -30,11 +30,11 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 
 		/**
 		 * @brief Creates a Subpass with the specified attachments.
-		 * @details The attachments must be present in the father RenderPass, and their index must be correct. This is ensured if the BoundAttachment(s) are part of: res = Attachment::prepareAttachments, and res is used to build the father RenderPass.
+		 * @details The attachments must be present in the father RenderPass, and their index must be correct. This is ensured if the BoundAttachmentDescription(s) are part of: res = AttachmentDescription::prepareAttachments, and res is used to build the father RenderPass.
 		 * 
 		 * @param bindPoint How this subpass will be used.
 		 * @param ...boundAttachments The attachments that this render Subpass will use.
-		 * @tparam BA The ...boundAttachments can be either standard BoundAttachment(s) or std::pair<BoundAttachment, bool>. The pair is used to specify whether the attachment should be left untouched during this render subpass (by default it is false).
+		 * @tparam BA The ...boundAttachments can be either standard BoundAttachmentDescription(s) or std::pair<BoundAttachmentDescription, bool>. The pair is used to specify whether the attachment should be left untouched during this render subpass (by default it is false).
 		 */
 		template<IsBoundAttachment... BA>
 		Subpass(VkPipelineBindPoint bindPoint = VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, const BA&... boundAttachments) : subpass{} {
@@ -42,7 +42,7 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 			buildAttachmentsTypesArrays(boundAttachments...);
 			
 			//create the structure
-			subpass.pipelineBindPoint = VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS; //bindPoint;
+			subpass.pipelineBindPoint = bindPoint;
 			subpass.inputAttachmentCount = inputRefs.size();
 			subpass.pInputAttachments = inputRefs.empty() ? nullptr : inputRefs.data();
 			subpass.colorAttachmentCount = colorRefs.size();
@@ -86,47 +86,48 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 
 	private:
 
-		//given the BoundAttachment(s), it extract their references and put them into 3 arrays, based on the type of the Attachment: input ref, color ref, depth/stencil ref
+		//given the BoundAttachmentDescription(s), it extract their references and put them into 3 arrays, based on the type of the AttachmentDescription: input ref, color ref, depth/stencil ref
 		template<IsBoundAttachment... BA>
 		void buildAttachmentsTypesArrays(const BA&... boundAttachments) {
-			//create a vector containing the BoundAttachment and a bool (true if that bound attachment should be added to the preserve array)
-			std::vector<std::pair<Attachment::BoundAttachment, bool>> parsedBoundAttachments;
+			//create a vector containing the BoundAttachmentDescription and a bool (true if that bound attachment should be added to the preserve array)
+			std::vector<std::pair<AttachmentDescription::BoundAttachmentDescription, bool>> parsedBoundAttachments;
 			(parsedBoundAttachments.push_back(parseBoundAttachment(boundAttachments)), ...);
 
-			//for each BoundAttachment
+			//for each BoundAttachmentDescription
 			for (const auto& boundAttachment : parsedBoundAttachments) {
-				//add it to the correct array: <input, color, depth/stencil>
-				switch (boundAttachment.first.getType()) {
-				case AttachmentType::INPUT:
-					inputRefs.push_back(boundAttachment.first.getAttachmentReference());
-					break;
-				case AttachmentType::COLOR:
-					colorRefs.push_back(boundAttachment.first.getAttachmentReference());
-					colorBlendingModes.push_back(boundAttachment.first.getColorBlendingMode());
-					break;
-				case AttachmentType::DEPTH_STENCIL:
-					depthStencilRefs.push_back(boundAttachment.first.getAttachmentReference());
-					break;
-				default:
-					throw VulkanException("BoundAttachment type not valid");
-					break;
-				}
-
-				//if the BoundAttachment should be preserved, add its index (VkAttachmentReference.attachment) to the preserve array
+				//if the BoundAttachmentDescription should be preserved, add its index (VkAttachmentReference.attachment) to the preserve array
 				if (boundAttachment.second) {
 					preserveRefs.push_back(boundAttachment.first.getAttachmentReferenceIndex());
+				}
+				else {
+					//add it to the correct array: <input, color, depth/stencil>
+					switch (boundAttachment.first.getType()) {
+					case AttachmentType::INPUT:
+						inputRefs.push_back(boundAttachment.first.getAttachmentReference());
+						break;
+					case AttachmentType::COLOR:
+						colorRefs.push_back(boundAttachment.first.getAttachmentReference());
+						colorBlendingModes.push_back(boundAttachment.first.getColorBlendingMode());
+						break;
+					case AttachmentType::DEPTH_STENCIL:
+						depthStencilRefs.push_back(boundAttachment.first.getAttachmentReference());
+						break;
+					default:
+						throw VulkanException("BoundAttachmentDescription type not valid");
+						break;
+					}
 				}
 			}
 		}
 
 
 		//These 2 functions are used to create standard pairs of bound attachments and whether they should be left untouched during this render subpass
-		static std::pair<Attachment::BoundAttachment, bool> parseBoundAttachment(const Attachment::BoundAttachment& boundAttachment) {
+		static std::pair<AttachmentDescription::BoundAttachmentDescription, bool> parseBoundAttachment(const AttachmentDescription::BoundAttachmentDescription& boundAttachment) {
 			return { boundAttachment, false }; //by deafult the attachment is not part of the preserve set
 		}
 
 		//These 2 functions are used to create standard pairs of bound attachments and whether they should be left untouched during this render subpass
-		static std::pair<Attachment::BoundAttachment, bool> parseBoundAttachment(const std::pair<Attachment::BoundAttachment, bool>& boundAttachment) {
+		static std::pair<AttachmentDescription::BoundAttachmentDescription, bool> parseBoundAttachment(const std::pair<AttachmentDescription::BoundAttachmentDescription, bool>& boundAttachment) {
 			return { boundAttachment.first, boundAttachment.second };
 		}
 

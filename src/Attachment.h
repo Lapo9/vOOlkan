@@ -9,14 +9,14 @@
 
 
 namespace Vulkan::PipelineOptions::RenderPassOptions {
-	class Attachment; enum class PredefinedAttachment; enum class AttachmentType;
+	class AttachmentDescription; enum class PredefinedAttachment; enum class AttachmentType;
 
 	template<typename T>
 	concept IsAttachment = requires(T t) {
-		std::same_as<T, Attachment> ||
-			std::same_as < T, std::pair<Attachment, VkImageLayout>> ||
-			std::same_as < T, std::pair<Attachment, AttachmentColorBlendingMode>>// && t.first.getType() == AttachmentType::COLOR) ||
-			|| std::same_as < T, std::tuple<Attachment, VkImageLayout, AttachmentColorBlendingMode>>;// && std::get<0>(t).getType() == AttachmentType::COLOR);
+		std::same_as<T, AttachmentDescription> ||
+			std::same_as < T, std::pair<AttachmentDescription, VkImageLayout>> ||
+			std::same_as < T, std::pair<AttachmentDescription, AttachmentColorBlendingMode>>// && t.first.getType() == AttachmentType::COLOR) ||
+			|| std::same_as < T, std::tuple<AttachmentDescription, VkImageLayout, AttachmentColorBlendingMode>>;// && std::get<0>(t).getType() == AttachmentType::COLOR);
 	};
 
 }
@@ -27,7 +27,7 @@ enum class Vulkan::PipelineOptions::RenderPassOptions::PredefinedAttachment {
 
 
 /**
- * @brief Each Attachment, based on his properties, can be used by a render Subpass in different ways: these are those ways.
+ * @brief Each AttachmentDescription, based on his properties, can be used by a render Subpass in different ways: these are those ways.
  */
 enum class Vulkan::PipelineOptions::RenderPassOptions::AttachmentType {
 	INPUT, COLOR, DEPTH_STENCIL
@@ -35,20 +35,21 @@ enum class Vulkan::PipelineOptions::RenderPassOptions::AttachmentType {
 
 
 /**
- * @brief An Attachment is basically the render target where the GPU will draw.
- * @details Lists of attachments are passed to the RenderPass and to the render Subpass(es). 
- *			The attachments passed to the render pass must be in an arbitrary but fixed order. This is because each render subpass must reference a subset of the attachments of its render pass, and to do so they use indexes, therefore the order in the render pass must be fixed.
+ * @brief An AttachmentDescription is basically the description of render target where the GPU will draw.
+ * @details An AttachmentDescription in a RenderPass must match a real attachment of a Framebuffer which is created for this render pass, therefore the number of attachment descriptions in a render pass must match the number of attachments in a framebuffer created for this render pass.
+ *			Lists of attachment descriptions are passed to the RenderPass and to the render Subpass(es). 
+ *			The attachment descriptions passed to the render pass must be in an arbitrary but fixed order. This is because each render subpass must reference a subset of the attachments of its render pass, and to do so they use indexes, therefore the order in the render pass must be fixed.
  */
-class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
+class Vulkan::PipelineOptions::RenderPassOptions::AttachmentDescription {
 	public:
 
 		/**
 		 * @brief Generates an attachment based on some standard attachment models.
-		 * @details The attachment will also have a predefined VkImageLayout, which will be the standard layout used to create a BoundAttachment object (but can be customized at creation).
+		 * @details The attachment will also have a predefined VkImageLayout, which will be the standard layout used to create a BoundAttachmentDescription object (but can be customized at creation).
 		 * 
 		 * @param predefined A set of predefined attachments.
 		 */
-		Attachment(PredefinedAttachment predefined = PredefinedAttachment::STANDARD_COLOR) : attachment{}, attachmentReferenceLayout{} {
+		AttachmentDescription(PredefinedAttachment predefined = PredefinedAttachment::STANDARD_COLOR) : attachment{}, attachmentReferenceLayout{} {
 			//struct for the attachment
 			switch (predefined) {
 			case PredefinedAttachment::STANDARD_COLOR:
@@ -72,13 +73,13 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 
 
 		/**
-		 * @brief Creates the Attachment starting from its Vulkan underlying struct.
+		 * @brief Creates the AttachmentDescription starting from its Vulkan underlying struct.
 		 * 
 		 * @param baseAttachment The Vulkan underlying struct.
 		 * @param type The type of this assignment, namely how the attachment will be used by a render Subpass.
-		 * @param referenceLayout Default VkImageLayout used during the creation of a BoundAttachment object if left unspecified.
+		 * @param referenceLayout Default VkImageLayout used during the creation of a BoundAttachmentDescription object if left unspecified.
 		 */
-		Attachment(const VkAttachmentDescription& baseAttachment, AttachmentType type, VkImageLayout referenceLayout = VK_IMAGE_LAYOUT_UNDEFINED) : attachment{ baseAttachment }, attachmentReferenceLayout{ referenceLayout }, type{ type } {}
+		AttachmentDescription(const VkAttachmentDescription& baseAttachment, AttachmentType type, VkImageLayout referenceLayout = VK_IMAGE_LAYOUT_UNDEFINED) : attachment{ baseAttachment }, attachmentReferenceLayout{ referenceLayout }, type{ type } {}
 
 
 		/**
@@ -100,9 +101,9 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 
 
 		/**
-		 * @brief Returns a modifiable reference to the default VkImageLayout used during BoundAttachment creation if left unspecified.
+		 * @brief Returns a modifiable reference to the default VkImageLayout used during BoundAttachmentDescription creation if left unspecified.
 		 * 
-		 * @return A modifiable reference to the default VkImageLayout used during BoundAttachment creation if left unspecified.
+		 * @return A modifiable reference to the default VkImageLayout used during BoundAttachmentDescription creation if left unspecified.
 		 */
 		VkImageLayout& getAttachmentReferenceLayout() {
 			return attachmentReferenceLayout;
@@ -110,21 +111,21 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 
 
 		/**
-		 * @brief A BoundAttachment is an Attachment which ir ready to be used in a RenderPass and render Subpass. This basically means that a BoundAttachment is an attachment with a valid index (named VkAttachmentReference.attachment).
+		 * @brief A BoundAttachmentDescription is an AttachmentDescription which ir ready to be used in a RenderPass and render Subpass. This basically means that a BoundAttachmentDescription is an attachment with a valid index (named VkAttachmentReference.attachment).
 		 * @details The index is stored in the VkAttachmentReference object, which is a struct used by a render subpass to reference a specific attachment of its render pass.
 		 *			In addition to the index the VkAttachmentReference object stores a VkImageLayout.
 		 *			If it is a color attachment, then also the color blending mode is specified.
 		 */
-		class BoundAttachment {
+		class BoundAttachmentDescription {
 		public:
 			/**
-			 * @brief Creates an object starting from an Attachment.
+			 * @brief Creates an object starting from an AttachmentDescription.
 			 * 
-			 * @param attachment Base Attachment.
+			 * @param attachment Base AttachmentDescription.
 			 * @param index The index with which this attachment will be referenced by a render Subpass.
 			 * @param layout How the subpass will treat this attachment.
 			 */
-			BoundAttachment(const Attachment& attachment, int index, VkImageLayout layout, AttachmentColorBlendingMode colorBlendingMode) : 
+			BoundAttachmentDescription(const AttachmentDescription& attachment, int index, VkImageLayout layout, AttachmentColorBlendingMode colorBlendingMode) : 
 				attachment{ attachment.attachment }, 
 				attachmentReference{}, type{ attachment.type },
 				colorBlendingMode{ colorBlendingMode } {
@@ -192,25 +193,25 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 
 
 		/**
-		 * @brief Prepares the attachments to be used into a RenderPass and its render Subpass(es), fixing a position for each attachment and assigning this position to the relative BoundAttachment.
-		 * @details vector<BoundAttachment> is the array containing attachments with a complete VkAttachmentReference. This means that the index (VkAttachmentReference.attachment) is set based on the position of the attachments in the argument list.
-		 *			Moreover a color BoundAttachment has also a specified color blending mode. A color BoundAttachment is any attachment where BoundAttachment::getType() == COLOR.
+		 * @brief Prepares the attachments to be used into a RenderPass and its render Subpass(es), fixing a position for each attachment and assigning this position to the relative BoundAttachmentDescription.
+		 * @details vector<BoundAttachmentDescription> is the array containing attachments with a complete VkAttachmentReference. This means that the index (VkAttachmentReference.attachment) is set based on the position of the attachments in the argument list.
+		 *			Moreover a color BoundAttachmentDescription has also a specified color blending mode. A color BoundAttachmentDescription is any attachment where BoundAttachmentDescription::getType() == COLOR.
 		 * 
-		 * @param ...attachments Attachment(s) to generate the array of BoundAttachment(s) from. The order defines the fixed indexes of each BoundAttachment.
-		 * @tparam A Each argument can be either an Attachment, std::pair<Attachment, VkImageLayout>, std::tuple<Attachment, VkImageLayout, AttachmentColorBlendingMode>, std::pair<Attachment, AttachmentColorBlendingMode>. The first pair and tuple are used to pass a different VkAttachmentReference.layout to the BoundAttachment ctor than the one specified during attachment creation (the default one). The AttachmentColorBlendingMode, when specified, defines the blending mode for the BoundAttachment.
-		 * @return The array of BoundAttachment(s).
+		 * @param ...attachments AttachmentDescription(s) to generate the array of BoundAttachmentDescription(s) from. The order defines the fixed indexes of each BoundAttachmentDescription.
+		 * @tparam A Each argument can be either an AttachmentDescription, std::pair<AttachmentDescription, VkImageLayout>, std::tuple<AttachmentDescription, VkImageLayout, AttachmentColorBlendingMode>, std::pair<AttachmentDescription, AttachmentColorBlendingMode>. The first pair and tuple are used to pass a different VkAttachmentReference.layout to the BoundAttachmentDescription ctor than the one specified during attachment creation (the default one). The AttachmentColorBlendingMode, when specified, defines the blending mode for the BoundAttachmentDescription.
+		 * @return The array of BoundAttachmentDescription(s).
 		 */
 		template<IsAttachment... A>
-		static std::vector<BoundAttachment> prepareAttachments(A... attachments) {
-			std::vector<BoundAttachment> boundAttachments; //array with the attachments which must have a complete VkAttachmentReference
+		static std::vector<BoundAttachmentDescription> prepareAttachments(A... attachments) {
+			std::vector<BoundAttachmentDescription> boundAttachments; //array with the attachments which must have a complete VkAttachmentReference
 			
-			//Put in the vector the attachment and layout to bind toghether. The right overload is called based on the type of the attachment argument (pair<Attachment, layout> or Attachment).
-			std::vector<std::tuple<Attachment, VkImageLayout, AttachmentColorBlendingMode>> attachmentLayoutColorBlendingModeTriplets; 		
+			//Put in the vector the attachment and layout to bind toghether. The right overload is called based on the type of the attachment argument (pair<AttachmentDescription, layout> or AttachmentDescription).
+			std::vector<std::tuple<AttachmentDescription, VkImageLayout, AttachmentColorBlendingMode>> attachmentLayoutColorBlendingModeTriplets; 		
 			(attachmentLayoutColorBlendingModeTriplets.push_back(parseAttachment(attachments)), ...);
 
 			//for each pair in the vector, add it to the array to return
 			for (const auto& alp : attachmentLayoutColorBlendingModeTriplets) {
-				boundAttachments.emplace_back(std::get<0>(alp), boundAttachments.size(), std::get<1>(alp), std::get<2>(alp)); //add the BoundAttachment to the array to return
+				boundAttachments.emplace_back(std::get<0>(alp), boundAttachments.size(), std::get<1>(alp), std::get<2>(alp)); //add the BoundAttachmentDescription to the array to return
 			}
 
 			return boundAttachments;
@@ -220,7 +221,7 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 	private:
 
 		//These 4 functions are used to return the attachment and its respective layout, which are then used in prepareAttachments(...) to build the array to create a subpass.
-		static std::tuple<Attachment, VkImageLayout, AttachmentColorBlendingMode> parseAttachment(const std::pair<Attachment, VkImageLayout>& attachment) {
+		static std::tuple<AttachmentDescription, VkImageLayout, AttachmentColorBlendingMode> parseAttachment(const std::pair<AttachmentDescription, VkImageLayout>& attachment) {
 			if (attachment.first.type == AttachmentType::COLOR) {
 				return { attachment.first, attachment.second, AttachmentColorBlendingMode{PredefinedColorBlendingModes::STANDARD} };
 			}
@@ -228,7 +229,7 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 		}
 
 		//These 4 functions are used to return the attachment and its respective layout, which are then used in prepareAttachments(...) to build the array to create a subpass.
-		static std::tuple<Attachment, VkImageLayout, AttachmentColorBlendingMode> parseAttachment(const Attachment& attachment) {
+		static std::tuple<AttachmentDescription, VkImageLayout, AttachmentColorBlendingMode> parseAttachment(const AttachmentDescription& attachment) {
 			if (attachment.type == AttachmentType::COLOR) {
 				return { attachment, attachment.attachmentReferenceLayout, AttachmentColorBlendingMode{PredefinedColorBlendingModes::STANDARD} };
 			}
@@ -236,12 +237,12 @@ class Vulkan::PipelineOptions::RenderPassOptions::Attachment {
 		}
 
 		//These 4 functions are used to return the attachment and its respective layout, which are then used in prepareAttachments(...) to build the array to create a subpass.
-		static std::tuple<Attachment, VkImageLayout, AttachmentColorBlendingMode> parseAttachment(const std::pair<Attachment, AttachmentColorBlendingMode>& attachment) {
+		static std::tuple<AttachmentDescription, VkImageLayout, AttachmentColorBlendingMode> parseAttachment(const std::pair<AttachmentDescription, AttachmentColorBlendingMode>& attachment) {
 			return { attachment.first, attachment.first.attachmentReferenceLayout, attachment.second };
 		}
 
 		//These 4 functions are used to return the attachment and its respective layout, which are then used in prepareAttachments(...) to build the array to create a subpass.
-		static std::tuple<Attachment, VkImageLayout, AttachmentColorBlendingMode> parseAttachment(const std::tuple<Attachment, VkImageLayout, AttachmentColorBlendingMode>& attachment) {
+		static std::tuple<AttachmentDescription, VkImageLayout, AttachmentColorBlendingMode> parseAttachment(const std::tuple<AttachmentDescription, VkImageLayout, AttachmentColorBlendingMode>& attachment) {
 			return attachment;
 		}
 

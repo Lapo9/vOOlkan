@@ -27,6 +27,10 @@ public:
 		std::vector<VkImageView> attachments;
 		(attachments.push_back(+imageViews), ...);
 
+		if (renderPass.attachmentCount != attachments.size()) {
+			throw VulkanException("Failed to create framebuffer!", "The number of attachments in the frame buffer must match the number of attachment descriptions in the render pass");
+		}
+
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = +renderPass;

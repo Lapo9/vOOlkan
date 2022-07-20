@@ -16,7 +16,6 @@ public:
 
 	~ImageView();
 
-	//FIXTHIS why do we need the copy/move ctor?
 	ImageView(const ImageView&) = delete;
 	ImageView(ImageView&&) = default;
 	ImageView& operator=(const ImageView&) = delete;

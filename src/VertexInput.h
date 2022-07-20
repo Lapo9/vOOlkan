@@ -24,6 +24,20 @@ namespace Vulkan::PipelineOptions {
 			std::same_as <Vec<n, Type, packing>, glm::vec<n, Type, packing>>;
 	}
 
+	template<typename T>
+	concept IsVertex = requires(T, unsigned int i) {
+		{T::getDescriptors(i)} -> std::same_as<std::pair<VkVertexInputBindingDescription, std::vector<VkVertexInputAttributeDescription>>>;
+	};
+
+
+
+
+
+//===========================================================================================================================================================================
+//===========================================================================================================================================================================
+//===========================================================================================================================================================================
+
+
 
 	/**
 	 * @brief This class is used to obtain the basic properties of a vertex, used to create bindings for the Vulkan pipeline.
@@ -218,6 +232,14 @@ namespace Vulkan::PipelineOptions {
 
 
 
+
+//===========================================================================================================================================================================
+//===========================================================================================================================================================================
+//===========================================================================================================================================================================
+
+
+
+
 	/**
 	 * @brief This class represents a vertex, which is made up of many components, such as space coordinates, texture coordinates, color, normals, ...
 	 * @details This class should be used to define the type of the vertex via a using directive, e.g.:
@@ -273,10 +295,12 @@ namespace Vulkan::PipelineOptions {
 
 
 
-	template<typename T>
-	concept IsVertex = requires(T, unsigned int i) {
-		{T::getDescriptors(i)} -> std::same_as<std::pair<VkVertexInputBindingDescription, std::vector<VkVertexInputAttributeDescription>>>;
-	};
+
+//===========================================================================================================================================================================
+//===========================================================================================================================================================================
+//===========================================================================================================================================================================
+
+
 
 
 	/**
@@ -292,6 +316,7 @@ namespace Vulkan::PipelineOptions {
 				int i = 0; //counter of how many vertex types has already been added
 				auto extract = [this, &i]<IsVertex T>()->void {
 					auto [bindingDescr, attributeDescrs] = T::getDescriptors(i); //get the descriptors for this vertex type
+
 					//add them to the arrays
 					this->bindingDescriptors.push_back(bindingDescr);
 					this->attributeDescriptors.insert(this->attributeDescriptors.end(), attributeDescrs.begin(), attributeDescrs.end());
