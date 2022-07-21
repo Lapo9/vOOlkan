@@ -64,8 +64,16 @@ int main() {
 
 		Vulkan::CommandBufferPool commandBufferPool{ virtualGpu };
 
-		uint32_t a = 1;
-		Vulkan::CommandBuffer commandBuffer{ virtualGpu, commandBufferPool, renderPass, framebuffers[0], pipeline, std::tuple{vkCmdDraw, a, a, a, a}, std::tuple{vkCmdDraw, a, a, a, a}};;
+		//create and register command buffer
+		Vulkan::CommandBuffer commandBuffer{ virtualGpu, commandBufferPool, renderPass, framebuffers[0], pipeline, std::tuple{vkCmdDraw, uint32_t(3), uint32_t(1), uint32_t(0), uint32_t(0)} };
+
+		//create drawer
+		Vulkan::Drawer drawer{ virtualGpu, swapchain };
+
+		//draw cycle
+		while (!glfwWindowShouldClose(+window)) {
+			drawer.draw();
+		}
 
 		std::cout << "\n";
 	} catch (const Vulkan::VulkanException& ve) {

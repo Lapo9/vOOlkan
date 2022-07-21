@@ -2,6 +2,7 @@
 #define VULKAN_FENCE
 
 #include <vulkan/vulkan.h>
+#include <iostream>
 
 #include "VulkanException.h"
 #include "LogicalDevice.h"
@@ -19,15 +20,25 @@ public:
 		if (VkResult result = vkCreateFence(+virtualGpu, &fenceInfo, nullptr, &fence); result != VK_SUCCESS) {
 			throw VulkanException{ "Failed to create fence", result };
 		}
+
+		std::cout << "\n+ Fence created";
 	}
 
 	Fence(const Fence&) = delete;
-	Fence(Fence&&) = default;
 	Fence& operator=(const Fence&) = delete;
+
+
+	Fence(Fence&& movedFrom) noexcept : fence{ movedFrom.fence }, virtualGpu{ movedFrom.virtualGpu } {
+		movedFrom.fence = nullptr;
+		std::cout << "\n> Fence moved";
+	}
+
+	//FIXTHIS implement this the right way
 	Fence& operator=(Fence&&) = default;
 
 	~Fence() {
 		vkDestroyFence(+virtualGpu, fence, nullptr);
+		std::cout << "\n- Fence destroyed";
 	}
 
 	const VkFence& operator+() const {

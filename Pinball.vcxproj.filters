@@ -186,4 +186,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\TestFrag.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\TestVert.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

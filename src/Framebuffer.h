@@ -48,8 +48,15 @@ public:
 	}
 
 	Framebuffer(const Framebuffer&) = delete;
-	Framebuffer(Framebuffer&&) = default;
 	Framebuffer& operator=(const Framebuffer&) = delete;
+
+
+	Framebuffer(Framebuffer&& movedFrom) noexcept : framebuffer{ movedFrom.framebuffer }, resolution{ movedFrom.resolution }, virtualGpu{ movedFrom.virtualGpu } {
+		movedFrom.framebuffer = nullptr;
+		std::cout << "\n> Framebuffer moved";
+	}
+
+	//FIXTHIS implement this the right way
 	Framebuffer& operator=(Framebuffer&&) = default;
 
 	~Framebuffer() {
@@ -78,8 +85,8 @@ public:
 	 * @return A framebuffer vector containing framebuffers made up of each image in the swapchain + otherAttachments.
 	 */
 	template<std::same_as<ImageView>... IV>
-	static std::deque<Framebuffer> generateFramebufferForEachSwapchainImageView(const LogicalDevice& virtualGpu, const PipelineOptions::RenderPass& renderPass, const Swapchain& swapchain, IV... otherAttachments) {
-		std::deque<Framebuffer> framebuffers; //FIXTHIS we use a deque because the vector resizes itself, and by doing so it calls the destructor of Framebuffer, which, for some obscure reason fails!
+	static std::vector<Framebuffer> generateFramebufferForEachSwapchainImageView(const LogicalDevice& virtualGpu, const PipelineOptions::RenderPass& renderPass, const Swapchain& swapchain, IV... otherAttachments) {
+		std::vector<Framebuffer> framebuffers; 
 
 		auto& images = swapchain.getImages();
 		for (const auto& image : images) {

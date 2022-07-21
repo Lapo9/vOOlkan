@@ -74,6 +74,10 @@
     <ClCompile Include="src\Window.cpp" />
     <ClCompile Include="src\WindowSurface.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\TestFrag.frag" />
+    <None Include="shaders\TestVert.vert" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

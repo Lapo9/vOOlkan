@@ -3,8 +3,6 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
-#include <map>
-#include <string>
 
 #include "LogicalDevice.h"
 #include "Swapchain.h"
@@ -15,17 +13,22 @@
 #include "Semaphore.h"
 
 
-namespace Vulkan { template<unsigned int>class Drawer; }
+namespace Vulkan { class Drawer; }
 
 
 /**
  * @brief A Drawer is a class which holds all of the resources to draw frames on screen, such as the synchronization primitives, the framebuffers and the function to actually draw a frame.
- * @tparam FramesInFlight Maximum number of frames that can be rendered at the same time (of course no more than the number of swap chain images).
  */
-template<unsigned int framesInFlight = 2>
 class Vulkan::Drawer {
 public:
-	Drawer(const LogicalDevice& virtualGpu, const Swapchain& swapchain) : virtualGpu{ virtualGpu }, swapchain{ swapchain }, currentFrame{ 0 } {}
+	Drawer(const LogicalDevice& virtualGpu, const Swapchain& swapchain, unsigned int framesInFlight = 2) :
+		virtualGpu{ virtualGpu }, swapchain{ swapchain }, currentFrame{ 0 } {
+		for (unsigned int i = 0; i < framesInFlight; ++i) {
+			fences.emplace_back(virtualGpu);
+			imageAvailableSemaphores.emplace_back(virtualGpu);
+			renderFinishedSemaphores.emplace_back(virtualGpu);
+		}
+	}
 
 
 	void draw() {
@@ -74,13 +77,14 @@ private:
 	//std::map<std::string, std::pair<std::vector<Semaphore>, std::vector<VkSemaphore>>> semaphores;
 	//std::map<std::string, std::pair<std::vector<Fence>, std::vector<VkFence>>> fences;
 
-	std::array<SynchronizationPrimitives::Fence, framesInFlight> fences;
-	std::array<SynchronizationPrimitives::Semaphore, framesInFlight> imageAvailableSemaphores; //tells when an image is occupied by rendering
-	std::array<SynchronizationPrimitives::Semaphore, framesInFlight> renderFinishedSemaphores; //tells when the rendeing of the image ends
-	std::array<CommandBuffer, framesInFlight> commandBuffers;
+	std::vector<SynchronizationPrimitives::Fence> fences;
+	std::vector<SynchronizationPrimitives::Semaphore> imageAvailableSemaphores; //tells when an image is occupied by rendering
+	std::vector<SynchronizationPrimitives::Semaphore> renderFinishedSemaphores; //tells when the rendeing of the image ends
+	std::vector<CommandBuffer> commandBuffers;
 
 	unsigned int currentFrame; //indicates which set of resources to use for the current frame (0 < x < maxFramesInFlight)
-	
+	unsigned int framesInFlight; //maximum number of frames that can be rendered at the same time(of course no more than the number of swap chain images)
+
 	const LogicalDevice& virtualGpu;
 	const Swapchain& swapchain;
 };
