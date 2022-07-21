@@ -41,7 +41,7 @@ class Vulkan::Swapchain {
 		 * 
 		 * @return The underlying VkSwapchainKHR object.
 		 */
-		const VkSwapchainKHR& operator+();
+		const VkSwapchainKHR& operator+() const;
 
 
 		const SwapchainOptions::SurfaceFormat& getImageFormat();

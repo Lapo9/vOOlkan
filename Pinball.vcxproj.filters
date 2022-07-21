@@ -22,6 +22,9 @@
     <Filter Include="Source Files\PipelineOptions\RenderPassOptions">
       <UniqueIdentifier>{a5612a91-8cb5-4244-83f1-c3a01bec7000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\SynchronizationPrimitives">
+      <UniqueIdentifier>{fa29b6ed-5327-4240-bb1a-5e8dee8c277e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Instance.h">
@@ -125,6 +128,12 @@
     </ClInclude>
     <ClInclude Include="src\Drawer.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Fence.h">
+      <Filter>Source Files\SynchronizationPrimitives</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Semaphore.h">
+      <Filter>Source Files\SynchronizationPrimitives</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -26,6 +26,7 @@
     <ClInclude Include="src\DepthStencil.h" />
     <ClInclude Include="src\DynamicState.h" />
     <ClInclude Include="src\Drawer.h" />
+    <ClInclude Include="src\Fence.h" />
     <ClInclude Include="src\Framebuffer.h" />
     <ClInclude Include="src\Image.h" />
     <ClInclude Include="src\ImageView.h" />
@@ -42,6 +43,7 @@
     <ClInclude Include="src\QueueFamily.h" />
     <ClInclude Include="src\Rasterizer.h" />
     <ClInclude Include="src\RenderPass.h" />
+    <ClInclude Include="src\Semaphore.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Subpass.h" />
     <ClInclude Include="src\Swapchain.h" />
@@ -153,13 +155,13 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>P:\SDKs\graphics\tinyobjloader;P:\SDKs\graphics\tinygltf;P:\SDKs\graphics\stb;P:\SDKs\graphics\glm;P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\include;P:\SDKs\Vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(GRAPHICS_HEADERS)\tinyobjloader;$(GRAPHICS_HEADERS)\tinygltf;$(GRAPHICS_HEADERS)\stb;$(GRAPHICS_HEADERS)\glm;$(GLFW_SDK)\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\lib-vc2022;P:\SDKs\Vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(GLFW_SDK)\lib-vc2022;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -172,14 +174,14 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>P:\SDKs\graphics\tinyobjloader;P:\SDKs\graphics\tinygltf;P:\SDKs\graphics\stb;P:\SDKs\graphics\glm;P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\include;P:\SDKs\Vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(GRAPHICS_HEADERS)\tinyobjloader;$(GRAPHICS_HEADERS)\tinygltf;$(GRAPHICS_HEADERS)\stb;$(GRAPHICS_HEADERS)\glm;$(GLFW_SDK)\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\lib-vc2022;P:\SDKs\Vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(GLFW_SDK)\lib-vc2022;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -190,13 +192,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>P:\SDKs\graphics\tinyobjloader;P:\SDKs\graphics\tinygltf;P:\SDKs\graphics\stb;P:\SDKs\graphics\glm;P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\include;P:\SDKs\Vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(GRAPHICS_HEADERS)\tinyobjloader;$(GRAPHICS_HEADERS)\tinygltf;$(GRAPHICS_HEADERS)\stb;$(GRAPHICS_HEADERS)\glm;$(GLFW_SDK)\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\lib-vc2022;P:\SDKs\Vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(GLFW_SDK)\lib-vc2022;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -209,14 +211,14 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>P:\SDKs\graphics\tinyobjloader;P:\SDKs\graphics\tinygltf;P:\SDKs\graphics\stb;P:\SDKs\graphics\glm;P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\include;P:\SDKs\Vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(GRAPHICS_HEADERS)\tinyobjloader;$(GRAPHICS_HEADERS)\tinygltf;$(GRAPHICS_HEADERS)\stb;$(GRAPHICS_HEADERS)\glm;$(GLFW_SDK)\include;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>P:\SDKs\graphics\glfw\glfw-3.3.6.bin.WIN64\lib-vc2022;P:\SDKs\Vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(GLFW_SDK)\lib-vc2022;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

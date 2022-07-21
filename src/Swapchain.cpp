@@ -65,7 +65,7 @@ Vulkan::Swapchain::~Swapchain() {
 }
 
 
-const VkSwapchainKHR& Vulkan::Swapchain::operator+() {
+const VkSwapchainKHR& Vulkan::Swapchain::operator+() const {
 	return swapchain;
 }
 

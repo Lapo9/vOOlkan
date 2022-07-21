@@ -88,7 +88,7 @@ class Vulkan::PipelineOptions::RenderPass {
 			return subpasses[i];
 		}
 
-		int getAttachmentCount() {
+		int getAttachmentCount() const {
 			return attachmentCount;
 		}
 

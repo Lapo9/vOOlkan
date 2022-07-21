@@ -26,7 +26,7 @@ public:
 
 
 	/**
-	 * @brief Create a framebuffer and register the specified commands.
+	 * @brief Create a command buffer and register the specified commands.
 	 * @details Other than the commands registered, the framebuffer will also have the commands added by the reset and endCommand functions.
 	 * 
 	 * @param virtualGpu The LogicalDevice where to execute this command buffer when needed.
@@ -49,7 +49,6 @@ public:
 			}, commands), ...);
 
 	}
-
 
 
 	
@@ -130,6 +129,22 @@ public:
 	template<typename... Args, typename... Params>
 	void addCommand(void(*command)(VkCommandBuffer, Params...), Args&&... args) {
 		//command(commandBuffer, std::forward(args)...); 
+	}
+
+
+	/**
+	 * @brief Adds the specified commands to the command buffer.
+	 *
+	 * @param ...commands Commands to register in this command buffer. Each command is made up of the Vulkan function + its arguments. The functions will be called in order and the arguments will be perfectly forwarded.
+	 * @tparam ...Args The types of the arguments to pass to each Vulkan function.
+	 * @tparam ...Command The tuples, each containing the Vulkan function and its arguments (of type ...Args).
+	 */
+	template<typename... Args, template<typename...> class... Command> requires (std::same_as<Command<int>, std::tuple<int>> && ...)
+		void addCommands(Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) {
+		//this is tricky... call the function addCommand and pass as arguments (perfect forwarding) the objects in the each tuple received as argument
+		(std::apply([this]<typename... Args>(Args&&... args) {
+			this->addCommand(std::forward<Args>(args)...);
+		}, commands), ...);
 	}
 
 

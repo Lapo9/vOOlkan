@@ -45,8 +45,6 @@ class Vulkan::Queue {
 		int getFamilyIndex() const;
 
 
-		//TODO functions to add commands to the queue
-
 	private:
 		VkQueue queue;
 		QueueFamily family;
