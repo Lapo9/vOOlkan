@@ -6,11 +6,15 @@
 
 #include "LogicalDevice.h"
 #include "Swapchain.h"
+#include "RenderPass.h"
+#include "Pipeline.h"
+#include "Framebuffer.h"
 #include "CommandBuffer.h"
-#include "VulkanException.h"
+#include "CommandBufferPool.h"
 #include "Queue.h"
 #include "Fence.h"
 #include "Semaphore.h"
+#include "VulkanException.h"
 
 
 namespace Vulkan { class Drawer; }
@@ -21,12 +25,32 @@ namespace Vulkan { class Drawer; }
  */
 class Vulkan::Drawer {
 public:
-	Drawer(const LogicalDevice& virtualGpu, const Swapchain& swapchain, unsigned int framesInFlight = 2) :
-		virtualGpu{ virtualGpu }, swapchain{ swapchain }, currentFrame{ 0 } {
+
+	Drawer(const LogicalDevice& virtualGpu, 
+		const PhysicalDevice& realGpu,
+		const Window& window,
+		const WindowSurface& windowSurface,
+		const PipelineOptions::RenderPass& renderPass, 
+		const Pipeline& pipeline, 
+		unsigned int framesInFlight = 2) 
+		:
+		framesInFlight{ framesInFlight },
+		currentFrame{ 0 }, 
+		virtualGpu{ virtualGpu }, 
+		realGpu{ realGpu }, 
+		window{ window }, 
+		windowSurface{ windowSurface }, 
+		renderPass{ renderPass }, 
+		pipeline{ pipeline }, 
+		swapchain{ realGpu, virtualGpu, windowSurface, window },
+		commandBufferPool{ virtualGpu } {
+
+		framebuffers = Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain);
 		for (unsigned int i = 0; i < framesInFlight; ++i) {
 			fences.emplace_back(virtualGpu);
 			imageAvailableSemaphores.emplace_back(virtualGpu);
 			renderFinishedSemaphores.emplace_back(virtualGpu);
+			commandBuffers.emplace_back(virtualGpu, commandBufferPool);
 		}
 	}
 
@@ -34,17 +58,19 @@ public:
 	void draw() {
 		uint32_t obtainedSwapchainImageIndex; //the index of the image of the swapchain we'll draw to
 		vkWaitForFences(+virtualGpu, 1, &+fences[currentFrame], VK_TRUE, UINT64_MAX); //wait until a swapchain image is free
-		vkResetFences(+virtualGpu, 1, &+fences[currentFrame]); //reset the just signalled fence to an unsignalled state
+		vkResetFences(+virtualGpu, 1, &+fences[currentFrame]); //reset the just signaled fence to an unsignalled state
 		vkAcquireNextImageKHR(+virtualGpu, +swapchain, UINT64_MAX, +imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &obtainedSwapchainImageIndex); //get an image from the swapchain
 		
-		//TODO the next 2 instructions should probably go in a draw() overload which takes a set of commands to register
-		//vkResetCommandBuffer(+commandBuffers[currentFrame], 0);
-		//recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
+		//TODO the next 3 instructions should probably go in a draw() overload which takes a set of commands to register
+		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);
+		commandBuffers[currentFrame].addCommand(vkCmdDraw, 3, 1, 0, 0); //TODO now this is an hardcoded command
+		commandBuffers[currentFrame].endCommand();
 
 		//struct to submit a command buffer to a queue
 		VkSemaphore waitSemaphores[] = { +imageAvailableSemaphores[currentFrame] }; //semaphore used to signal that an image is available to render to
 		VkSemaphore signalSemaphores[] = { +renderFinishedSemaphores[currentFrame]}; //semaphore used to signal that the render finished
 		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }; //where to wait for an image (first semaphore). You can still run the vertex shader without an image, but you have to wait for an image for the fragment shader
+		
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.waitSemaphoreCount = 1;
@@ -59,6 +85,18 @@ public:
 			throw VulkanException{ "Failed to submit the command buffer for the current frame", result };
 		}
 
+
+		VkSwapchainKHR swapchains[] = { +swapchain };
+		VkPresentInfoKHR presentInfo{};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapchains;
+		presentInfo.pImageIndices = &obtainedSwapchainImageIndex;
+
+		vkQueuePresentKHR(+virtualGpu[QueueFamily::PRESENTATION], &presentInfo);
+
 		increaseCurrentFrame();
 	}
 
@@ -70,6 +108,12 @@ private:
 
 	void increaseCurrentFrame() {
 		currentFrame = (currentFrame + 1) % framesInFlight;
+	}
+
+
+	void recreateSwapchain() {
+		swapchain = Swapchain{ realGpu, virtualGpu, windowSurface, window };
+		//FROMHERE finish swapchain recreation: framebuffers and command buffers (because they could have references to the old swapchain)
 	}
 
 	//Each string (name) is bound to a vector of synch primitives. Each element in the vector is a different primitive, and each one is used for a specific frame in flight.
@@ -86,7 +130,15 @@ private:
 	unsigned int framesInFlight; //maximum number of frames that can be rendered at the same time(of course no more than the number of swap chain images)
 
 	const LogicalDevice& virtualGpu;
-	const Swapchain& swapchain;
+	const PhysicalDevice& realGpu;
+	const Window& window;
+	const WindowSurface& windowSurface;
+	const PipelineOptions::RenderPass& renderPass;
+	const Pipeline& pipeline;
+
+	Swapchain swapchain;
+	std::vector<Framebuffer> framebuffers;
+	CommandBufferPool commandBufferPool;
 };
 
 #endif

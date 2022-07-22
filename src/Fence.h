@@ -16,6 +16,7 @@ public:
 	Fence(const LogicalDevice& virtualGpu) : virtualGpu{ virtualGpu } {
 		VkFenceCreateInfo fenceInfo{};
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 		if (VkResult result = vkCreateFence(+virtualGpu, &fenceInfo, nullptr, &fence); result != VK_SUCCESS) {
 			throw VulkanException{ "Failed to create fence", result };

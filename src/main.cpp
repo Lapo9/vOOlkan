@@ -11,7 +11,6 @@ int main() {
 		Vulkan::WindowSurface windowSurface{ vulkanInstance, window };
 		Vulkan::PhysicalDevice realGpu{ vulkanInstance, windowSurface };
 		Vulkan::LogicalDevice virtualGpu{ realGpu };
-		Vulkan::Swapchain swapchain{ realGpu, virtualGpu, windowSurface, window };
 
 
 		//attachments for the render pass of the pipeline
@@ -57,23 +56,16 @@ int main() {
 
 		//pipeline
 		Vulkan::Pipeline pipeline{ virtualGpu, renderPass, 0, std::vector{&vertexShader, &fragmentShader},vertexTypesDescriptor, pipelineLayout, inputAssembly, rasterizer, multisampler, depthStencil, dynamicState, viewport};
-
-
-		//create the framebuffers
-		auto framebuffers = Vulkan::Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain);
-
-		Vulkan::CommandBufferPool commandBufferPool{ virtualGpu };
-
-		//create and register command buffer
-		Vulkan::CommandBuffer commandBuffer{ virtualGpu, commandBufferPool, renderPass, framebuffers[0], pipeline, std::tuple{vkCmdDraw, uint32_t(3), uint32_t(1), uint32_t(0), uint32_t(0)} };
-
+	
 		//create drawer
-		Vulkan::Drawer drawer{ virtualGpu, swapchain };
+		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, renderPass, pipeline };
 
 		//draw cycle
 		while (!glfwWindowShouldClose(+window)) {
+			glfwPollEvents();
 			drawer.draw();
 		}
+		vkDeviceWaitIdle(+virtualGpu);
 
 		std::cout << "\n";
 	} catch (const Vulkan::VulkanException& ve) {

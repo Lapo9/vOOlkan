@@ -32,9 +32,9 @@ class Vulkan::Swapchain {
 		~Swapchain();
 
 		Swapchain(const Swapchain&) = delete;
-		Swapchain(Swapchain&&) = default;
 		Swapchain& operator=(const Swapchain&) = delete;
-		Swapchain& operator=(Swapchain&&) = default;
+		Swapchain(Swapchain&&) = default; //FIXTHIS implement custom move ctor
+		Swapchain& operator=(Swapchain&& movedFrom) noexcept;
 
 		/**
 		 * @brief Returns the underlying VkSwapchainKHR object.
@@ -86,7 +86,7 @@ class Vulkan::Swapchain {
 		SwapchainOptions::PresentMode swapchainPresentMode;
 
 		std::vector<Image> images; //the images which the swapchain holds
-		const LogicalDevice& virtualGpu;
+		LogicalDevice const * virtualGpu;
 };
 
 #endif

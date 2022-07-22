@@ -20,7 +20,7 @@ public:
 	 * @param virtualGpu The LogicalDevice where the CommandBuffer(s) originating from this pool will send their commands.
 	 * @param queueFamily The QueueFamily where the CommandBuffer(s) originating from this pool will send their commands.
 	 */
-	CommandBufferPool(const LogicalDevice& virtualGpu, QueueFamily queueFamily = QueueFamily::GRAPHICS);;
+	CommandBufferPool(const LogicalDevice& virtualGpu, QueueFamily queueFamily = QueueFamily::GRAPHICS);
 
 	CommandBufferPool(const CommandBufferPool&) = delete;
 	CommandBufferPool(CommandBufferPool&&) = default;

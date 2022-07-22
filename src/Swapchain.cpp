@@ -60,9 +60,24 @@ Vulkan::Swapchain::Swapchain(const PhysicalDevice& realGpu, const LogicalDevice&
 
 
 Vulkan::Swapchain::~Swapchain() {
-	vkDestroySwapchainKHR(+virtualGpu, swapchain, nullptr);
+	vkDestroySwapchainKHR(+*virtualGpu, swapchain, nullptr);
 	std::cout << "\n- Swapchain destroyed";
 }
+
+
+
+Vulkan::Swapchain& Vulkan::Swapchain::operator=(Swapchain&& movedFrom) noexcept {
+	std::swap(swapchain, movedFrom.swapchain);
+	std::swap(swapchainCapabilities, movedFrom.swapchainCapabilities);
+	std::swap(swapchainSurfaceFormat, movedFrom.swapchainSurfaceFormat);
+	std::swap(swapchainPresentMode, movedFrom.swapchainPresentMode);
+	std::swap(images, movedFrom.images);
+	std::swap(virtualGpu, movedFrom.virtualGpu);
+
+	std::cout << "\n=> Swapchain move assigned";
+	return *this;
+}
+
 
 
 const VkSwapchainKHR& Vulkan::Swapchain::operator+() const {

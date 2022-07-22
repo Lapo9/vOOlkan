@@ -51,6 +51,7 @@ public:
 		endCommand();
 	}
 
+	//FIXTHIS probably implement custom move ctor
 
 	
 	const VkCommandBuffer& operator+() {
@@ -67,6 +68,9 @@ public:
 	 * @param pipeline What pipeline to use.
 	 */
 	void reset(const PipelineOptions::RenderPass& renderPass, const Framebuffer& framebuffer, const Pipeline& pipeline) {
+		//reset command buffer
+		vkResetCommandBuffer(commandBuffer, 0);
+		
 		//initialize command buffer
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -129,7 +133,7 @@ public:
 	 */
 	template<typename... Args, typename... Params>
 	void addCommand(void(*command)(VkCommandBuffer, Params...), Args&&... args) {
-		//command(commandBuffer, std::forward(args)...); 
+		command(commandBuffer, std::forward<Args>(args)...); 
 	}
 
 
