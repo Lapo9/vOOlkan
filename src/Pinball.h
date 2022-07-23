@@ -3,6 +3,7 @@
 
 #include "Attachment.h"
 #include "AttachmentColorBlendingMode.h"
+#include "Buffer.h"
 #include "CommandBuffer.h"
 #include "CommandBufferPool.h"
 #include "DepthStencil.h"

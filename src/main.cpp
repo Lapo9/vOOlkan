@@ -28,15 +28,9 @@ int main() {
 		//render pass
 		Vulkan::PipelineOptions::RenderPass renderPass{ virtualGpu, boundAttachments, s1};
 
-		//how a vertex is made up of
-		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec2>;
-		{
-			//vertex array example
-			std::vector<MyVertex> v1s{
-				{{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-				{{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-			};
-		}
+		//how a vertex is made up
+		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec2, glm::vec3>;
+		MyVertex{ {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 
 		//vertices types descriptor
 		Vulkan::PipelineOptions::PipelineVertexArrays vertexTypesDescriptor{ MyVertex{} };
@@ -60,10 +54,13 @@ int main() {
 		//create drawer
 		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, renderPass, pipeline };
 
+		//create vertex buffer for models
+		Vulkan::Buffer model{ virtualGpu, realGpu };
+
 		//draw cycle
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			drawer.draw();
+			drawer.draw(model);
 		}
 		vkDeviceWaitIdle(+virtualGpu);
 

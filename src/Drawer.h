@@ -15,6 +15,7 @@
 #include "Queue.h"
 #include "Fence.h"
 #include "Semaphore.h"
+#include "Buffer.h"
 #include "VulkanException.h"
 
 
@@ -22,11 +23,23 @@ namespace Vulkan { class Drawer; }
 
 
 /**
- * @brief A Drawer is a class which holds all of the resources to draw frames on screen, such as the synchronization primitives, the framebuffers and the function to actually draw a frame.
+ * @brief A Drawer is a class which holds all of the resources to draw frames on screen, such as the synchronization primitives, the framebuffers, the swapchain, ... and the function to actually draw a frame.
  */
 class Vulkan::Drawer {
 public:
 
+	/**
+	 * @brief Creates all the resources needed to draw something on screen.
+	 * @details These resources more specifically are: Swapchain, Framebuffer(s), CommandBufferPool, COmmandBuffer(s), Fence(s), Semaphore(s).
+	 * 
+	 * @param virtualGpu The LogicalDevice.
+	 * @param realGpu The PhysiscalDevice.
+	 * @param window The Window ehre to draw.
+	 * @param windowSurface The WindowSurface of the window (also serves to poll for window resizes and such).
+	 * @param renderPass How to draw a frame.
+	 * @param pipeline The stages to draw a frame.
+	 * @param framesInFlight How many frames can be rendered concurrently.
+	 */
 	Drawer(const LogicalDevice& virtualGpu, 
 		const PhysicalDevice& realGpu,
 		const Window& window,
@@ -56,7 +69,7 @@ public:
 	}
 
 
-	void draw() {
+	void draw(const Buffer& models) {
 		uint32_t obtainedSwapchainImageIndex; //the index of the image of the swapchain we'll draw to
 		vkWaitForFences(+virtualGpu, 1, &+fences[currentFrame], VK_TRUE, UINT64_MAX); //wait until a swapchain image is free
 		//get an image from the swapchain
@@ -71,7 +84,13 @@ public:
 		
 		//TODO the next 3 instructions should probably go in a draw() overload which takes a set of commands to register
 		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);
-		commandBuffers[currentFrame].addCommand(vkCmdDraw, 3, 1, 0, 0); //TODO now this is an hardcoded command
+		
+		//DEBUG now these are hardcoded commands
+		VkBuffer vertexBuffers[] = { +models };
+		VkDeviceSize offsets[] = { 0 };
+		commandBuffers[currentFrame].addCommand(vkCmdBindVertexBuffers, 0, 1, vertexBuffers, offsets); 
+		commandBuffers[currentFrame].addCommand(vkCmdDraw, 3, 1, 0, 0); 
+
 		commandBuffers[currentFrame].endCommand();
 
 		//struct to submit a command buffer to a queue

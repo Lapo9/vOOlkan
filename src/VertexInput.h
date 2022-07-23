@@ -191,6 +191,17 @@ namespace Vulkan::PipelineOptions {
 		}
 
 
+		//FROMHERE do this with recursion (not index sequence)
+		template<typename... Es>
+		static std::array<size_t, sizeof(Es)...> tupleElementOffset(Es... elems) {
+			std::array<size_t, sizeof(Es)...> res;
+			std::tuple<Es> tuple{ elems };
+			auto sequence = std::make_index_sequence<sizeof(Es)...>;
+			((res[sequence] = reinterpret_cast<int>(&tuple) - reinterpret_cast<int>(&std::get<sequence>(tuple))), ...);
+			return res;
+		}
+
+
 	public:
 		/**
 		 * @brief Extract all of the properties from this Vertex.
@@ -201,6 +212,7 @@ namespace Vulkan::PipelineOptions {
 		 */
 		template<typename... Vec> requires (isGlmVec(Vec{}) && ...)
 			VertexProperties(int sizeOfVertex = -1, Vec... components) : stride{ 0 }, sizeOfVertex{ sizeOfVertex }, componentsProperties{} {
+
 			(addComponent(components), ...); //for each component, extract its properties
 			stride = sizeOfVertex; //the stride should already be set by the addComponent loop in the instruction above, but if the Vertex type (Vec) has some other data in addition to the components, the stride should be different than the one calculated
 		}
@@ -327,10 +339,10 @@ namespace Vulkan::PipelineOptions {
 
 			//fill the descriptor
 			vertexArraysDescriptor.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-			vertexArraysDescriptor.vertexBindingDescriptionCount = 0;//TODO bindingDescriptors.size();
-			vertexArraysDescriptor.pVertexBindingDescriptions = nullptr;//TODO bindingDescriptors.data();
-			vertexArraysDescriptor.vertexAttributeDescriptionCount = 0;//TODO attributeDescriptors.size();
-			vertexArraysDescriptor.pVertexAttributeDescriptions = nullptr;//TODO attributeDescriptors.data();
+			vertexArraysDescriptor.vertexBindingDescriptionCount = bindingDescriptors.size();
+			vertexArraysDescriptor.pVertexBindingDescriptions = bindingDescriptors.data();
+			vertexArraysDescriptor.vertexAttributeDescriptionCount = attributeDescriptors.size();
+			vertexArraysDescriptor.pVertexAttributeDescriptions = attributeDescriptors.data();
 		}
 
 
