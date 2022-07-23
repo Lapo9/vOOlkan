@@ -11,6 +11,7 @@
 #include "Framebuffer.h"
 #include "CommandBuffer.h"
 #include "CommandBufferPool.h"
+#include "Window.h"
 #include "Queue.h"
 #include "Fence.h"
 #include "Semaphore.h"
@@ -58,8 +59,15 @@ public:
 	void draw() {
 		uint32_t obtainedSwapchainImageIndex; //the index of the image of the swapchain we'll draw to
 		vkWaitForFences(+virtualGpu, 1, &+fences[currentFrame], VK_TRUE, UINT64_MAX); //wait until a swapchain image is free
+		//get an image from the swapchain
+		if (VkResult result = vkAcquireNextImageKHR(+virtualGpu, +swapchain, UINT64_MAX, +imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &obtainedSwapchainImageIndex); result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+			recreateSwapchain();
+			return;
+		} 
+		else if (result != VK_SUCCESS) {
+			throw VulkanException{ "Failed to acquire swapchain image", result };
+		}
 		vkResetFences(+virtualGpu, 1, &+fences[currentFrame]); //reset the just signaled fence to an unsignalled state
-		vkAcquireNextImageKHR(+virtualGpu, +swapchain, UINT64_MAX, +imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &obtainedSwapchainImageIndex); //get an image from the swapchain
 		
 		//TODO the next 3 instructions should probably go in a draw() overload which takes a set of commands to register
 		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);
@@ -95,7 +103,12 @@ public:
 		presentInfo.pSwapchains = swapchains;
 		presentInfo.pImageIndices = &obtainedSwapchainImageIndex;
 
-		vkQueuePresentKHR(+virtualGpu[QueueFamily::PRESENTATION], &presentInfo);
+		if (VkResult result = vkQueuePresentKHR(+virtualGpu[QueueFamily::PRESENTATION], &presentInfo); result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+			recreateSwapchain();
+		}
+		else if (result != VK_SUCCESS) {
+			throw VulkanException{ "Failed to present image", result };
+		}
 
 		increaseCurrentFrame();
 	}
@@ -112,8 +125,23 @@ private:
 
 
 	void recreateSwapchain() {
-		swapchain = Swapchain{ realGpu, virtualGpu, windowSurface, window };
-		//FROMHERE finish swapchain recreation: framebuffers and command buffers (because they could have references to the old swapchain)
+		//if window is minimized, pause application
+		int width = 0, height = 0;
+		do {
+			glfwGetFramebufferSize(+window, &width, &height);
+			glfwWaitEvents();
+		} while (width == 0 || height == 0);
+ 
+		vkDeviceWaitIdle(+virtualGpu); //wait for all the resources to be free
+
+		//recreate new swapchain
+		swapchain.recreate(realGpu, virtualGpu, windowSurface, window);
+		framebuffers = Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain);
+		commandBuffers = std::vector<CommandBuffer>{};
+
+		for (unsigned int i = 0; i < framesInFlight; ++i) {
+			commandBuffers.emplace_back(virtualGpu, commandBufferPool);
+		}
 	}
 
 	//Each string (name) is bound to a vector of synch primitives. Each element in the vector is a different primitive, and each one is used for a specific frame in flight.

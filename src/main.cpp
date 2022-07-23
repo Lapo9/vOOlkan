@@ -6,7 +6,7 @@
 int main() {
 	try {
 		//GPU setup
-		Vulkan::Window window{ 500, 300, "Test app title" };
+		Vulkan::Window window{ 1000, 600, "Test app title" };
 		Vulkan::Instance vulkanInstance{ "test app" };
 		Vulkan::WindowSurface windowSurface{ vulkanInstance, window };
 		Vulkan::PhysicalDevice realGpu{ vulkanInstance, windowSurface };
