@@ -144,7 +144,7 @@ public:
 	 * @tparam ...Args The types of the arguments to pass to each Vulkan function.
 	 * @tparam ...Command The tuples, each containing the Vulkan function and its arguments (of type ...Args).
 	 */
-	template<typename... Args, template<typename...> class... Command> requires (std::same_as<Command<int>, std::tuple<int>> && ...)
+	template<typename... Args, template<typename...> class... Command> requires (std::same_as<Command<>, std::tuple<>> && ...)
 		void addCommands(Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) {
 		//this is tricky... call the function addCommand and pass as arguments (perfect forwarding) the objects in the each tuple received as argument
 		(std::apply([this]<typename... Args>(Args&&... args) {

@@ -69,7 +69,16 @@ public:
 	}
 
 
-	void draw(const Buffer& models) {
+	/**
+	 * @brief Draws the models by running the specified commands.
+	 * 
+	 * @param models Vertices to draw.
+	 * @param ...commands Vulkan Functions to execute on the vertices.
+	 * @tparam ...Args The types of the arguments to pass to each Vulkan function.
+	 * @tparam ...Command The tuples, each containing the Vulkan function and its arguments (of type ...Args).
+	 */
+	template<typename... Args, template<typename...> class... Command> requires (std::same_as<Command<>, std::tuple<>> && ...)
+	void draw(const Buffer& models, Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) {
 		uint32_t obtainedSwapchainImageIndex; //the index of the image of the swapchain we'll draw to
 		vkWaitForFences(+virtualGpu, 1, &+fences[currentFrame], VK_TRUE, UINT64_MAX); //wait until a swapchain image is free
 		//get an image from the swapchain
@@ -82,15 +91,9 @@ public:
 		}
 		vkResetFences(+virtualGpu, 1, &+fences[currentFrame]); //reset the just signaled fence to an unsignalled state
 		
-		//TODO the next 3 instructions should probably go in a draw() overload which takes a set of commands to register
-		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);
-		
-		//DEBUG now these are hardcoded commands
-		VkBuffer vertexBuffers[] = { +models };
-		VkDeviceSize offsets[] = { 0 };
-		commandBuffers[currentFrame].addCommand(vkCmdBindVertexBuffers, 0, 1, vertexBuffers, offsets); 
-		commandBuffers[currentFrame].addCommand(vkCmdDraw, 3, 1, 0, 0); 
-
+		//fill the command buffer
+		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);	
+		commandBuffers[currentFrame].addCommands(std::forward<Command...>(commands...));
 		commandBuffers[currentFrame].endCommand();
 
 		//struct to submit a command buffer to a queue
@@ -132,6 +135,73 @@ public:
 		increaseCurrentFrame();
 	}
 
+
+
+	/**
+	 * @brief Draws the models.
+	 * @details This function will simply bind the vertex buffer (models) and then draw it.
+	 *
+	 * @param models Vertices to draw.
+	 */
+	void draw(const Buffer& models) {
+		uint32_t obtainedSwapchainImageIndex; //the index of the image of the swapchain we'll draw to
+		vkWaitForFences(+virtualGpu, 1, &+fences[currentFrame], VK_TRUE, UINT64_MAX); //wait until a swapchain image is free
+		//get an image from the swapchain
+		if (VkResult result = vkAcquireNextImageKHR(+virtualGpu, +swapchain, UINT64_MAX, +imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &obtainedSwapchainImageIndex); result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+			recreateSwapchain();
+			return;
+		}
+		else if (result != VK_SUCCESS) {
+			throw VulkanException{ "Failed to acquire swapchain image", result };
+		}
+		vkResetFences(+virtualGpu, 1, &+fences[currentFrame]); //reset the just signaled fence to an unsignalled state
+
+		//fill the command buffer
+		VkBuffer vertexBuffers[] = { +models };
+		VkDeviceSize offsets[] = { 0 };
+		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);		
+		commandBuffers[currentFrame].addCommand(vkCmdBindVertexBuffers, 0, 1, vertexBuffers, offsets);
+		commandBuffers[currentFrame].addCommand(vkCmdDraw, models.getVerticesCount(), 1, 0, 0);
+		commandBuffers[currentFrame].endCommand();
+
+		//struct to submit a command buffer to a queue
+		VkSemaphore waitSemaphores[] = { +imageAvailableSemaphores[currentFrame] }; //semaphore used to signal that an image is available to render to
+		VkSemaphore signalSemaphores[] = { +renderFinishedSemaphores[currentFrame] }; //semaphore used to signal that the render finished
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }; //where to wait for an image (first semaphore). You can still run the vertex shader without an image, but you have to wait for an image for the fragment shader
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &+commandBuffers[currentFrame];
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+
+		if (VkResult result = vkQueueSubmit(+virtualGpu[QueueFamily::GRAPHICS], 1, &submitInfo, +fences[currentFrame]); result != VK_SUCCESS) {
+			throw VulkanException{ "Failed to submit the command buffer for the current frame", result };
+		}
+
+
+		VkSwapchainKHR swapchains[] = { +swapchain };
+		VkPresentInfoKHR presentInfo{};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapchains;
+		presentInfo.pImageIndices = &obtainedSwapchainImageIndex;
+
+		if (VkResult result = vkQueuePresentKHR(+virtualGpu[QueueFamily::PRESENTATION], &presentInfo); result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+			recreateSwapchain();
+		}
+		else if (result != VK_SUCCESS) {
+			throw VulkanException{ "Failed to present image", result };
+		}
+
+		increaseCurrentFrame();
+	}
 
 	
 	

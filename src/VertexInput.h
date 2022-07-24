@@ -14,8 +14,8 @@
 namespace Vulkan::PipelineOptions {
 
 	/**
-	 * @brief Returns true if 1 <= n <= 4, Type is a fundalental typeand Vec<n, Type, packing> is a glm::vec<...>.
-	 * @details It is mandatory to have a function (and not a concept with its requires clause, because n, Type and packing must be automatically deducted by the compiler.
+	 * @brief Returns true if 1 <= n <= 4, Type is a fundalental type and Vec<n, Type, packing> is a glm::vec<...>.
+	 * @details It is mandatory to have a function (and not a concept with its requires clause), because n, Type and packing must be automatically deducted by the compiler.
 	 */
 	template<template<int, typename, glm::qualifier> class Vec, int n, typename Type, glm::qualifier packing>
 	constexpr bool isGlmVec(Vec<n, Type, packing>) {
@@ -65,7 +65,6 @@ namespace Vulkan::PipelineOptions {
 
 		std::array<ComponentProperties, componentsAmount> componentsProperties;
 		size_t stride;
-		int sizeOfVertex;
 		int arrayDimension = 0; //how many "complete" elements are in the array
 
 
@@ -82,10 +81,10 @@ namespace Vulkan::PipelineOptions {
 		 * @tparam packing
 		 */
 		template<template<int, typename, glm::qualifier> class Vec, int n, typename Type, glm::qualifier packing> requires(isGlmVec(Vec<n, Type, packing>{}))
-			void addComponent(Vec<n, Type, packing>) {
-			componentsProperties.at(arrayDimension) = ComponentProperties{ n, sizeof(Type), stride }; //the offset of this component is equivalent to the current stride
+			void addComponent(Vec<n, Type, packing>, std::array<size_t, componentsAmount> tupleOffsets) {
+			componentsProperties.at(arrayDimension) = ComponentProperties{ n, sizeof(Type), tupleOffsets[arrayDimension]};
 			componentsProperties.at(arrayDimension).format = findRightFormat<Type, n>(); //calculate the VkFormat (no arguments are passed because it is only important the Type and coordinates amount to calculate the format)
-			stride += sizeof(Type) * n; //increase the stride, namely the dimension of this Vertex
+			stride += sizeof(Vec<n, Type, packing>); //increase the stride, namely the dimension of this Vertex
 			arrayDimension++;
 		}
 
@@ -191,14 +190,31 @@ namespace Vulkan::PipelineOptions {
 		}
 
 
-		//FROMHERE do this with recursion (not index sequence)
-		template<typename... Es>
-		static std::array<size_t, sizeof(Es)...> tupleElementOffset(Es... elems) {
-			std::array<size_t, sizeof(Es)...> res;
-			std::tuple<Es> tuple{ elems };
-			auto sequence = std::make_index_sequence<sizeof(Es)...>;
-			((res[sequence] = reinterpret_cast<int>(&tuple) - reinterpret_cast<int>(&std::get<sequence>(tuple))), ...);
-			return res;
+		/**
+		 * @brief Calculates all the offsets (in bytes) of the elements of the tuple from the tuple itself.
+		 * 
+		 * @param tuple The tuple.
+		 * @return The offsets (in bytes) of all the elements of the tuple from the tuple itself.
+		 * @tparam I Parameter used for recursion. Specifies which element of the tuple we are calculating the offset of.
+		 * @tparam ...E Types of the lements in the tuple. We need it because we use it to calculate how many element are there in the tuple.
+		 */
+		template<int I = 0, typename... E>
+		static constexpr std::array<size_t, sizeof...(E)> tupleElementsOffset(const std::tuple<E...>& tuple) {
+			constexpr size_t elementsInTuple = sizeof...(E);
+			std::array<size_t, elementsInTuple> result{};
+			result[I] = (char*)&std::get<I>(tuple) - (char*)&tuple; //place the offset of the I-th element of the tuple (from the beginning of the tuple itself) into the I-th element of the array
+
+			//if we reached the last element of the tuple you don't have to try to calculate the offsets of the next elements (because there are none)
+			if constexpr (I < elementsInTuple - 1) {
+				auto tmp = tupleElementsOffset<I + 1>(tuple); //calculate offsets of the elements past I
+
+				//copy the calculated offsets into the return array (only elements past I)
+				for (int i = I + 1; i < elementsInTuple; ++i) {
+					result[i] = tmp[i];
+				}
+			}
+
+			return result;
 		}
 
 
@@ -206,15 +222,15 @@ namespace Vulkan::PipelineOptions {
 		/**
 		 * @brief Extract all of the properties from this Vertex.
 		 * @details Check that each component is indeed a GlmVec via the requires clause.
+		 *			It is supposed that the Vertex class holds the components of the vertices in a tuple of glm::vec<...>, and that that such tuple is the one and only member of the class (if not problems with the stride may arise).
 		 *
-		 * @param sizeOfVertex The size of the Vertex from where this function has been called. It is important to know the size of the Vertex in order to calculate the stride.
 		 * @param ...components Each component of this vertex.
 		 */
 		template<typename... Vec> requires (isGlmVec(Vec{}) && ...)
-			VertexProperties(int sizeOfVertex = -1, Vec... components) : stride{ 0 }, sizeOfVertex{ sizeOfVertex }, componentsProperties{} {
+			VertexProperties(Vec... components) : stride{ 0 }, componentsProperties{} {
+			auto tupleOffsets = tupleElementsOffset(std::tuple{ components... }); //calculate the offsets of each element of the tuple
 
-			(addComponent(components), ...); //for each component, extract its properties
-			stride = sizeOfVertex; //the stride should already be set by the addComponent loop in the instruction above, but if the Vertex type (Vec) has some other data in addition to the components, the stride should be different than the one calculated
+			(addComponent(components, tupleOffsets), ...); //for each component, extract its properties
 		}
 
 
@@ -226,18 +242,6 @@ namespace Vulkan::PipelineOptions {
 		 */
 		const ComponentProperties& operator[](unsigned int i) {
 			return componentsProperties.at(i);
-		}
-
-
-		/**
-		 * @brief Returns whether the object has been initialized or not.
-		 * @details If the object has been default initialized, then sizeOfVertex is negative.
-		 * It is so because this class should only be used inside the Vertex class as a static member, so, when it is first initialized, it is impossible (or, at least, unconvenient) to know the Vertex size.
-		 *
-		 * @return Whether the object has been initialized or not.
-		 */
-		bool isInitialized() const {
-			return sizeOfVertex > 0;
 		}
 	};
 
@@ -266,11 +270,7 @@ namespace Vulkan::PipelineOptions {
 			 *
 			 * @param ...vertexComponents All of the components of this vertex.
 			 */
-			Vertex(Vec... vertexComponents) : vertexComponents{ vertexComponents... } {
-				if (!vertexProperties.isInitialized()) {
-					vertexProperties = VertexProperties<sizeof...(Vec)>{ sizeof(this), vertexComponents... };
-				}
-			}
+			Vertex(Vec... vertexComponents) : vertexComponents{ vertexComponents... } {}
 
 
 			Vertex() : vertexComponents{} {}
@@ -301,8 +301,8 @@ namespace Vulkan::PipelineOptions {
 
 
 		private:
-			std::tuple<Vec...> vertexComponents;
-			inline static VertexProperties<sizeof...(Vec)> vertexProperties;
+			std::tuple<Vec...> vertexComponents; //this MUST be the only (non-static) member of the class, if not we may have problems with the stride.
+			inline static VertexProperties<sizeof...(Vec)> vertexProperties = VertexProperties<sizeof...(Vec)>{ Vec{}... };
 	};
 
 
@@ -334,7 +334,7 @@ namespace Vulkan::PipelineOptions {
 					this->attributeDescriptors.insert(this->attributeDescriptors.end(), attributeDescrs.begin(), attributeDescrs.end());
 					i++;
 				};
-				((extract.template operator() < V > ()), ...); //calls the lambda for each Vertex type that has been passed as argument
+				((extract.operator() < V > ()), ...); //calls the lambda for each Vertex type that has been passed as argument
 			}
 
 			//fill the descriptor

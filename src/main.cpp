@@ -1,7 +1,12 @@
 #include <vulkan/vulkan.h>
 #include <iostream>
+#include <tuple>
+#include <utility>
 
 #include "Pinball.h"
+
+
+
 
 int main() {
 	try {
@@ -30,7 +35,6 @@ int main() {
 
 		//how a vertex is made up
 		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec2, glm::vec3>;
-		MyVertex{ {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
 
 		//vertices types descriptor
 		Vulkan::PipelineOptions::PipelineVertexArrays vertexTypesDescriptor{ MyVertex{} };

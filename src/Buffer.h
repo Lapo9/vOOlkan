@@ -17,7 +17,7 @@ public:
     //DEBUG of course one should be able to add the data he wants to the buffer
     using Vertex = PipelineOptions::Vertex<glm::vec2, glm::vec3>;
     std::vector<Vertex> model{
-        {{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+        {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
         {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
         {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
     };
@@ -65,6 +65,11 @@ public:
 
     void fillBuffer() {
 
+    }
+
+
+    unsigned int getVerticesCount() const {
+        return 3;
     }
 
 
