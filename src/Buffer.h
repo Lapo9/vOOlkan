@@ -2,48 +2,36 @@
 #define VULKAN_BUFFER
 
 #include <vulkan/vulkan.h>
+#include <glm/glm.hpp>
 
 #include "LogicalDevice.h"
 #include "PhysicalDevice.h"
 #include "VulkanException.h"
-#include "VertexInput.h"
 
 
-namespace Vulkan { class Buffer; }
+namespace Vulkan::Buffers { class Buffer; }
 
-class Vulkan::Buffer {
+class Vulkan::Buffers::Buffer {
 public:
-    
-    //DEBUG of course one should be able to add the data he wants to the buffer
-    using Vertex = PipelineOptions::Vertex<glm::vec2, glm::vec3>;
-    std::vector<Vertex> model{
-        {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
-    };
 
-
-
-    Buffer(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu) : virtualGpu{ virtualGpu } {
+    template<std::same_as<VkMemoryPropertyFlagBits>... P>
+    Buffer(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, size_t size, int usage, P... requiredMemoryProperties) : virtualGpu{ virtualGpu }, size{ size } {
         //create the buffer
-        createBuffer(virtualGpu);
+        createBuffer(virtualGpu, size, usage);
 
         //find out the constraints about the real GPU memory to use for this buffer
         VkMemoryRequirements memRequirements;
         vkGetBufferMemoryRequirements(+virtualGpu, buffer, &memRequirements);
 
         //find which GPU memory to use
-        auto memIndex = findSuitableMemoryIndex(realGpu, memRequirements.memoryTypeBits);
+        auto memIndex = findSuitableMemoryIndex(realGpu, memRequirements.memoryTypeBits, requiredMemoryProperties...);
 
         //allocate the choosen memory
         allocateMemory(memIndex, memRequirements.size);
 
-        //DEBUG
-        fillGpuMemory(sizeof(model[0]) * model.size());
-
         //associate the allocated memory with the created buffer
         vkBindBufferMemory(+virtualGpu, buffer, bufferMemory, 0);
-	}
+    }
 
 
     Buffer(const Buffer&) = delete;
@@ -53,8 +41,8 @@ public:
 
 
     ~Buffer() {
-         vkDestroyBuffer(+virtualGpu, buffer, nullptr);
-         vkFreeMemory(+virtualGpu, bufferMemory, nullptr);
+        vkDestroyBuffer(+virtualGpu, buffer, nullptr);
+        vkFreeMemory(+virtualGpu, bufferMemory, nullptr);
     }
 
 
@@ -63,25 +51,20 @@ public:
     }
 
 
-    void fillBuffer() {
-
+    VkDeviceMemory& getBufferMemory() {
+        return bufferMemory;
     }
 
 
-    unsigned int getVerticesCount() const {
-        return 3;
-    }
-
-
-private:
+protected:
 
     //Create the buffer
-    void createBuffer(const LogicalDevice& virtualGpu) {    
+    void createBuffer(const LogicalDevice& virtualGpu, size_t size, int usage) {
         //info about the buffer we want to create
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = sizeof(model[0]) * model.size();
-        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        bufferInfo.size = size;
+        bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
         //actually create the buffer
@@ -92,16 +75,16 @@ private:
 
 
     //Return the first index of a memory type on the GPU which is suitable for the resource we want to load onto the GPU. 
-    uint32_t findSuitableMemoryIndex(const PhysicalDevice& realGpu, uint32_t suitableTypesBitmask) const {
-        VkMemoryPropertyFlags requiredMemoryProperties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-
+    template<std::same_as< VkMemoryPropertyFlagBits>... P>
+    uint32_t findSuitableMemoryIndex(const PhysicalDevice& realGpu, uint32_t suitableTypesBitmask, P... requiredMemoryProperties) const {
         //get the properties of the memory of the GPU
         VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(+realGpu, &memProperties); 
+        vkGetPhysicalDeviceMemoryProperties(+realGpu, &memProperties);
+        auto requiredMemoryPropertiesMask = (requiredMemoryProperties | ...);
 
         //for each memory type, check if it is suitable for what we want to do (i.e. this type is 1 in the suitableTypesBitmask and the properties of this type are a superset of requiredMemoryProperties)
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-            if ((suitableTypesBitmask & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & requiredMemoryProperties) == requiredMemoryProperties) {
+            if ((suitableTypesBitmask & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & requiredMemoryPropertiesMask) == requiredMemoryPropertiesMask) {
                 return i;
             }
         }
@@ -123,19 +106,11 @@ private:
     }
 
 
-    //Fill the GPU RAM with the specified data from the CPU RAM
-    void fillGpuMemory(size_t size) {
-        void* data;
-        vkMapMemory(+virtualGpu, bufferMemory, 0, size, 0, &data); //map GPU memory to CPU memory
-        memcpy(data, model.data(), size); //copy required data
-        vkUnmapMemory(+virtualGpu, bufferMemory); //unmap GPU memory from CPU memory (data is already there)
-    }
-
-
-	VkBuffer buffer;
+    VkBuffer buffer;
     VkDeviceMemory bufferMemory;
     const LogicalDevice& virtualGpu;
-
+    const size_t size;
 };
+
 
 #endif

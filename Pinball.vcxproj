@@ -22,6 +22,9 @@
     <ClInclude Include="src\Attachment.h" />
     <ClInclude Include="src\AttachmentColorBlendingMode.h" />
     <ClInclude Include="src\Buffer.h" />
+    <ClInclude Include="src\IndexBuffer.h" />
+    <ClInclude Include="src\Model.h" />
+    <ClInclude Include="src\VertexBuffer.h" />
     <ClInclude Include="src\CommandBuffer.h" />
     <ClInclude Include="src\CommandBufferPool.h" />
     <ClInclude Include="src\DepthStencil.h" />

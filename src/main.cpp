@@ -1,7 +1,7 @@
 #include <vulkan/vulkan.h>
 #include <iostream>
-#include <tuple>
-#include <utility>
+#include <vector>
+
 
 #include "Pinball.h"
 
@@ -58,13 +58,28 @@ int main() {
 		//create drawer
 		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, renderPass, pipeline };
 
+		//create model
+		Vulkan::Model model{ std::vector<MyVertex>{
+			{ {0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+			{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+			{{-0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+		},
+		std::vector<uint32_t>{0, 1, 3}
+		};
+
 		//create vertex buffer for models
-		Vulkan::Buffer model{ virtualGpu, realGpu };
+		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, model.getVertices().size() * sizeof(model.getVertices()[0])};
+		vertexBuffer.fillBuffer(model);
+
+		//create index buffer for model
+		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, model.getVertices().size() * sizeof(model.getIndexes()[0]) };
+		indexBuffer.fillBuffer(model);
 
 		//draw cycle
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			drawer.draw(model);
+			drawer.draw(vertexBuffer, indexBuffer);
 		}
 		vkDeviceWaitIdle(+virtualGpu);
 

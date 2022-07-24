@@ -25,6 +25,9 @@
     <Filter Include="Source Files\SynchronizationPrimitives">
       <UniqueIdentifier>{fa29b6ed-5327-4240-bb1a-5e8dee8c277e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Buffers">
+      <UniqueIdentifier>{dbd0a1a5-9329-427c-a733-a7aaf469d989}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Instance.h">
@@ -135,8 +138,17 @@
     <ClInclude Include="src\Semaphore.h">
       <Filter>Source Files\SynchronizationPrimitives</Filter>
     </ClInclude>
+    <ClInclude Include="src\VertexBuffer.h">
+      <Filter>Source Files\Buffers</Filter>
+    </ClInclude>
     <ClInclude Include="src\Buffer.h">
+      <Filter>Source Files\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Model.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IndexBuffer.h">
+      <Filter>Source Files\Buffers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

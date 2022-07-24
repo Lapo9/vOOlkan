@@ -15,7 +15,8 @@
 #include "Queue.h"
 #include "Fence.h"
 #include "Semaphore.h"
-#include "Buffer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 #include "VulkanException.h"
 
 
@@ -70,15 +71,15 @@ public:
 
 
 	/**
-	 * @brief Draws the models by running the specified commands.
+	 * @brief Draws the vertexBuffer by running the specified commands.
 	 * 
-	 * @param models Vertices to draw.
+	 * @param vertexBuffer Vertices to draw.
 	 * @param ...commands Vulkan Functions to execute on the vertices.
 	 * @tparam ...Args The types of the arguments to pass to each Vulkan function.
 	 * @tparam ...Command The tuples, each containing the Vulkan function and its arguments (of type ...Args).
 	 */
 	template<typename... Args, template<typename...> class... Command> requires (std::same_as<Command<>, std::tuple<>> && ...)
-	void draw(const Buffer& models, Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) {
+	void draw(const Buffers::VertexBuffer& vertexBuffer, const Buffers::IndexBuffer& indexBuffer, Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) {
 		uint32_t obtainedSwapchainImageIndex; //the index of the image of the swapchain we'll draw to
 		vkWaitForFences(+virtualGpu, 1, &+fences[currentFrame], VK_TRUE, UINT64_MAX); //wait until a swapchain image is free
 		//get an image from the swapchain
@@ -138,12 +139,12 @@ public:
 
 
 	/**
-	 * @brief Draws the models.
-	 * @details This function will simply bind the vertex buffer (models) and then draw it.
+	 * @brief Draws the vertexBuffer.
+	 * @details This function will simply bind the vertex buffer (vertexBuffer) and then draw it.
 	 *
-	 * @param models Vertices to draw.
+	 * @param vertexBuffer Vertices to draw.
 	 */
-	void draw(const Buffer& models) {
+	void draw(const Buffers::VertexBuffer& vertexBuffer, const Buffers::IndexBuffer& indexBuffer) {
 		uint32_t obtainedSwapchainImageIndex; //the index of the image of the swapchain we'll draw to
 		vkWaitForFences(+virtualGpu, 1, &+fences[currentFrame], VK_TRUE, UINT64_MAX); //wait until a swapchain image is free
 		//get an image from the swapchain
@@ -157,11 +158,12 @@ public:
 		vkResetFences(+virtualGpu, 1, &+fences[currentFrame]); //reset the just signaled fence to an unsignalled state
 
 		//fill the command buffer
-		VkBuffer vertexBuffers[] = { +models };
+		VkBuffer vertexBuffers[] = { +vertexBuffer };
 		VkDeviceSize offsets[] = { 0 };
 		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);		
 		commandBuffers[currentFrame].addCommand(vkCmdBindVertexBuffers, 0, 1, vertexBuffers, offsets);
-		commandBuffers[currentFrame].addCommand(vkCmdDraw, models.getVerticesCount(), 1, 0, 0);
+		commandBuffers[currentFrame].addCommand(vkCmdBindIndexBuffer, +indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		commandBuffers[currentFrame].addCommand(vkCmdDrawIndexed, indexBuffer.getIndexesCount(), 1, 0, 0, 0);
 		commandBuffers[currentFrame].endCommand();
 
 		//struct to submit a command buffer to a queue
