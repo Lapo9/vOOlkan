@@ -23,8 +23,18 @@ public:
     template<typename... C, template<typename...> class... M> requires (std::same_as<M<C...>, Model<C...>> && ...)
         void fillBuffer(const M<C...>&... models) {
         std::vector<uint32_t> data{};
-        (data.insert(data.end(), models.getIndexes().begin(), models.getIndexes().end()), ...); //copy all the vertices to one vector
-
+        
+        unsigned int currentOffset = 0;
+        ([this, &currentOffset, &data](const M<C...>& model) {
+            //copy all the vertices to one vector
+            for (auto index : model.getIndexes()) {
+                data.push_back(index + currentOffset);
+            }
+            
+            modelOffsets.push_back(currentOffset); //save the offset for this model
+            currentOffset += model.getIndexes().size(); //increase next offset
+        }(models), ...);
+        modelOffsets.push_back(currentOffset); //save the last offset (= indexesCount) in order to speed up the getModelIndexesCount function
         indexesCount = data.size();
 
         //TODO staging buffer
@@ -42,9 +52,25 @@ public:
     }
 
 
+    unsigned int getModelOffset(unsigned int i) const {
+        return modelOffsets[i];
+    }
+
+
+    unsigned int getModelIndexesCount(unsigned int i) const {
+        return modelOffsets[i + 1] - modelOffsets[i];
+    }
+
+
+    unsigned int getModelsCount() const {
+        return modelOffsets.size() - 1;
+    }
+
+
 private:
 
     unsigned int indexesCount;
+    std::vector<unsigned int> modelOffsets;
 };
 
 #endif

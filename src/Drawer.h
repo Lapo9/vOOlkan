@@ -137,14 +137,14 @@ public:
 	}
 
 
-
+	//FROMHERE perModelBuffer contains data which changes for each model and therefore uses dynamic descriptor sets. GlobalData is the opposite. 
 	/**
 	 * @brief Draws the vertexBuffer.
 	 * @details This function will simply bind the vertex buffer (vertexBuffer) and then draw it.
 	 *
 	 * @param vertexBuffer Vertices to draw.
 	 */
-	void draw(const Buffers::VertexBuffer& vertexBuffer, const Buffers::IndexBuffer& indexBuffer) {
+	void draw(const Buffers::VertexBuffer& vertexBuffer, const Buffers::IndexBuffer& indexBuffer){//, const Buffers::UniformBuffer& perModelData, const Buffers::UniformBuffer& globalData) {
 		uint32_t obtainedSwapchainImageIndex; //the index of the image of the swapchain we'll draw to
 		vkWaitForFences(+virtualGpu, 1, &+fences[currentFrame], VK_TRUE, UINT64_MAX); //wait until a swapchain image is free
 		//get an image from the swapchain
@@ -163,7 +163,9 @@ public:
 		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);		
 		commandBuffers[currentFrame].addCommand(vkCmdBindVertexBuffers, 0, 1, vertexBuffers, offsets);
 		commandBuffers[currentFrame].addCommand(vkCmdBindIndexBuffer, +indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-		commandBuffers[currentFrame].addCommand(vkCmdDrawIndexed, indexBuffer.getIndexesCount(), 1, 0, 0, 0);
+		for (int i = 0; i < indexBuffer.getModelsCount(); ++i) {
+			commandBuffers[currentFrame].addCommand(vkCmdDrawIndexed, indexBuffer.getModelIndexesCount(i), 1, indexBuffer.getModelOffset(i), 0, 0);
+		}
 		commandBuffers[currentFrame].endCommand();
 
 		//struct to submit a command buffer to a queue

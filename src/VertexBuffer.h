@@ -21,8 +21,7 @@ public:
 	}
 
 
-    //IMPROVE I should save the offset of each different model, so that I can use these offsets during the call to vkCmdBindVertices in the drawer (and for PipelineVertexArrays)
-    template<typename... C, template<typename...> class... M> requires (std::same_as<M<C...>, Model<C...>> && ...)
+        template<typename... C, template<typename...> class... M> requires (std::same_as<M<C...>, Model<C...>> && ...)
     void fillBuffer(const M<C...>&... models) {
         std::vector<PipelineOptions::Vertex<C...>> data{};
         (data.insert(data.end(), models.getVertices().begin(), models.getVertices().end()), ...); //copy all the vertices to one vector

@@ -58,23 +58,30 @@ int main() {
 		//create drawer
 		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, renderPass, pipeline };
 
-		//create model
-		Vulkan::Model model{ std::vector<MyVertex>{
-			{ {0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-			{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-			{{-0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+		//create models
+		Vulkan::Model model1{ std::vector<MyVertex>{
+			{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+			{{0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+			{{0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}},
 		},
-		std::vector<uint32_t>{0, 1, 3}
+		std::vector<uint32_t>{2, 1, 0}
+		};
+		Vulkan::Model model2{ std::vector<MyVertex>{
+			{{0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}},
+			{{0.5f, 0.9f}, {1.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.9f}, {1.0f, 1.0f, 1.0f}},
+		},
+		std::vector<uint32_t>{3, 2, 0, 0, 1, 3}
 		};
 
 		//create vertex buffer for models
-		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, model.getVertices().size() * sizeof(model.getVertices()[0])};
-		vertexBuffer.fillBuffer(model);
+		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size() + model2.getVertices().size()) * sizeof(model1.getVertices()[0])};
+		vertexBuffer.fillBuffer(model1, model2);
 
 		//create index buffer for model
-		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, model.getVertices().size() * sizeof(model.getIndexes()[0]) };
-		indexBuffer.fillBuffer(model);
+		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size() + model2.getIndexes().size()) * sizeof(model1.getIndexes()[0]) };
+		indexBuffer.fillBuffer(model1, model2);
 
 		//draw cycle
 		while (!glfwWindowShouldClose(+window)) {
