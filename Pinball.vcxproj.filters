@@ -150,6 +150,9 @@
     <ClInclude Include="src\IndexBuffer.h">
       <Filter>Source Files\Buffers</Filter>
     </ClInclude>
+    <ClInclude Include="src\DescriptorSetLayout.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
