@@ -19,13 +19,13 @@ namespace Vulkan { class DescriptorSetLayout; }
 class Vulkan::DescriptorSetLayout {
 public:
 
-	template<template<typename, typename> class... T, typename Type, typename Stage> requires (std::same_as<T<Type, Stage>, std::tuple<VkDescriptorType, VkShaderStageFlags>> && ...)
-		DescriptorSetLayout(const LogicalDevice& virtualGpu, T<Type, Stage>... bindingsInfo) : virtualGpu{ virtualGpu } {
+	template<template<typename, typename, typename> class... T> requires (std::same_as<T<int, int, int>, std::tuple<int, int, int>> && ...)
+		DescriptorSetLayout(const LogicalDevice& virtualGpu, T<VkDescriptorType, VkShaderStageFlags, int>... bindingsInfo) : virtualGpu{ virtualGpu }, sizes{} {
 		//varaargs in a vector
-		std::vector<T<Type, Stage>> bindingsInfoVector;
+		std::vector<T<VkDescriptorType, VkShaderStageFlags, int>> bindingsInfoVector;
 		(bindingsInfoVector.push_back(bindingsInfo), ...);
 
-		std::vector<VkDescriptorSetLayoutBinding> bindings; //vector containing the bindings
+		std::vector<VkDescriptorSetLayoutBinding> bindings; //vector containing the bindings for this set
 		
 		//create the descriptor for each binding in this set
 		for (int i = 0; i < bindingsInfoVector.size(); ++i) {
@@ -36,6 +36,9 @@ public:
 			binding.pImmutableSamplers = nullptr;
 			binding.stageFlags = std::get<1>(bindingsInfoVector[i]);
 			bindings.push_back(binding);
+
+			//save the size of each binding
+			sizes.push_back(std::get<2>(bindingsInfoVector[i]));
 		}
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -57,10 +60,26 @@ public:
 		vkDestroyDescriptorSetLayout(+virtualGpu, descriptorSetLayout, nullptr);
 	}
 
-private:
 
+	const VkDescriptorSetLayout& operator+() const {
+		return descriptorSetLayout;
+	}
+
+
+	const std::vector<int>& getSizes() {
+		return sizes;
+	}
+
+	int getSize(unsigned int i) {
+		return sizes[i];
+	}
+
+
+private:
 	VkDescriptorSetLayout descriptorSetLayout;
 	const LogicalDevice& virtualGpu;
+
+	std::vector<int> sizes;
 
 };
 
