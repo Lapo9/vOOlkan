@@ -159,6 +159,9 @@
     <ClInclude Include="src\DecriptorSetPool.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\UniformBuffer.h">
+      <Filter>Source Files\Buffers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -201,9 +204,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Shader.cpp">
-      <Filter>Source Files\PipelineOptions</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PipelineLayout.cpp">
       <Filter>Source Files\PipelineOptions</Filter>
     </ClCompile>
     <ClCompile Include="src\CommandBufferPool.cpp">

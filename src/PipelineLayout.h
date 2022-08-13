@@ -2,12 +2,15 @@
 #define VULKAN_PIPELINELAYOUT
 
 #include <vulkan/vulkan.h>
+#include <concepts>
+
+#include "PipelineLayout.h"
+#include "LogicalDevice.h"
+#include "DescriptorSetLayout.h"
+#include "VulkanException.h"
 
 
-namespace Vulkan {
-	class LogicalDevice;
-	namespace PipelineOptions { class PipelineLayout; }
-}
+namespace Vulkan::PipelineOptions { class PipelineLayout; }
 
 
 /**
@@ -16,17 +19,37 @@ namespace Vulkan {
 class Vulkan::PipelineOptions::PipelineLayout {
 public:
 
-	PipelineLayout(const LogicalDevice& virtualGpu);
+	template<std::same_as<DescriptorSetLayout>... DSL>
+	PipelineLayout(const LogicalDevice& virtualGpu, const DSL&... layouts) : virtualGpu{ virtualGpu } {
+		//put the descriptor set layouts in a vector
+		std::vector<VkDescriptorSetLayout> rawLayouts;
+		(rawLayouts.emplace_back(+layouts), ...);
+		
+		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+		pipelineLayoutInfo.setLayoutCount = rawLayouts.size();
+		pipelineLayoutInfo.pSetLayouts = rawLayouts.data();
+		pipelineLayoutInfo.pushConstantRangeCount = 0;
+		pipelineLayoutInfo.pPushConstantRanges = nullptr;
+
+		if (VkResult result = vkCreatePipelineLayout(+virtualGpu, &pipelineLayoutInfo, nullptr, &pipelineLayout); result != VK_SUCCESS) {
+			throw VulkanException("Failed to create pipeline layout!", result);
+		}
+	}
 
 	PipelineLayout(const PipelineLayout&) = delete;
 	PipelineLayout(PipelineLayout&&) = delete;
 	PipelineLayout& operator=(const PipelineLayout&) = delete;
 	PipelineLayout& operator=(PipelineLayout&&) = delete;
 
-	~PipelineLayout();
+	~PipelineLayout() {
+		vkDestroyPipelineLayout(+virtualGpu, pipelineLayout, nullptr);
+	}
 
 
-	const VkPipelineLayout operator+() const;
+	const VkPipelineLayout operator+() const {
+		return pipelineLayout;
+	}
 
 private:
 	VkPipelineLayout pipelineLayout;

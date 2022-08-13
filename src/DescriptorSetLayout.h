@@ -66,12 +66,16 @@ public:
 	}
 
 
-	const std::vector<int>& getSizes() {
+	const std::vector<int>& getSizes() const {
 		return sizes;
 	}
 
-	int getSize(unsigned int i) {
+	int getSize(unsigned int i) const {
 		return sizes[i];
+	}
+
+	int getAmountOfBindings() const {
+		return sizes.size();
 	}
 
 

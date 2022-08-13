@@ -27,6 +27,7 @@
     <ClInclude Include="src\DescriptorSetLayout.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\Model.h" />
+    <ClInclude Include="src\UniformBuffer.h" />
     <ClInclude Include="src\VertexBuffer.h" />
     <ClInclude Include="src\CommandBuffer.h" />
     <ClInclude Include="src\CommandBufferPool.h" />
@@ -71,7 +72,6 @@
     <ClCompile Include="src\LogicalDevice.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\PhysicalDevice.cpp" />
-    <ClCompile Include="src\PipelineLayout.cpp" />
     <ClCompile Include="src\Queue.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Swapchain.cpp" />
