@@ -39,12 +39,22 @@ int main() {
 		//vertices types descriptor
 		Vulkan::PipelineOptions::PipelineVertexArrays vertexTypesDescriptor{ MyVertex{} };
 
+		//uniform descriptors layouts
+		Vulkan::DescriptorSetLayout globalLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 64} };
+		Vulkan::DescriptorSetLayout perObjectLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 64} };
+		
+		//uniform buffers
+		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 256 };
+		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 256 };
+		globalUniformBuffer.fillBuffer(std::vector{ 256, 0.5f });
+		perObjectUniformBuffer.fillBuffer(std::vector{ 256, 0.5f });
+
 		//pipeline options
 		Vulkan::PipelineOptions::Multisampler multisampler{};
 		Vulkan::PipelineOptions::DepthStencil depthStencil{};
 		Vulkan::PipelineOptions::DynamicState dynamicState{};
 		Vulkan::PipelineOptions::InputAssembly inputAssembly{};
-		Vulkan::PipelineOptions::PipelineLayout pipelineLayout{virtualGpu};
+		Vulkan::PipelineOptions::PipelineLayout pipelineLayout{virtualGpu, globalLayout};
 		Vulkan::PipelineOptions::Rasterizer rasterizer{};
 		Vulkan::PipelineOptions::Viewport viewport{};
 
@@ -56,7 +66,7 @@ int main() {
 		Vulkan::Pipeline pipeline{ virtualGpu, renderPass, 0, std::vector{&vertexShader, &fragmentShader},vertexTypesDescriptor, pipelineLayout, inputAssembly, rasterizer, multisampler, depthStencil, dynamicState, viewport};
 	
 		//create drawer
-		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, renderPass, pipeline };
+		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, renderPass, pipeline, globalUniformBuffer, perObjectUniformBuffer };
 
 		//create models
 		Vulkan::Model model1{ std::vector<MyVertex>{

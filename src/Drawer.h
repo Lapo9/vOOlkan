@@ -17,6 +17,8 @@
 #include "Semaphore.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "DescriptorSetPool.h"
+#include "DescriptorSet.h"
 #include "VulkanException.h"
 
 
@@ -47,6 +49,8 @@ public:
 		const WindowSurface& windowSurface,
 		const PipelineOptions::RenderPass& renderPass, 
 		const Pipeline& pipeline, 
+		const Buffers::UniformBuffer& globalBuffer,
+		const Buffers::UniformBuffer& perObjectBuffer,
 		unsigned int framesInFlight = 2) 
 		:
 		framesInFlight{ framesInFlight },
@@ -58,7 +62,8 @@ public:
 		renderPass{ renderPass }, 
 		pipeline{ pipeline }, 
 		swapchain{ realGpu, virtualGpu, windowSurface, window },
-		commandBufferPool{ virtualGpu } {
+		commandBufferPool{ virtualGpu } ,
+		descriptorSetPool{ virtualGpu, framesInFlight }{
 
 		framebuffers = Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain);
 		for (unsigned int i = 0; i < framesInFlight; ++i) {
@@ -66,6 +71,8 @@ public:
 			imageAvailableSemaphores.emplace_back(virtualGpu);
 			renderFinishedSemaphores.emplace_back(virtualGpu);
 			commandBuffers.emplace_back(virtualGpu, commandBufferPool);
+			globalDescriptorSets.emplace_back(virtualGpu, descriptorSetPool, pipeline.getLayout().getLayout(0), globalBuffer);
+			perObjectDescriptorSets.emplace_back(virtualGpu, descriptorSetPool, pipeline.getLayout().getLayout(1), perObjectBuffer);
 		}
 	}
 
@@ -137,7 +144,6 @@ public:
 	}
 
 
-	//FROMHERE perModelBuffer contains data which changes for each model and therefore uses dynamic descriptor sets. GlobalData is the opposite. 
 	/**
 	 * @brief Draws the vertexBuffer.
 	 * @details This function will simply bind the vertex buffer (vertexBuffer) and then draw it.
@@ -163,7 +169,9 @@ public:
 		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);		
 		commandBuffers[currentFrame].addCommand(vkCmdBindVertexBuffers, 0, 1, vertexBuffers, offsets);
 		commandBuffers[currentFrame].addCommand(vkCmdBindIndexBuffer, +indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 0, 1, &+globalDescriptorSets[currentFrame], 0, nullptr);
 		for (int i = 0; i < indexBuffer.getModelsCount(); ++i) {
+			commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 1, 1, &+perObjectDescriptorSets[currentFrame], perObjectDescriptorSets[currentFrame].getAmountOfOffsets(), perObjectDescriptorSets[currentFrame].getOffsets(i).data());
 			commandBuffers[currentFrame].addCommand(vkCmdDrawIndexed, indexBuffer.getModelIndexesCount(i), 1, indexBuffer.getModelOffset(i), 0, 0);
 		}
 		commandBuffers[currentFrame].endCommand();
@@ -246,6 +254,8 @@ private:
 	std::vector<SynchronizationPrimitives::Semaphore> imageAvailableSemaphores; //tells when an image is occupied by rendering
 	std::vector<SynchronizationPrimitives::Semaphore> renderFinishedSemaphores; //tells when the rendeing of the image ends
 	std::vector<CommandBuffer> commandBuffers;
+	std::vector<DescriptorSet> globalDescriptorSets; //descriptor sets (one per frame in flight) for the global info
+	std::vector<DescriptorSet> perObjectDescriptorSets; //descriptor sets (one per frame in flight) for the per-object info
 
 	unsigned int currentFrame; //indicates which set of resources to use for the current frame (0 < x < maxFramesInFlight)
 	unsigned int framesInFlight; //maximum number of frames that can be rendered at the same time(of course no more than the number of swap chain images)
@@ -260,6 +270,7 @@ private:
 	Swapchain swapchain;
 	std::vector<Framebuffer> framebuffers;
 	CommandBufferPool commandBufferPool;
+	DescriptorSetPool descriptorSetPool;
 };
 
 #endif

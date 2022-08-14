@@ -24,6 +24,7 @@ public:
 		//put the descriptor set layouts in a vector
 		std::vector<VkDescriptorSetLayout> rawLayouts;
 		(rawLayouts.emplace_back(+layouts), ...);
+		(descriptorSetsLayouts.push_back(&layouts), ...);
 		
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -51,9 +52,15 @@ public:
 		return pipelineLayout;
 	}
 
+
+	const DescriptorSetLayout& getLayout(unsigned int i) const {
+		return *(descriptorSetsLayouts[i]);
+	}
+
 private:
 	VkPipelineLayout pipelineLayout;
 	const LogicalDevice& virtualGpu;
+	std::vector<DescriptorSetLayout*> descriptorSetsLayouts;
 };
 
 

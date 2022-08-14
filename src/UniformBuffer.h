@@ -2,6 +2,7 @@
 #define VULKAN_UNIFORMBUFFER
 
 #include <vulkan/vulkan.h>
+#include <concepts>
 
 #include "LogicalDevice.h"
 #include "PhysicalDevice.h"
@@ -16,7 +17,16 @@ public:
 
 	}
 
-	//TODO fill buffer
+
+	//DEBUG this function just fill the buffer, but it is not very useful (e.g. padding, ...)
+	void fillBuffer(const std::vector<float>& data) {
+		void* rawData;
+		vkMapMemory(+virtualGpu, bufferMemory, 0, data.size() * sizeof(data[0]), 0, &rawData);
+		memcpy(rawData, data.data(), data.size() * sizeof(data[0]));
+		vkUnmapMemory(+virtualGpu, bufferMemory);
+	}
+
+	//TODO overload fillBuffer with a function that takes in models and copies all of their uniform data into the buffer following a policy (such as AAAABB AAAABB or AAAA AAAA BB BB) which must be the same as the one choosen in the descriptor set
 };
 
 #endif

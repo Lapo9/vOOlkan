@@ -20,9 +20,9 @@ class Vulkan::DescriptorSetLayout {
 public:
 
 	template<template<typename, typename, typename> class... T> requires (std::same_as<T<int, int, int>, std::tuple<int, int, int>> && ...)
-		DescriptorSetLayout(const LogicalDevice& virtualGpu, T<VkDescriptorType, VkShaderStageFlags, int>... bindingsInfo) : virtualGpu{ virtualGpu }, sizes{} {
+		DescriptorSetLayout(const LogicalDevice& virtualGpu, T<VkDescriptorType, VkShaderStageFlagBits, int>... bindingsInfo) : virtualGpu{ virtualGpu }, sizes{} {
 		//varaargs in a vector
-		std::vector<T<VkDescriptorType, VkShaderStageFlags, int>> bindingsInfoVector;
+		std::vector<std::tuple<VkDescriptorType, VkShaderStageFlagBits, int>> bindingsInfoVector;
 		(bindingsInfoVector.push_back(bindingsInfo), ...);
 
 		std::vector<VkDescriptorSetLayoutBinding> bindings; //vector containing the bindings for this set

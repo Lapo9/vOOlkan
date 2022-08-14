@@ -42,7 +42,7 @@ public:
 		const PipelineOptions::DepthStencil& depthStencil = PipelineOptions::DepthStencil{},
 		const PipelineOptions::DynamicState& dynamicState = PipelineOptions::DynamicState{},
 		const PipelineOptions::Viewport& viewport = PipelineOptions::Viewport{}
-	) : virtualGpu{ virtualGpu } {
+	) : virtualGpu{ virtualGpu }, pipelineLayout{ pipelineLayout } {
 		//create the array of VkPipelineShaderStageCreateInfo starting from the shaders
 		std::vector<VkPipelineShaderStageCreateInfo> shadersDescriptors;
 		for (const auto& shader : shaders) {
@@ -90,9 +90,15 @@ public:
 		return pipeline;
 	}
 
+
+	const PipelineOptions::PipelineLayout& getLayout() const {
+		return pipelineLayout;
+	}
+
 private:
 	VkPipeline pipeline;
 	const LogicalDevice& virtualGpu;
+	const PipelineOptions::PipelineLayout& pipelineLayout;
 };
 
 
