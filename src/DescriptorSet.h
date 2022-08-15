@@ -30,9 +30,10 @@ public:
 		//fill the created descriptors
 		//TODO this should check whether the current descriptor is a dynamic buffer, a static buffer or an image and act accordingly
 		std::vector<VkWriteDescriptorSet> descriptorsInfo;
-		int offset;
-		for (int i = 0, offset = 0; i < layout.getAmountOfBindings(); ++i) {
-			descriptorsInfo.emplace_back(fillDescriptorSet(i, buffer, offset, layout.getSize(i)));
+		std::vector<VkDescriptorBufferInfo> descriptorsBufferInfo(layout.getAmountOfBindings()); //this is necessary in order to have a reference to the buffer info struct used by the descriptors info. If we created the object inside the fill function, we would lose the reference as soon as the function returns
+		int offset = 0;
+		for (int i = 0; i < layout.getAmountOfBindings(); ++i) {
+			descriptorsInfo.emplace_back(fillDescriptorSet(i, buffer, offset, layout.getSize(i), descriptorsBufferInfo[i]));
 			offset += layout.getSize(i); //FIXTHIS padding
 		}
 		offsets.insert(offsets.begin(), layout.getAmountOfBindings(), offset); //we allocate the vector like AAAABB AAAABB AAAABB, so the offsets between adjacent bindings are always the same
@@ -42,7 +43,7 @@ public:
 	
 
 	const VkDescriptorSet& operator+() const {
-		descriptorSet;
+		return descriptorSet;
 	}
 
 
@@ -69,8 +70,7 @@ public:
 private:
 
 	//TODO make a similar function for Images and non-dynamic uniform buffer
-	VkWriteDescriptorSet fillDescriptorSet(unsigned int binding, const Buffers::UniformBuffer& buffer, unsigned int offset, unsigned int size) {
-		VkDescriptorBufferInfo bufferInfo{};
+	VkWriteDescriptorSet fillDescriptorSet(unsigned int binding, const Buffers::UniformBuffer& buffer, unsigned int offset, unsigned int size, VkDescriptorBufferInfo& bufferInfo) {
 		bufferInfo.buffer = +buffer;
 		bufferInfo.offset = offset;
 		bufferInfo.range = size;

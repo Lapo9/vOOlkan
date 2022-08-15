@@ -40,13 +40,13 @@ int main() {
 		Vulkan::PipelineOptions::PipelineVertexArrays vertexTypesDescriptor{ MyVertex{} };
 
 		//uniform descriptors layouts
-		Vulkan::DescriptorSetLayout globalLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 64} };
+		Vulkan::DescriptorSetLayout globalLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 256}, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 64} };
 		Vulkan::DescriptorSetLayout perObjectLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 64} };
 		
 		//uniform buffers
-		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 256 };
+		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 2048 };
 		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 256 };
-		globalUniformBuffer.fillBuffer(std::vector{ 256, 0.5f });
+		globalUniformBuffer.fillBuffer(std::vector{ 2048, 0.5f });
 		perObjectUniformBuffer.fillBuffer(std::vector{ 256, 0.5f });
 
 		//pipeline options
@@ -54,7 +54,7 @@ int main() {
 		Vulkan::PipelineOptions::DepthStencil depthStencil{};
 		Vulkan::PipelineOptions::DynamicState dynamicState{};
 		Vulkan::PipelineOptions::InputAssembly inputAssembly{};
-		Vulkan::PipelineOptions::PipelineLayout pipelineLayout{virtualGpu, globalLayout};
+		Vulkan::PipelineOptions::PipelineLayout pipelineLayout{virtualGpu, globalLayout, perObjectLayout};
 		Vulkan::PipelineOptions::Rasterizer rasterizer{};
 		Vulkan::PipelineOptions::Viewport viewport{};
 

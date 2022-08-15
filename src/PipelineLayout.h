@@ -60,7 +60,7 @@ public:
 private:
 	VkPipelineLayout pipelineLayout;
 	const LogicalDevice& virtualGpu;
-	std::vector<DescriptorSetLayout*> descriptorSetsLayouts;
+	std::vector<const DescriptorSetLayout*> descriptorSetsLayouts;
 };
 
 
