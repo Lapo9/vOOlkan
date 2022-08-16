@@ -6,6 +6,7 @@
 #include "DescriptorSetPool.h"
 #include "DescriptorSetLayout.h"
 #include "LogicalDevice.h"
+#include "PhysicalDevice.h"
 #include "UniformBuffer.h"
 #include "VulkanException.h"
 
@@ -16,7 +17,7 @@ class Vulkan::DescriptorSet {
 public:
 
 	//TODO there should also be another ctor which lets the user choose how to bind the bindings (so it should take one buffer and offset for each binding in the layout)
-	DescriptorSet(const LogicalDevice& virtualGpu, const DescriptorSetPool& descriptorPool, const DescriptorSetLayout& layout, const Buffers::UniformBuffer& buffer) : descriptorSet{} {
+	DescriptorSet(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, const DescriptorSetPool& descriptorPool, const DescriptorSetLayout& layout, const Buffers::UniformBuffer& buffer) : descriptorSet{} {
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = +descriptorPool;
@@ -32,9 +33,17 @@ public:
 		std::vector<VkWriteDescriptorSet> descriptorsInfo;
 		std::vector<VkDescriptorBufferInfo> descriptorsBufferInfo(layout.getAmountOfBindings()); //this is necessary in order to have a reference to the buffer info struct used by the descriptors info. If we created the object inside the fill function, we would lose the reference as soon as the function returns
 		int offset = 0;
+
+		//get minimum alignment for the GPU memory, used for padding
+		VkPhysicalDeviceProperties limits;
+		vkGetPhysicalDeviceProperties(+realGpu, &limits);
+		int alignment = limits.limits.minUniformBufferOffsetAlignment;
+
 		for (int i = 0; i < layout.getAmountOfBindings(); ++i) {
 			descriptorsInfo.emplace_back(fillDescriptorSet(i, buffer, offset, layout.getSize(i), descriptorsBufferInfo[i]));
-			offset += layout.getSize(i); //FIXTHIS padding
+			offset += layout.getSize(i);
+			int paddingAmount = (alignment - (offset % alignment)) % alignment; //number of padding bytes
+			offset += paddingAmount; //padding
 		}
 		offsets.insert(offsets.begin(), layout.getAmountOfBindings(), offset); //we allocate the vector like AAAABB AAAABB AAAABB, so the offsets between adjacent bindings are always the same
 
@@ -90,7 +99,7 @@ private:
 
 
 	VkDescriptorSet descriptorSet;
-	std::vector<int> offsets; //distance between 2 consecutive bindings. e.g. AAAABB AAAABB AAAABB offsets = {6,6}. AAAA AAAA AAAA BB BB BB offsets = {4, 2}
+	std::vector<int> offsets; //distance between 2 consecutive bindings. e.g. AAAABB AAAABB AAAABB offsets = {6,6}. AAAA AAAA AAAA BB BB BB offsets = {4, 2} (in the examples padding is not considered)
 
 };
 

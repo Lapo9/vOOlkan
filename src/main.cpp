@@ -34,20 +34,39 @@ int main() {
 		Vulkan::PipelineOptions::RenderPass renderPass{ virtualGpu, boundAttachments, s1};
 
 		//how a vertex is made up
-		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec2, glm::vec3>;
+		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3>;
 
 		//vertices types descriptor
 		Vulkan::PipelineOptions::PipelineVertexArrays vertexTypesDescriptor{ MyVertex{} };
 
 		//uniform descriptors layouts
 		Vulkan::DescriptorSetLayout globalLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 256}, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 64} };
-		Vulkan::DescriptorSetLayout perObjectLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 64} };
+		Vulkan::DescriptorSetLayout perObjectLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(16 * sizeof(float))}, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(6 * sizeof(float))} };
 		
 		//uniform buffers
-		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 2048 };
-		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 256 };
-		globalUniformBuffer.fillBuffer(std::vector{ 2048, 0.5f });
-		perObjectUniformBuffer.fillBuffer(std::vector{ 256, 0.5f });
+		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
+		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 1024 * sizeof(float) };
+		globalUniformBuffer.fillBuffer(std::vector( 2048, 0.5f ));
+		std::vector perObjectData1mvp{
+			   1.0f, 0.0f, 0.0f, 0.0f,
+			   0.0f, 1.0f, 0.0f, 0.0f,
+			   0.0f, 0.0f, 1.0f, 0.0f,
+			   0.5f, -0.1f, 0.0f, 1.0f
+		};
+		std::vector perObjectData1color{1.0f, 0.0f, 0.0f, 0.2f, 0.2f, 0.2f};
+
+
+		std::vector perObjectData2mvp{
+				1.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f
+		};
+
+		std::vector perObjectData2color{ 0.0f, 1.0f, 0.0f, 0.2f, 0.2f, 0.2f};
+
+
+		perObjectUniformBuffer.fillBuffer(perObjectData1mvp, perObjectData1color, perObjectData2mvp, perObjectData2color);
 
 		//pipeline options
 		Vulkan::PipelineOptions::Multisampler multisampler{};
@@ -70,17 +89,17 @@ int main() {
 
 		//create models
 		Vulkan::Model model1{ std::vector<MyVertex>{
-			{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-			{{0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}},
+			{{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+			{{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+			{{0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
 		},
 		std::vector<uint32_t>{2, 1, 0}
 		};
 		Vulkan::Model model2{ std::vector<MyVertex>{
-			{{0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}},
-			{{0.5f, 0.9f}, {1.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.9f}, {1.0f, 1.0f, 1.0f}},
+			{{0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+			{{0.5f, 0.9f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.9f, 0.0f}, {1.0f, 1.0f, 1.0f}},
 		},
 		std::vector<uint32_t>{3, 2, 0, 0, 1, 3}
 		};

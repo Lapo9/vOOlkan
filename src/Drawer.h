@@ -71,8 +71,8 @@ public:
 			imageAvailableSemaphores.emplace_back(virtualGpu);
 			renderFinishedSemaphores.emplace_back(virtualGpu);
 			commandBuffers.emplace_back(virtualGpu, commandBufferPool);
-			globalDescriptorSets.emplace_back(virtualGpu, descriptorSetPool, pipeline.getLayout().getLayout(0), globalBuffer);
-			perObjectDescriptorSets.emplace_back(virtualGpu, descriptorSetPool, pipeline.getLayout().getLayout(1), perObjectBuffer);
+			globalDescriptorSets.emplace_back(virtualGpu, realGpu, descriptorSetPool, pipeline.getLayout().getLayout(0), globalBuffer);
+			perObjectDescriptorSets.emplace_back(virtualGpu, realGpu, descriptorSetPool, pipeline.getLayout().getLayout(1), perObjectBuffer);
 		}
 	}
 
