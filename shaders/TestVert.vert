@@ -5,7 +5,7 @@ layout(set = 1, binding = 0) uniform MVP {
 } mvp;
 
 layout(set = 1, binding = 1) uniform Color {
-    vec3 rgb;
+    vec4 rgb;
     vec3 grey;
 } color;
 

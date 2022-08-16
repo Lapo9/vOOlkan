@@ -9,11 +9,23 @@
 
 namespace Vulkan { class DescriptorSetPool; }
 
+
+/**
+ * @brief Class used to allocate DescriptorSet(s).
+ */
 class Vulkan::DescriptorSetPool {
 public:
-	DescriptorSetPool(const LogicalDevice& virtualGpu, unsigned int size) : virtualGpu{ virtualGpu } {
+
+	/**
+	 * @brief Creates a DescriptorSetPool object of the specified size.
+	 * 
+	 * @param virtualGpu The LogicalDevice.
+	 * @param type The type of DescriptorSet(s) that this pool can allocate.
+	 * @param size The maximum number of DescriptorSet(s) that this pool can allocate.
+	 */
+	DescriptorSetPool(const LogicalDevice& virtualGpu, VkDescriptorType type, unsigned int size) : virtualGpu{ virtualGpu } {
 		VkDescriptorPoolSize poolSize{};
-		poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		poolSize.type = type;
 		poolSize.descriptorCount = static_cast<uint32_t>(size);
 
 		VkDescriptorPoolCreateInfo poolInfo{};

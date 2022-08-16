@@ -41,7 +41,7 @@ int main() {
 
 		//uniform descriptors layouts
 		Vulkan::DescriptorSetLayout globalLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 256}, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 64} };
-		Vulkan::DescriptorSetLayout perObjectLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(16 * sizeof(float))}, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(6 * sizeof(float))} };
+		Vulkan::DescriptorSetLayout perObjectLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(16 * sizeof(float))}, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(7 * sizeof(float))} };
 		
 		//uniform buffers
 		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
@@ -53,7 +53,7 @@ int main() {
 			   0.0f, 0.0f, 1.0f, 0.0f,
 			   0.5f, -0.1f, 0.0f, 1.0f
 		};
-		std::vector perObjectData1color{1.0f, 0.0f, 0.0f, 0.2f, 0.2f, 0.2f};
+		std::vector perObjectData1color{1.0f, 0.0f, 0.0f, 0.0f, 0.2f, 0.2f, 0.2f};
 
 
 		std::vector perObjectData2mvp{
@@ -63,7 +63,7 @@ int main() {
 				0.0f, 0.0f, 0.0f, 1.0f
 		};
 
-		std::vector perObjectData2color{ 0.0f, 1.0f, 0.0f, 0.2f, 0.2f, 0.2f};
+		std::vector perObjectData2color{ 0.0f, 1.0f, 0.0f, 0.0f, 0.9f, 0.1f, 0.9f};
 
 
 		perObjectUniformBuffer.fillBuffer(perObjectData1mvp, perObjectData1color, perObjectData2mvp, perObjectData2color);

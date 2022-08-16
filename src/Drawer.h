@@ -63,7 +63,7 @@ public:
 		pipeline{ pipeline }, 
 		swapchain{ realGpu, virtualGpu, windowSurface, window },
 		commandBufferPool{ virtualGpu } ,
-		descriptorSetPool{ virtualGpu, framesInFlight*10 }{
+		descriptorSetPool{ virtualGpu, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, framesInFlight*10 }{
 
 		framebuffers = Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain);
 		for (unsigned int i = 0; i < framesInFlight; ++i) {
@@ -77,6 +77,7 @@ public:
 	}
 
 
+	//TODO specify which are the global commands and which are the per vertex commands
 	/**
 	 * @brief Draws the vertexBuffer by running the specified commands.
 	 * 
@@ -149,6 +150,7 @@ public:
 	 * @details This function will simply bind the vertex buffer (vertexBuffer) and then draw it.
 	 *
 	 * @param vertexBuffer Vertices to draw.
+	 * @param indexBuffer Indeces of the vertices to draw (for indexed drawing).
 	 */
 	void draw(const Buffers::VertexBuffer& vertexBuffer, const Buffers::IndexBuffer& indexBuffer){//, const Buffers::UniformBuffer& perModelData, const Buffers::UniformBuffer& globalData) {
 		uint32_t obtainedSwapchainImageIndex; //the index of the image of the swapchain we'll draw to
@@ -169,8 +171,7 @@ public:
 		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);		
 		commandBuffers[currentFrame].addCommand(vkCmdBindVertexBuffers, 0, 1, vertexBuffers, offsets);
 		commandBuffers[currentFrame].addCommand(vkCmdBindIndexBuffer, +indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-		uint32_t debugOffsets[] = {0, 0}; //DEBUG this is used because at the moment we only use dynamic binding (see next line)
-		commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 0, 1, &+globalDescriptorSets[currentFrame], 2, debugOffsets);
+		commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 0, 1, &+globalDescriptorSets[currentFrame], globalDescriptorSets[currentFrame].getAmountOfOffsets(), globalDescriptorSets[currentFrame].getOffsets().data()); //TODO at the moment the binding of the global descriptors is dynamic, but it should be static (not a big deal really)
 		for (int i = 0; i < indexBuffer.getModelsCount(); ++i) {
 			commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 1, 1, &+perObjectDescriptorSets[currentFrame], perObjectDescriptorSets[currentFrame].getAmountOfOffsets(), perObjectDescriptorSets[currentFrame].getOffsets(i).data());
 			commandBuffers[currentFrame].addCommand(vkCmdDrawIndexed, indexBuffer.getModelIndexesCount(i), 1, indexBuffer.getModelOffset(i), 0, 0);

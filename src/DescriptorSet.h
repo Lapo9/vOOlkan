@@ -13,10 +13,27 @@
 
 namespace Vulkan { class DescriptorSet; }
 
+
+/**
+ * @brief A DescriptorSet is an object which holds the handles (pointers) to the bindings (variables) in a specific set.
+ * @details If the layout of the set is { Data 40bytes, Data 6bytes, Data 10bytes }, then, by default, the descriptor set will hold 3 pointers into a UniformBuffer.
+ */
 class Vulkan::DescriptorSet {
 public:
 
 	//TODO there should also be another ctor which lets the user choose how to bind the bindings (so it should take one buffer and offset for each binding in the layout)
+	/**
+	 * @brief This ctor sets the pointers into the buffer in a linear way, by grouping the resources in a per-object fashion. Padding is considered.
+	 * @details e.g. data1 -> 40bytes, data2 -> 6bytes, data3 -> 10bytes, alignment = 16bytes.
+	 *			data1 starting position = 0, data2 starting position = 48, data3 starting position = 64.
+	 *			Of course the data in the buffer must respect this layout.
+	 * 
+	 * @param virtualGpu The LogicalDevice.
+	 * @param realGpu The PhysicalDevice.
+	 * @param descriptorPool The pool from which allocate the buffers.
+	 * @param layout The layout (DescriptorSetLayout) of this set. It is used to get the number and dimension of each binding in this set.
+	 * @param buffer The buffer where the set is stored.
+	 */
 	DescriptorSet(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, const DescriptorSetPool& descriptorPool, const DescriptorSetLayout& layout, const Buffers::UniformBuffer& buffer) : descriptorSet{} {
 		VkDescriptorSetAllocateInfo allocInfo{};
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -57,10 +74,11 @@ public:
 
 
 	/**
-	* @brief Returns the offsets of each binding from the first binding of each type.
-	* @details e.g. we have the buffer structured as AAAABB AAAABB AAAABB, then the offsets will be 6 for A binding and 6 for B binding.
+	* @brief Returns the offsets of each binding from the first binding of each type (useful for dynamic buffers which hold a binding for each object).
+	* @details e.g. If we have the buffer structured as AAAABB AAAABB AAAABB, then the offsets will be 6 for A binding and 6 for B binding.
 	*			If we had AAAA AAAA AAAA BB BB BB then the offsets would be 4 for A binding and 2 for B binding.
-	*			The multiplier is used to get the offset of a specific binding, e.g. in the second example with multiplier = 7 we would get {28, 14}
+	* @param multiplier The multiplier is used to get the offset of a specific binding when the buffer is allocated dynamically (so it holds a binding for each object), e.g. in the second example with multiplier = 7 we would get {28, 14}
+	* @return The offsets.
 	*/
 	std::vector<uint32_t> getOffsets(unsigned int multiplier = 0) const {
 		std::vector<uint32_t> res;
@@ -71,6 +89,11 @@ public:
 	}
 
 
+	/**
+	 * @brief Returns how many dynamic bindings are present in this descriptor set.
+	 * 
+	 * @return How many dynamic bindings are present in this descriptor set.
+	 */
 	int getAmountOfOffsets() const {
 		return offsets.size();
 	}
