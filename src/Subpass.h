@@ -23,7 +23,7 @@ namespace Vulkan::PipelineOptions::RenderPassOptions {
 /**
  * @brief A Subpass is a step of a RenderPass.
  * @details Each Subpass has a subset of the attachments (the render targets) of its father RenderPass.
- *			These attachments are divided into 3 categories based on their properties (and therefore their future use): input, color, depth/stencil. Moreover there can be specified a set of attachments to leave untouched durin this subpass.
+ *			These attachments are divided into 3 categories based on their properties (and therefore their future use): input, color, depth/stencil. Moreover there can be specified a set of attachments to leave untouched during this subpass.
  */
 class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 	public:
@@ -38,7 +38,7 @@ class Vulkan::PipelineOptions::RenderPassOptions::Subpass {
 		 */
 		template<IsBoundAttachment... BA>
 		Subpass(VkPipelineBindPoint bindPoint = VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, const BA&... boundAttachments) : subpass{} {
-			//put each assignment in the correct array
+			//put each attachment in the correct array
 			buildAttachmentsTypesArrays(boundAttachments...);
 			
 			//create the structure

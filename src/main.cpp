@@ -51,7 +51,7 @@ int main() {
 			   1.0f, 0.0f, 0.0f, 0.0f,
 			   0.0f, 1.0f, 0.0f, 0.0f,
 			   0.0f, 0.0f, 1.0f, 0.0f,
-			   0.5f, -0.1f, 0.0f, 1.0f
+			   0.5f, 0.5f, 0.0f, 1.0f
 		};
 		std::vector perObjectData1color{1.0f, 0.0f, 0.0f, 0.0f, 0.2f, 0.2f, 0.2f};
 
@@ -67,6 +67,9 @@ int main() {
 
 
 		perObjectUniformBuffer.fillBuffer(perObjectData1mvp, perObjectData1color, perObjectData2mvp, perObjectData2color);
+
+		//depth image view
+		Vulkan::Image depthBuffer {}
 
 		//pipeline options
 		Vulkan::PipelineOptions::Multisampler multisampler{};
@@ -90,7 +93,7 @@ int main() {
 		//create models
 		Vulkan::Model model1{ std::vector<MyVertex>{
 			{{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-			{{0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+			{{-0.3f, 0.8f, 0.0f}, {0.0f, 1.0f, 0.0f}},
 			{{0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
 		},
 		std::vector<uint32_t>{2, 1, 0}
