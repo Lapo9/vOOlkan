@@ -85,7 +85,7 @@ public:
 	 * @return A framebuffer vector containing framebuffers made up of each image in the swapchain + otherAttachments.
 	 */
 	template<std::same_as<ImageView>... IV>
-	static std::vector<Framebuffer> generateFramebufferForEachSwapchainImageView(const LogicalDevice& virtualGpu, const PipelineOptions::RenderPass& renderPass, const Swapchain& swapchain, IV... otherAttachments) {
+	static std::vector<Framebuffer> generateFramebufferForEachSwapchainImageView(const LogicalDevice& virtualGpu, const PipelineOptions::RenderPass& renderPass, const Swapchain& swapchain, const IV&... otherAttachments) {
 		std::vector<Framebuffer> framebuffers; 
 
 		auto& images = swapchain.getImages();

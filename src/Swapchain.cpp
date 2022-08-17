@@ -81,7 +81,7 @@ void Vulkan::Swapchain::saveSwapchainImages() {
 	vkGetSwapchainImagesKHR(+*virtualGpu, swapchain, &imageCount, tmpImages.data());
 
 	for (const auto& image : tmpImages) {
-		images.emplace_back(image, *virtualGpu, swapchainSurfaceFormat);
+		images.emplace_back(image, *virtualGpu, (+swapchainSurfaceFormat).format);
 	}
 }
 

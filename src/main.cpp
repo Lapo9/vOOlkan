@@ -1,3 +1,5 @@
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #include <vulkan/vulkan.h>
 #include <iostream>
 #include <vector>
@@ -17,21 +19,23 @@ int main() {
 		Vulkan::PhysicalDevice realGpu{ vulkanInstance, windowSurface };
 		Vulkan::LogicalDevice virtualGpu{ realGpu };
 
+		//swapchain
+		Vulkan::Swapchain swapchain{ realGpu, virtualGpu, windowSurface, window };
+
 
 		//attachments for the render pass of the pipeline
-		Vulkan::PipelineOptions::RenderPassOptions::AttachmentDescription a1{};
-		Vulkan::PipelineOptions::RenderPassOptions::AttachmentDescription a2{};
-		Vulkan::PipelineOptions::RenderPassOptions::AttachmentDescription a3{};
+		Vulkan::PipelineOptions::RenderPassOptions::AttachmentDescription colorAttachment{};
+		Vulkan::PipelineOptions::RenderPassOptions::AttachmentDescription depthBufferAttachment{ Vulkan::PipelineOptions::RenderPassOptions::PredefinedAttachment::DEPTH };
 
 		//attachments ready to be used in a render pass's subpass
-		auto boundAttachments = Vulkan::PipelineOptions::RenderPassOptions::AttachmentDescription::prepareAttachments(a1);//, a2, std::pair{ a3, VkImageLayout::VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR });
+		auto boundAttachments = Vulkan::PipelineOptions::RenderPassOptions::AttachmentDescription::prepareAttachments(colorAttachment, depthBufferAttachment);
 
 		//subpasses
-		Vulkan::PipelineOptions::RenderPassOptions::Subpass s1(VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, boundAttachments[0]);
+		Vulkan::PipelineOptions::RenderPassOptions::Subpass subpass(VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, boundAttachments[0], boundAttachments[1]);
 		//Vulkan::PipelineOptions::RenderPassOptions::Subpass s2(VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, std::pair{ boundAttachments[2], true }, boundAttachments[0]);
 
 		//render pass
-		Vulkan::PipelineOptions::RenderPass renderPass{ virtualGpu, boundAttachments, s1};
+		Vulkan::PipelineOptions::RenderPass renderPass{ virtualGpu, boundAttachments, subpass };
 
 		//how a vertex is made up
 		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3>;
@@ -69,7 +73,7 @@ int main() {
 		perObjectUniformBuffer.fillBuffer(perObjectData1mvp, perObjectData1color, perObjectData2mvp, perObjectData2color);
 
 		//depth image view
-		Vulkan::Image depthBuffer {}
+		Vulkan::DepthImage depthBuffer{ virtualGpu, realGpu, swapchain.getResolution() };
 
 		//pipeline options
 		Vulkan::PipelineOptions::Multisampler multisampler{};
@@ -88,21 +92,21 @@ int main() {
 		Vulkan::Pipeline pipeline{ virtualGpu, renderPass, 0, std::vector{&vertexShader, &fragmentShader},vertexTypesDescriptor, pipelineLayout, inputAssembly, rasterizer, multisampler, depthStencil, dynamicState, viewport};
 	
 		//create drawer
-		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, renderPass, pipeline, globalUniformBuffer, perObjectUniformBuffer };
+		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, swapchain, depthBuffer, renderPass, pipeline, globalUniformBuffer, perObjectUniformBuffer };
 
 		//create models
 		Vulkan::Model model1{ std::vector<MyVertex>{
-			{{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-			{{-0.3f, 0.8f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+			{{0.0f, -0.5f, 0.1f}, {1.0f, 0.0f, 0.0f}},
+			{{-0.3f, 0.8f, 0.3f}, {0.0f, 1.0f, 0.0f}},
+			{{0.5f, -0.5f, 0.1f}, {0.0f, 0.0f, 1.0f}},
 		},
 		std::vector<uint32_t>{2, 1, 0}
 		};
 		Vulkan::Model model2{ std::vector<MyVertex>{
-			{{0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}},
-			{{0.5f, 0.9f, 0.0f}, {1.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.9f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+			{{0.5f, 0.5f,  0.2f}, {1.0f, 1.0f, 1.0f}},
+			{{0.5f, 0.9f,  0.2f}, {1.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.5f, 0.2f}, {1.0f, 1.0f, 1.0f}},
+			{{-0.5f, 0.9f, 0.2f}, {1.0f, 1.0f, 1.0f}},
 		},
 		std::vector<uint32_t>{3, 2, 0, 0, 1, 3}
 		};

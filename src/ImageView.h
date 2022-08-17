@@ -12,7 +12,7 @@ namespace Vulkan { class ImageView; class LogicalDevice; class Image; }
 class Vulkan::ImageView {
 public:
 
-	ImageView(const Image& image, const LogicalDevice& virtualGpu);
+	ImageView(const Image& image, const LogicalDevice& virtualGpu, VkImageAspectFlags type = VK_IMAGE_ASPECT_COLOR_BIT);
 
 	~ImageView();
 

@@ -56,6 +56,25 @@ public:
     }
 
 
+    //Return the first index of a memory type on the GPU which is suitable for the resource we want to load onto the GPU. 
+    template<std::same_as< VkMemoryPropertyFlagBits>... P>
+    static uint32_t findSuitableMemoryIndex(const PhysicalDevice& realGpu, uint32_t suitableTypesBitmask, P... requiredMemoryProperties) {
+        //get the properties of the memory of the GPU
+        VkPhysicalDeviceMemoryProperties memProperties;
+        vkGetPhysicalDeviceMemoryProperties(+realGpu, &memProperties);
+        auto requiredMemoryPropertiesMask = (requiredMemoryProperties | ...);
+
+        //for each memory type, check if it is suitable for what we want to do (i.e. this type is 1 in the suitableTypesBitmask and the properties of this type are a superset of requiredMemoryProperties)
+        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+            if ((suitableTypesBitmask & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & requiredMemoryPropertiesMask) == requiredMemoryPropertiesMask) {
+                return i;
+            }
+        }
+
+        throw VulkanException{ "No suitable memory for the buffer" };
+    }
+
+
 protected:
 
     //Create the buffer
@@ -71,25 +90,6 @@ protected:
         if (VkResult result = vkCreateBuffer(+virtualGpu, &bufferInfo, nullptr, &buffer); result != VK_SUCCESS) {
             throw VulkanException("Failed to create buffer!", result);
         }
-    }
-
-
-    //Return the first index of a memory type on the GPU which is suitable for the resource we want to load onto the GPU. 
-    template<std::same_as< VkMemoryPropertyFlagBits>... P>
-    uint32_t findSuitableMemoryIndex(const PhysicalDevice& realGpu, uint32_t suitableTypesBitmask, P... requiredMemoryProperties) const {
-        //get the properties of the memory of the GPU
-        VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(+realGpu, &memProperties);
-        auto requiredMemoryPropertiesMask = (requiredMemoryProperties | ...);
-
-        //for each memory type, check if it is suitable for what we want to do (i.e. this type is 1 in the suitableTypesBitmask and the properties of this type are a superset of requiredMemoryProperties)
-        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-            if ((suitableTypesBitmask & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & requiredMemoryPropertiesMask) == requiredMemoryPropertiesMask) {
-                return i;
-            }
-        }
-
-        throw VulkanException{ "No suitable memory for the buffer" };
     }
 
 

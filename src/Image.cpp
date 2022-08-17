@@ -1,12 +1,15 @@
 #include "Image.h"
 #include "SwapchainSurfaceFormat.h"
 #include "ImageView.h"
+#include "LogicalDevice.h"
+#include "PhysicalDevice.h"
 #include "VulkanException.h"
+#include "Buffer.h" //for the findSuitableMemoryType function
 
 #include <iostream>
 
 
-Vulkan::Image::Image(const VkImage& image, const LogicalDevice& virtualGpu, const SwapchainOptions::SurfaceFormat& format) : image{ image }, format{ format } {
+Vulkan::Image::Image(const VkImage& image, const LogicalDevice& virtualGpu, VkFormat format) : image{ image }, format{ format } {
 	generateImageView("base", virtualGpu);
 	std::cout << "\n+ Image created";
 }
@@ -17,16 +20,16 @@ const VkImage& Vulkan::Image::operator+() const {
 }
 
 
-const Vulkan::SwapchainOptions::SurfaceFormat& Vulkan::Image::getFormat() const {
+VkFormat Vulkan::Image::getFormat() const {
 	return format;
 }
 
 
 
-const Vulkan::ImageView& Vulkan::Image::generateImageView(std::string tag, const LogicalDevice& virtualGpu) {
+const Vulkan::ImageView& Vulkan::Image::generateImageView(std::string tag, const LogicalDevice& virtualGpu, VkImageAspectFlags type) {
 	auto res = views.emplace(std::piecewise_construct,
 		std::forward_as_tuple(tag),
-		std::forward_as_tuple(*this, virtualGpu));
+		std::forward_as_tuple(*this, virtualGpu, type));
 
 	if (!res.second) {
 		throw VulkanException("Cannot create an image view with tag " + tag + " because the tag has been already used", "Change tag");

@@ -22,7 +22,7 @@ namespace Vulkan::PipelineOptions::RenderPassOptions {
 }
 
 enum class Vulkan::PipelineOptions::RenderPassOptions::PredefinedAttachment {
-	STANDARD_COLOR
+	STANDARD_COLOR, DEPTH
 };
 
 
@@ -67,6 +67,23 @@ class Vulkan::PipelineOptions::RenderPassOptions::AttachmentDescription {
 
 				//set type
 				type = AttachmentType::COLOR;
+				break;
+
+			case PredefinedAttachment::DEPTH:
+				attachment.format = VK_FORMAT_D32_SFLOAT;
+				attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+				attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+				attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+				attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+				//format reference
+				attachmentReferenceLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+				//set type
+				type = AttachmentType::DEPTH_STENCIL;
 				break;
 			}
 		}

@@ -5,6 +5,7 @@
 #include "AttachmentColorBlendingMode.h"
 #include "CommandBuffer.h"
 #include "CommandBufferPool.h"
+#include "DepthImage.h"
 #include "DepthStencil.h"
 #include "DescriptorSet.h"
 #include "DescriptorSetLayout.h"

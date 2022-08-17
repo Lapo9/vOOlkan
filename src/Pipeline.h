@@ -63,7 +63,7 @@ public:
 		pipelineInfo.pViewportState = &+viewport;
 		pipelineInfo.pRasterizationState = &+rasterizer;
 		pipelineInfo.pMultisampleState = &+multisampler;
-		pipelineInfo.pDepthStencilState = nullptr; //TODO &+depthStencil;
+		pipelineInfo.pDepthStencilState = &+depthStencil;
 		pipelineInfo.pColorBlendState = &+pipelineColorBlendingModes;
 		pipelineInfo.pDynamicState = &+dynamicState;
 		pipelineInfo.layout = +pipelineLayout;

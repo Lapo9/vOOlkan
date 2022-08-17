@@ -47,6 +47,8 @@ public:
 		const PhysicalDevice& realGpu,
 		const Window& window,
 		const WindowSurface& windowSurface,
+		Swapchain& swapchain,
+		DepthImage& depthBuffer,
 		const PipelineOptions::RenderPass& renderPass, 
 		const Pipeline& pipeline, 
 		const Buffers::UniformBuffer& globalBuffer,
@@ -59,13 +61,14 @@ public:
 		realGpu{ realGpu }, 
 		window{ window }, 
 		windowSurface{ windowSurface }, 
+		depthBuffer{ depthBuffer },
 		renderPass{ renderPass }, 
 		pipeline{ pipeline }, 
-		swapchain{ realGpu, virtualGpu, windowSurface, window },
+		swapchain{ swapchain },
 		commandBufferPool{ virtualGpu } ,
 		descriptorSetPool{ virtualGpu, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, framesInFlight*10 }{
 
-		framebuffers = Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain);
+		framebuffers = Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain, depthBuffer["base"]);
 		for (unsigned int i = 0; i < framesInFlight; ++i) {
 			fences.emplace_back(virtualGpu);
 			imageAvailableSemaphores.emplace_back(virtualGpu);
@@ -239,7 +242,8 @@ private:
 
 		//recreate new swapchain
 		swapchain.recreate(realGpu, virtualGpu, windowSurface, window);
-		framebuffers = Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain);
+		depthBuffer = DepthImage{ virtualGpu, realGpu, swapchain.getResolution() }; //FROMHERE move ctor for DepthImage
+		framebuffers = Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain, depthBuffer["base"]);
 		commandBuffers = std::vector<CommandBuffer>{};
 
 		for (unsigned int i = 0; i < framesInFlight; ++i) {
@@ -269,7 +273,8 @@ private:
 	const PipelineOptions::RenderPass& renderPass;
 	const Pipeline& pipeline;
 
-	Swapchain swapchain;
+	Swapchain& swapchain;
+	DepthImage& depthBuffer;
 	std::vector<Framebuffer> framebuffers;
 	CommandBufferPool commandBufferPool;
 	DescriptorSetPool descriptorSetPool;

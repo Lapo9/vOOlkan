@@ -25,6 +25,10 @@ class Vulkan::SwapchainOptions::SurfaceFormat {
 		SurfaceFormat(const PhysicalDevice& realGpu, const WindowSurface& windowSurface, std::function<VkSurfaceFormatKHR(const std::vector<VkSurfaceFormatKHR>&)> chooseBestFormat = chooseBestFormat);
 
 
+
+		SurfaceFormat(VkSurfaceFormatKHR format) : format{ format } {}
+
+
 		/**
 		 * @brief Returns the underlying VkSurfaceFormat.
 		 * 
