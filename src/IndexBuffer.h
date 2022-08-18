@@ -25,14 +25,16 @@ public:
         std::vector<uint32_t> data{};
         
         unsigned int currentOffset = 0;
-        ([this, &currentOffset, &data](const M<C...>& model) {
+        unsigned int totalVertices = 0; //how many vertices (NOT indexes) are there in the models from 0 to current
+        ([this, &currentOffset, &totalVertices, &data](const M<C...>& model) {
             //copy all the vertices to one vector
             for (auto index : model.getIndexes()) {
-                data.push_back(index + currentOffset);
+                data.push_back(index + totalVertices);
             }
             
             modelOffsets.push_back(currentOffset); //save the offset for this model
             currentOffset += model.getIndexes().size(); //increase next offset
+            totalVertices += model.getVertices().size(); //increas the total number of vertices present in the models so far
         }(models), ...);
         modelOffsets.push_back(currentOffset); //save the last offset (= indexesCount) in order to speed up the getModelIndexesCount function
         indexesCount = data.size();

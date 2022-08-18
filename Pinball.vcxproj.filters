@@ -165,6 +165,9 @@
     <ClInclude Include="src\DepthImage.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Binding.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

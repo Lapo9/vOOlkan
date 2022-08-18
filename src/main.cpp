@@ -3,11 +3,15 @@
 #include <vulkan/vulkan.h>
 #include <iostream>
 #include <vector>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 
 #include "Pinball.h"
 
 
+
+void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta);
 
 
 int main() {
@@ -22,6 +26,9 @@ int main() {
 		//swapchain
 		Vulkan::Swapchain swapchain{ realGpu, virtualGpu, windowSurface, window };
 
+		//depth image view
+		Vulkan::DepthImage depthBuffer{ virtualGpu, realGpu, swapchain.getResolution() };
+
 
 		//attachments for the render pass of the pipeline
 		Vulkan::PipelineOptions::RenderPassOptions::AttachmentDescription colorAttachment{};
@@ -32,10 +39,11 @@ int main() {
 
 		//subpasses
 		Vulkan::PipelineOptions::RenderPassOptions::Subpass subpass(VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, boundAttachments[0], boundAttachments[1]);
-		//Vulkan::PipelineOptions::RenderPassOptions::Subpass s2(VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, std::pair{ boundAttachments[2], true }, boundAttachments[0]);
 
 		//render pass
 		Vulkan::PipelineOptions::RenderPass renderPass{ virtualGpu, boundAttachments, subpass };
+
+
 
 		//how a vertex is made up
 		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3>;
@@ -45,35 +53,10 @@ int main() {
 
 		//uniform descriptors layouts
 		Vulkan::DescriptorSetLayout globalLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 256}, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 64} };
-		Vulkan::DescriptorSetLayout perObjectLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(16 * sizeof(float))}, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(7 * sizeof(float))} };
+		Vulkan::DescriptorSetLayout perObjectLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(16 * sizeof(float))}, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(4 * sizeof(float))} };
 		
-		//uniform buffers
-		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
-		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 1024 * sizeof(float) };
-		globalUniformBuffer.fillBuffer(std::vector( 2048, 0.5f ));
-		std::vector perObjectData1mvp{
-			   1.0f, 0.0f, 0.0f, 0.0f,
-			   0.0f, 1.0f, 0.0f, 0.0f,
-			   0.0f, 0.0f, 1.0f, 0.0f,
-			   0.5f, 0.5f, 0.0f, 1.0f
-		};
-		std::vector perObjectData1color{1.0f, 0.0f, 0.0f, 0.0f, 0.2f, 0.2f, 0.2f};
 
 
-		std::vector perObjectData2mvp{
-				1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f,
-				0.0f, 0.0f, 0.0f, 1.0f
-		};
-
-		std::vector perObjectData2color{ 0.0f, 1.0f, 0.0f, 0.0f, 0.9f, 0.1f, 0.9f};
-
-
-		perObjectUniformBuffer.fillBuffer(perObjectData1mvp, perObjectData1color, perObjectData2mvp, perObjectData2color);
-
-		//depth image view
-		Vulkan::DepthImage depthBuffer{ virtualGpu, realGpu, swapchain.getResolution() };
 
 		//pipeline options
 		Vulkan::PipelineOptions::Multisampler multisampler{};
@@ -81,7 +64,7 @@ int main() {
 		Vulkan::PipelineOptions::DynamicState dynamicState{};
 		Vulkan::PipelineOptions::InputAssembly inputAssembly{};
 		Vulkan::PipelineOptions::PipelineLayout pipelineLayout{virtualGpu, globalLayout, perObjectLayout};
-		Vulkan::PipelineOptions::Rasterizer rasterizer{};
+		Vulkan::PipelineOptions::Rasterizer rasterizer{ false };
 		Vulkan::PipelineOptions::Viewport viewport{};
 
 		//shaders
@@ -89,41 +72,65 @@ int main() {
 		Vulkan::PipelineOptions::Shader fragmentShader{ virtualGpu, "shaders/TestFrag.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT };
 
 		//pipeline
-		Vulkan::Pipeline pipeline{ virtualGpu, renderPass, 0, std::vector{&vertexShader, &fragmentShader},vertexTypesDescriptor, pipelineLayout, inputAssembly, rasterizer, multisampler, depthStencil, dynamicState, viewport};
+		Vulkan::Pipeline pipeline{ virtualGpu, renderPass, 0, std::vector{&vertexShader, &fragmentShader},vertexTypesDescriptor, pipelineLayout, rasterizer, inputAssembly, multisampler, depthStencil, dynamicState, viewport};
+
+
+
+
+		//uniform buffers
+		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
+		globalUniformBuffer.fillBuffer(std::vector( 2048, 0.5f ));
+
+		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 1024 * sizeof(float) };
+		
+
+
+
 	
 		//create drawer
 		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, swapchain, depthBuffer, renderPass, pipeline, globalUniformBuffer, perObjectUniformBuffer };
 
 		//create models
 		Vulkan::Model model1{ std::vector<MyVertex>{
-			{{0.0f, -0.5f, 0.1f}, {1.0f, 0.0f, 0.0f}},
-			{{-0.3f, 0.8f, 0.3f}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, -0.5f, 0.1f}, {0.0f, 0.0f, 1.0f}},
+			{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+			{{0.0f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+			{{0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
 		},
-		std::vector<uint32_t>{2, 1, 0}
+			std::vector<uint32_t>{0, 1, 2}
 		};
+
 		Vulkan::Model model2{ std::vector<MyVertex>{
-			{{0.5f, 0.5f,  0.2f}, {1.0f, 1.0f, 1.0f}},
-			{{0.5f, 0.9f,  0.2f}, {1.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.5f, 0.2f}, {1.0f, 1.0f, 1.0f}},
-			{{-0.5f, 0.9f, 0.2f}, {1.0f, 1.0f, 1.0f}},
+			{{-0.8f, -0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}},
+			{{-0.8f,  0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}},
+			{{0.8f,   0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}},
+			{{0.8f,  -0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}},
 		},
-		std::vector<uint32_t>{3, 2, 0, 0, 1, 3}
+			std::vector<uint32_t>{0, 1, 2, 0, 2, 3}
+		};
+
+		Vulkan::Model model3{ std::vector<MyVertex>{
+			{{-1.0f, -0.3f,  0.0f}, {0.0f, 0.0f, 0.0f}},
+			{{-1.0f,  0.3f,  0.0f}, {1.0f, 0.0f, 0.0f}},
+			{{ 1.0f,  0.3f,  0.0f}, {0.5f, 0.0f, 1.0f}},
+			{{ 1.0f, -0.3f,  0.0f}, {1.0f, 0.0f, 0.5f}},
+		},
+			std::vector<uint32_t>{0, 1, 2, 0, 2, 3}
 		};
 
 		//create vertex buffer for models
-		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size() + model2.getVertices().size()) * sizeof(model1.getVertices()[0])};
-		vertexBuffer.fillBuffer(model1, model2);
+		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size() + model2.getVertices().size() + model3.getVertices().size()) * sizeof(model1.getVertices()[0])};
+		vertexBuffer.fillBuffer(model1, model2, model3);
 
 		//create index buffer for model
-		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size() + model2.getIndexes().size()) * sizeof(model1.getIndexes()[0]) };
-		indexBuffer.fillBuffer(model1, model2);
+		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size() + model2.getIndexes().size() + model3.getIndexes().size()) * sizeof(model1.getIndexes()[0]) };
+		indexBuffer.fillBuffer(model1, model2, model3);
 
 		std::cout << "\n";
 
 		//draw cycle
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
+			debugAnimation(perObjectUniformBuffer, 0.1f);
 			drawer.draw(vertexBuffer, indexBuffer);
 		}
 		vkDeviceWaitIdle(+virtualGpu);
@@ -134,4 +141,70 @@ int main() {
 	}
 
 	std::cout << "\n\n";
+}
+
+
+
+void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta){
+	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f;
+	static  glm::mat4 perspective{
+			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
+			0, -1 / glm::tan(glm::radians(fovY / 2)), 0, 0,
+			0, 0, f / (n - f), -1,
+			0, 0, (n * f) / (n - f), 0
+	};
+
+	static glm::vec3 Angs{ 0.0f, 0.0f, 0.0f }, Pos{ 0.0f, 0.0f, 0.9f };
+	static glm::mat4 view = glm::rotate(glm::mat4(1.0f), -Angs.z, glm::vec3(0.0f, 0.0f, 1.0f)) *
+		glm::rotate(glm::mat4(1.0f), -Angs.y, glm::vec3(1.0f, 0.0f, 0.0f)) *
+		glm::rotate(glm::mat4(1.0f), -Angs.x, glm::vec3(0.0f, 1.0f, 0.0f)) *
+		glm::translate(glm::mat4(1.0f), -Pos);
+
+
+	static glm::vec3 pos1 = glm::vec3(0.0f, 0.0f, -9.0f);
+	static glm::vec3 pos2 = glm::vec3(-0.5f, -0.5f, -1.5f);
+	static glm::vec3 pos3 = glm::vec3(0.2f, 0.0f, -1.5f);
+
+	static float rotation1 = 0.0f;
+	static float rotation2 = 0.0f;
+	static float rotation3 = 0.0f;
+
+
+	pos1 += glm::vec3(0.0f, 0.0f, 0.1f * delta);
+	rotation1 += 0.4f * delta;
+	rotation2 += 0.1f * delta;
+	rotation3 += 0.3f * delta;
+
+
+	glm::mat4 model1 = glm::translate(glm::mat4(1.0f), pos1) * glm::rotate(glm::mat4(1.0f), rotation1, glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 model2 = glm::translate(glm::mat4(1.0f), pos2) * glm::rotate(glm::mat4(1.0f), rotation2, glm::vec3(0.0f, 1.0f, 0.0f));;
+	glm::mat4 model3 = glm::translate(glm::mat4(1.0f), pos3) * glm::rotate(glm::mat4(1.0f), rotation3, glm::vec3(0.0f, 1.0f, 0.0f));;
+
+
+
+	glm::mat4 mvp1 = perspective * view * model1;
+	glm::mat4 mvp2 = perspective * view * model2;
+	glm::mat4 mvp3 = perspective * view * model3;
+
+
+	std::vector<float> perObjectData1mvp;
+	std::vector<float> perObjectData2mvp;
+	std::vector<float> perObjectData3mvp;
+
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			perObjectData1mvp.push_back(mvp1[i][j]);
+			perObjectData2mvp.push_back(mvp2[i][j]);
+			perObjectData3mvp.push_back(mvp3[i][j]);
+		}
+	}
+
+
+
+	std::vector perObjectData1color{ 1.0f, 0.0f, 0.0f, 0.0f};
+	std::vector perObjectData2color{ 0.0f, 1.0f, 0.0f, 0.0f};
+	std::vector perObjectData3color{ 0.0f, 0.0f, 1.0f, 0.0f};
+
+
+	buffer.fillBuffer(perObjectData1mvp, perObjectData1color, perObjectData2mvp, perObjectData2color, perObjectData3mvp, perObjectData3color);
 }

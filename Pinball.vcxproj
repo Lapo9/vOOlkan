@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="src\Attachment.h" />
     <ClInclude Include="src\AttachmentColorBlendingMode.h" />
+    <ClInclude Include="src\Binding.h" />
     <ClInclude Include="src\Buffer.h" />
     <ClInclude Include="src\DepthImage.h" />
     <ClInclude Include="src\DescriptorSetPool.h" />
