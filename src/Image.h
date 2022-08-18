@@ -22,9 +22,11 @@ class Vulkan::Image {
 		Image(const VkImage& image, const LogicalDevice& virtualGpu, VkFormat format);
 
 		Image(const Image&) = delete;
-		Image(Image&&) = default;
 		Image& operator=(const Image&) = delete;
-		Image& operator=(Image&&) = default;
+		Image(Image&&) noexcept;
+		Image& operator=(Image&&) noexcept;
+
+		~Image();
 
 		const VkImage& operator+() const;
 
@@ -72,9 +74,12 @@ class Vulkan::Image {
 		const std::map<std::string, ImageView>& getImageViews() const;
 
 	protected:
-		//used by child classes only (they also need a custom dtor)
+		//Used only by move assignment operator in order to create an empty image
+		Image();
+
+		//Used by child classes only (they also need a custom dtor)
 		template<std::same_as<VkMemoryPropertyFlagBits>... P>
-		Image(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, VkFormat format, std::pair<unsigned int, unsigned int> resolution, VkImageTiling tiling, VkImageUsageFlags usage, P... memoryProperties) : format{ format } {
+		Image(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, VkFormat format, std::pair<unsigned int, unsigned int> resolution, VkImageTiling tiling, VkImageUsageFlags usage, P... memoryProperties) : virtualGpu{ &virtualGpu }, format{ format }, isSwapchainImage{ false } {
 			VkImageCreateInfo imageInfo{};
 			imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 			imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -114,6 +119,8 @@ class Vulkan::Image {
 		VkFormat format;
 		std::map<std::string, ImageView> views;
 		VkDeviceMemory allocatedMemory;
+		LogicalDevice const* virtualGpu;
+		bool isSwapchainImage; //if an image is created automatically by the swapchain, it doesn't have to be explicitly destroyed
 };
 
 #endif

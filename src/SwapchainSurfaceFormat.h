@@ -29,6 +29,9 @@ class Vulkan::SwapchainOptions::SurfaceFormat {
 		SurfaceFormat(VkSurfaceFormatKHR format) : format{ format } {}
 
 
+
+		SurfaceFormat() = default;
+
 		/**
 		 * @brief Returns the underlying VkSurfaceFormat.
 		 * 

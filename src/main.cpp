@@ -119,6 +119,8 @@ int main() {
 		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size() + model2.getIndexes().size()) * sizeof(model1.getIndexes()[0]) };
 		indexBuffer.fillBuffer(model1, model2);
 
+		std::cout << "\n";
+
 		//draw cycle
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();

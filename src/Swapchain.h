@@ -33,8 +33,8 @@ class Vulkan::Swapchain {
 
 		Swapchain(const Swapchain&) = delete;
 		Swapchain& operator=(const Swapchain&) = delete;
-		Swapchain(Swapchain&&) = default; //FIXTHIS implement custom move ctor
-		Swapchain& operator=(Swapchain&& movedFrom) noexcept;
+		Swapchain(Swapchain&&) noexcept;
+		Swapchain& operator=(Swapchain&&) noexcept;
 
 		/**
 		 * @brief Returns the underlying VkSwapchainKHR object.
@@ -64,20 +64,6 @@ class Vulkan::Swapchain {
 		std::pair<unsigned int, unsigned int> getResolution() const;
 		
 
-		/**
-		 * @brief Re-creates the swapchain. It should be called after window resizes/minimizations.
-		 * @details It is not possible to use the move ctor, because we have to clean-up the VkSwapchainKHR object before creating the new swapchain, because 2 swapchains cannot use the same Window at the same time.
-		 *			e.g. This wouldn't work because the ctor would try to create the swapchain before the old swapchain (currently in mySwapchain) is cleaned-up:
-		 * @code mySwapchain = Swapchain{ realGpu, virtualGpu, windowSurface, window };
-		 * 
-		 * @param realGpu The physical GPU.
-		 * @param virtualGpu The logical GPU.
-		 * @param windowSurface The surface where images will be drawn.
-		 * @param window The OS window where the Vulkan application is running.
-		 */
-		void recreate(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const WindowSurface& windowSurface, const Window& window);
-
-
 
 		/**
 		 * @brief Checks whether there exist a swapchain for this physiscal GPU and windows surface.
@@ -89,6 +75,10 @@ class Vulkan::Swapchain {
 		static bool isSwapchainSupported(const PhysicalDevice& realGpu, const WindowSurface& windowSurface);
 
 	private:
+
+		//Used only for move ctor and assignment operator (move and swap)
+		Swapchain();
+
 
 		//Saves the images of the swap chain to be able to access them later on
 		void saveSwapchainImages();

@@ -23,14 +23,19 @@ Vulkan::Swapchain::Swapchain(const PhysicalDevice& realGpu, const LogicalDevice&
 }
 
 
+Vulkan::Swapchain::Swapchain() : swapchain{ VK_NULL_HANDLE }, virtualGpu{ nullptr }, images{}, swapchainPresentMode{}, swapchainCapabilities{}, swapchainSurfaceFormat{}{}
+
+
 Vulkan::Swapchain::~Swapchain() {
-	vkDestroySwapchainKHR(+*virtualGpu, swapchain, nullptr);
+	if (swapchain != VK_NULL_HANDLE) {
+		vkDestroySwapchainKHR(+*virtualGpu, swapchain, nullptr);
+	}
 	std::cout << "\n- Swapchain destroyed";
 }
 
 
 
-Vulkan::Swapchain& Vulkan::Swapchain::operator=(Swapchain&& movedFrom) noexcept {
+Vulkan::Swapchain::Swapchain::Swapchain(Swapchain&& movedFrom) noexcept : Swapchain{} {
 	std::swap(swapchain, movedFrom.swapchain);
 	std::swap(swapchainCapabilities, movedFrom.swapchainCapabilities);
 	std::swap(swapchainSurfaceFormat, movedFrom.swapchainSurfaceFormat);
@@ -38,10 +43,23 @@ Vulkan::Swapchain& Vulkan::Swapchain::operator=(Swapchain&& movedFrom) noexcept 
 	std::swap(images, movedFrom.images);
 	std::swap(virtualGpu, movedFrom.virtualGpu);
 
+	std::cout << "\n> Swapchain moved";
+}
+
+
+Vulkan::Swapchain& Vulkan::Swapchain::operator=(Swapchain&& movedFrom) noexcept {
+	Swapchain temp{ std::move(movedFrom) };
+
+	std::swap(swapchain, temp.swapchain);
+	std::swap(swapchainCapabilities, temp.swapchainCapabilities);
+	std::swap(swapchainSurfaceFormat, temp.swapchainSurfaceFormat);
+	std::swap(swapchainPresentMode, temp.swapchainPresentMode);
+	std::swap(images, temp.images);
+	std::swap(virtualGpu, temp.virtualGpu);
+
 	std::cout << "\n=> Swapchain move assigned";
 	return *this;
 }
-
 
 
 const VkSwapchainKHR& Vulkan::Swapchain::operator+() const {
@@ -85,20 +103,6 @@ void Vulkan::Swapchain::saveSwapchainImages() {
 	}
 }
 
-
-void Vulkan::Swapchain::recreate(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const WindowSurface& windowSurface, const Window& window) {
-	vkDestroySwapchainKHR(+*this->virtualGpu, swapchain, nullptr);
-	images.clear();
-
-	swapchainCapabilities = SwapchainOptions::Capabilities{ realGpu, windowSurface };
-	swapchainSurfaceFormat = SwapchainOptions::SurfaceFormat{ realGpu, windowSurface };
-	swapchainPresentMode = SwapchainOptions::PresentMode{ realGpu, windowSurface };
-	this->virtualGpu = &virtualGpu;
-
-	create(realGpu, virtualGpu, windowSurface, window);
-
-	std::cout << "\n# Swapchain re-created";
-}
 
 
 void Vulkan::Swapchain::create(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const WindowSurface& windowSurface, const Window& window) {

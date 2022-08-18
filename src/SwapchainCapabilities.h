@@ -22,6 +22,9 @@ class Vulkan::SwapchainOptions::Capabilities {
         Capabilities(const PhysicalDevice& realGpu, const WindowSurface& windowSurface);
 
 
+        Capabilities() = default;
+
+
         /**
          * @brief Returns the underlying VkSurfaceCapabilitiesKHR.
          *

@@ -9,9 +9,53 @@
 #include <iostream>
 
 
-Vulkan::Image::Image(const VkImage& image, const LogicalDevice& virtualGpu, VkFormat format) : image{ image }, format{ format } {
+Vulkan::Image::Image(const VkImage& image, const LogicalDevice& virtualGpu, VkFormat format) : image{ image }, format{ format }, virtualGpu{ &virtualGpu }, isSwapchainImage{ true }, allocatedMemory{ VK_NULL_HANDLE } {
 	generateImageView("base", virtualGpu);
 	std::cout << "\n+ Image created";
+}
+
+
+
+Vulkan::Image::Image() : image{ VK_NULL_HANDLE }, allocatedMemory{ VK_NULL_HANDLE }, format{ VK_FORMAT_UNDEFINED }, virtualGpu{ nullptr }, isSwapchainImage{ false }{}
+
+
+
+Vulkan::Image::Image(Image&& movedFrom) noexcept : Image{} {
+	std::swap(image, movedFrom.image);
+	std::swap(format, movedFrom.format);
+	std::swap(views, movedFrom.views);
+	std::swap(allocatedMemory, movedFrom.allocatedMemory);
+	std::swap(virtualGpu, movedFrom.virtualGpu);
+	std::swap(isSwapchainImage, movedFrom.isSwapchainImage);
+
+	std::cout << "\n> Image moved";
+}
+
+
+
+Vulkan::Image& Vulkan::Image::operator=(Image&& movedFrom) noexcept {
+	Image temp{ std::move(movedFrom) };
+
+	std::swap(image, temp.image);
+	std::swap(format, temp.format);
+	std::swap(views, temp.views);
+	std::swap(allocatedMemory, temp.allocatedMemory);
+	std::swap(virtualGpu, temp.virtualGpu);
+	std::swap(isSwapchainImage, movedFrom.isSwapchainImage);
+
+	std::cout << "\n=> Image move assigned";
+	return *this;
+}
+
+
+Vulkan::Image::~Image() {
+	if (image != VK_NULL_HANDLE && !isSwapchainImage) {
+		vkDestroyImage(+*virtualGpu, image, nullptr);
+	}
+	if (allocatedMemory != VK_NULL_HANDLE && !isSwapchainImage) {
+		vkFreeMemory(+*virtualGpu, allocatedMemory, nullptr);
+	}
+	std::cout << "\n- Image destroyed";
 }
 
 

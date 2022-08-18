@@ -26,6 +26,10 @@ class Vulkan::SwapchainOptions::PresentMode {
 		PresentMode(const PhysicalDevice& realGpu, const WindowSurface& windowSurface, std::function<VkPresentModeKHR(const std::vector<VkPresentModeKHR>&)> chooseBestPresentMode = chooseBestPresentMode);
 
 
+
+		PresentMode() = default;
+
+
 		/**
 		 * @brief Returns the underlying VkPresentModeKHR.
 		 *
