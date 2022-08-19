@@ -9,24 +9,19 @@
 #include <iostream>
 
 
-Vulkan::Image::Image(const VkImage& image, const LogicalDevice& virtualGpu, VkFormat format) : image{ image }, format{ format }, virtualGpu{ &virtualGpu }, isSwapchainImage{ true }, allocatedMemory{ VK_NULL_HANDLE } {
+Vulkan::Image::Image(const VkImage& image, const LogicalDevice& virtualGpu, VkFormat format, std::pair<unsigned int, unsigned int> resolution) : image{ image }, format{ format }, virtualGpu{ &virtualGpu }, isSwapchainImage{ true }, allocatedMemory{ VK_NULL_HANDLE }, layout{ VK_IMAGE_LAYOUT_UNDEFINED }, resolution{ resolution } {
 	generateImageView("base", virtualGpu);
 	std::cout << "\n+ Image created";
 }
 
 
 
-Vulkan::Image::Image() : image{ VK_NULL_HANDLE }, allocatedMemory{ VK_NULL_HANDLE }, format{ VK_FORMAT_UNDEFINED }, virtualGpu{ nullptr }, isSwapchainImage{ false }{}
+Vulkan::Image::Image() : image{ VK_NULL_HANDLE }, allocatedMemory{ VK_NULL_HANDLE }, format{ VK_FORMAT_UNDEFINED }, virtualGpu{ nullptr }, isSwapchainImage{ false }, layout{ VK_IMAGE_LAYOUT_UNDEFINED }, resolution{ 0,0 }{}
 
 
 
 Vulkan::Image::Image(Image&& movedFrom) noexcept : Image{} {
-	std::swap(image, movedFrom.image);
-	std::swap(format, movedFrom.format);
-	std::swap(views, movedFrom.views);
-	std::swap(allocatedMemory, movedFrom.allocatedMemory);
-	std::swap(virtualGpu, movedFrom.virtualGpu);
-	std::swap(isSwapchainImage, movedFrom.isSwapchainImage);
+	swap(*this, movedFrom);
 
 	std::cout << "\n> Image moved";
 }
@@ -36,12 +31,7 @@ Vulkan::Image::Image(Image&& movedFrom) noexcept : Image{} {
 Vulkan::Image& Vulkan::Image::operator=(Image&& movedFrom) noexcept {
 	Image temp{ std::move(movedFrom) };
 
-	std::swap(image, temp.image);
-	std::swap(format, temp.format);
-	std::swap(views, temp.views);
-	std::swap(allocatedMemory, temp.allocatedMemory);
-	std::swap(virtualGpu, temp.virtualGpu);
-	std::swap(isSwapchainImage, movedFrom.isSwapchainImage);
+	swap(*this, temp);
 
 	std::cout << "\n=> Image move assigned";
 	return *this;
@@ -99,4 +89,18 @@ const Vulkan::ImageView& Vulkan::Image::operator[](std::string tag) const {
 
 const std::map<std::string, Vulkan::ImageView>& Vulkan::Image::getImageViews() const {
 	return views;
+}
+
+
+
+
+void Vulkan::swap(Vulkan::Image& lhs, Vulkan::Image& rhs) {
+	using std::swap;
+	swap(lhs.image, rhs.image);
+	swap(lhs.format, rhs.format);
+	swap(lhs.views, rhs.views);
+	swap(lhs.allocatedMemory, rhs.allocatedMemory);
+	swap(lhs.virtualGpu, rhs.virtualGpu);
+	swap(lhs.isSwapchainImage, rhs.isSwapchainImage);
+	swap(lhs.resolution, rhs.resolution);
 }

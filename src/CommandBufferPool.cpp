@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "CommandBufferPool.h"
 #include "LogicalDevice.h"
 #include "Queue.h"
@@ -21,6 +23,8 @@ Vulkan::CommandBufferPool::CommandBufferPool(const LogicalDevice& virtualGpu, Qu
 
 Vulkan::CommandBufferPool::~CommandBufferPool() {
 	vkDestroyCommandPool(+virtualGpu, commandBufferPool, nullptr);
+
+	std::cout << "\n- CommandBufferPool destroyed";
 }
 
 

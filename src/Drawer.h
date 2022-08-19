@@ -181,33 +181,20 @@ public:
 		}
 		commandBuffers[currentFrame].endCommand();
 
-		//struct to submit a command buffer to a queue
-		VkSemaphore waitSemaphores[] = { +imageAvailableSemaphores[currentFrame] }; //semaphore used to signal that an image is available to render to
-		VkSemaphore signalSemaphores[] = { +renderFinishedSemaphores[currentFrame] }; //semaphore used to signal that the render finished
-		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }; //where to wait for an image (first semaphore). You can still run the vertex shader without an image, but you have to wait for an image for the fragment shader
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = waitSemaphores;
-		submitInfo.pWaitDstStageMask = waitStages;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &+commandBuffers[currentFrame];
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = signalSemaphores;
-
-		if (VkResult result = vkQueueSubmit(+virtualGpu[QueueFamily::GRAPHICS], 1, &submitInfo, +fences[currentFrame]); result != VK_SUCCESS) {
-			throw VulkanException{ "Failed to submit the command buffer for the current frame", result };
-		}
-
-
-		VkSwapchainKHR swapchains[] = { +swapchain };
+		//submit the command buffer to a queue
+		std::vector<VkSemaphore> waitSemaphores = { +imageAvailableSemaphores[currentFrame] }; //semaphore used to signal that an image is available to render to
+		std::vector<VkSemaphore> signalSemaphores = { +renderFinishedSemaphores[currentFrame] }; //semaphore used to signal that the render finished
+		std::vector<VkPipelineStageFlags> waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT }; //where to wait for an image (first semaphore). You can still run the vertex shader without an image, but you have to wait for an image for the fragment shader
+		commandBuffers[currentFrame].sendCommand(virtualGpu[QueueFamily::GRAPHICS], waitSemaphores, signalSemaphores, waitStages, fences[currentFrame]);
+		
+		//submit the rendered image back to the swapchain for presentation
+		std::vector<VkSwapchainKHR> swapchains = { +swapchain };
 		VkPresentInfoKHR presentInfo{};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = signalSemaphores;
-		presentInfo.swapchainCount = 1;
-		presentInfo.pSwapchains = swapchains;
+		presentInfo.waitSemaphoreCount = signalSemaphores.size();
+		presentInfo.pWaitSemaphores = signalSemaphores.data();
+		presentInfo.swapchainCount = swapchains.size();
+		presentInfo.pSwapchains = swapchains.data();
 		presentInfo.pImageIndices = &obtainedSwapchainImageIndex;
 
 		if (VkResult result = vkQueuePresentKHR(+virtualGpu[QueueFamily::PRESENTATION], &presentInfo); result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
@@ -256,13 +243,6 @@ private:
 	//std::map<std::string, std::pair<std::vector<Semaphore>, std::vector<VkSemaphore>>> semaphores;
 	//std::map<std::string, std::pair<std::vector<Fence>, std::vector<VkFence>>> fences;
 
-	std::vector<SynchronizationPrimitives::Fence> fences;
-	std::vector<SynchronizationPrimitives::Semaphore> imageAvailableSemaphores; //tells when an image is occupied by rendering
-	std::vector<SynchronizationPrimitives::Semaphore> renderFinishedSemaphores; //tells when the rendeing of the image ends
-	std::vector<CommandBuffer> commandBuffers;
-	std::vector<DescriptorSet> globalDescriptorSets; //descriptor sets (one per frame in flight) for the global info
-	std::vector<DescriptorSet> perObjectDescriptorSets; //descriptor sets (one per frame in flight) for the per-object info
-
 	unsigned int currentFrame; //indicates which set of resources to use for the current frame (0 < x < maxFramesInFlight)
 	unsigned int framesInFlight; //maximum number of frames that can be rendered at the same time(of course no more than the number of swap chain images)
 
@@ -276,8 +256,15 @@ private:
 	Swapchain& swapchain;
 	DepthImage& depthBuffer;
 	std::vector<Framebuffer> framebuffers;
-	CommandBufferPool commandBufferPool;
+	CommandBufferPool commandBufferPool; //this MUST be placed before std::vector<CommandBuffer> commandBuffers, because it must be destroyed later: "Non-static data members shall be initialized in the order they were declared in the class definition (again regardless of the order of the mem-initializers)." cit. 12.6.2 C++20
 	DescriptorSetPool descriptorSetPool;
+
+	std::vector<SynchronizationPrimitives::Fence> fences;
+	std::vector<SynchronizationPrimitives::Semaphore> imageAvailableSemaphores; //tells when an image is occupied by rendering
+	std::vector<SynchronizationPrimitives::Semaphore> renderFinishedSemaphores; //tells when the rendeing of the image ends
+	std::vector<CommandBuffer> commandBuffers;
+	std::vector<DescriptorSet> globalDescriptorSets; //descriptor sets (one per frame in flight) for the global info
+	std::vector<DescriptorSet> perObjectDescriptorSets; //descriptor sets (one per frame in flight) for the per-object info
 };
 
 #endif

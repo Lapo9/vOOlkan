@@ -13,6 +13,8 @@
 #include "Framebuffer.h"
 #include "Pipeline.h"
 #include "VulkanException.h"
+#include "Fence.h"
+#include "Queue.h"
 
 
 namespace Vulkan { class CommandBuffer; }
@@ -20,8 +22,10 @@ namespace Vulkan { class CommandBuffer; }
 
 class Vulkan::CommandBuffer {
 public:
-	CommandBuffer(const LogicalDevice& virtualGpu, const CommandBufferPool& commandBufferPool) : virtualGpu{ virtualGpu } {
+
+	CommandBuffer(const LogicalDevice& virtualGpu, const CommandBufferPool& commandBufferPool) : virtualGpu{ &virtualGpu }, commandBufferPool{ &commandBufferPool } {
 		allocateCommandBuffer(virtualGpu, commandBufferPool);
+		reset();
 	}
 
 
@@ -39,7 +43,7 @@ public:
 	 * @tparam ...Command The tuples, each containing the Vulkan function and its arguments (of type ...Args).
 	 */
 	template<typename... Args, template<typename...> class... Command> requires (std::same_as<Command<int>, std::tuple<int>> && ...)
-	CommandBuffer(const LogicalDevice& virtualGpu, const CommandBufferPool& commandBufferPool, const PipelineOptions::RenderPass& renderPass, const Framebuffer& framebuffer, const Pipeline& pipeline, Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) : virtualGpu{virtualGpu} {
+	CommandBuffer(const LogicalDevice& virtualGpu, const CommandBufferPool& commandBufferPool, const PipelineOptions::RenderPass& renderPass, const Framebuffer& framebuffer, const Pipeline& pipeline, Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) : virtualGpu{ virtualGpu }, commandBufferPool{ commandBufferPool } {
 		allocateCommandBuffer(virtualGpu, commandBufferPool);
 		reset(renderPass, framebuffer, pipeline);
 
@@ -51,7 +55,23 @@ public:
 		endCommand();
 	}
 
-	//FIXTHIS probably implement custom move ctor
+	
+	CommandBuffer(const CommandBuffer&) = delete;
+	CommandBuffer& operator=(const CommandBuffer&) = delete;
+	
+	CommandBuffer(CommandBuffer&& movedFrom) noexcept : CommandBuffer{} {
+		std::swap(commandBuffer, movedFrom.commandBuffer);
+		std::swap(virtualGpu, movedFrom.virtualGpu);
+		std::swap(commandBufferPool, movedFrom.commandBufferPool);
+	}
+	
+	CommandBuffer& operator=(CommandBuffer&&) = delete;
+
+	~CommandBuffer() {
+		if (commandBuffer != VK_NULL_HANDLE) {
+			vkFreeCommandBuffers(+*virtualGpu, +*commandBufferPool, 1, &commandBuffer);
+		}
+	}
 
 	
 	const VkCommandBuffer& operator+() {
@@ -61,13 +81,13 @@ public:
 
 	//TODO make it possible to specify Viewport and Scissor and clear color
 	/**
-	 * @brief Initialize a command buffer with the operations which are in common with most command buffers.
+	 * @brief Initializes a command buffer with the operations which are in common with most command buffers.
 	 * 
 	 * @param renderPass Used to begin the render pass.
 	 * @param framebuffer Where the GPU will write.
 	 * @param pipeline What pipeline to use.
 	 */
-	void reset(const PipelineOptions::RenderPass& renderPass, const Framebuffer& framebuffer, const Pipeline& pipeline) {
+	CommandBuffer& reset(const PipelineOptions::RenderPass& renderPass, const Framebuffer& framebuffer, const Pipeline& pipeline) {
 		//reset command buffer
 		vkResetCommandBuffer(commandBuffer, 0);
 		
@@ -110,6 +130,29 @@ public:
 		scissor.offset = { 0, 0 };
 		scissor.extent = VkExtent2D{ framebuffer.getResolution().first, framebuffer.getResolution().second };
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+		return *this;
+	}
+
+
+
+	/**
+	 * @brief Initializes a command buffer, ready to be recorded from scratch.
+	 */
+	CommandBuffer& reset() {
+		//reset command buffer
+		vkResetCommandBuffer(commandBuffer, 0);
+		
+		//initialize command buffer
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = 0;
+		beginInfo.pInheritanceInfo = nullptr;
+		if (VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo); result != VK_SUCCESS) {
+			throw VulkanException("Failed to begin recording command buffer!", result);
+		}
+
+		return *this;
 	}
 
 
@@ -132,8 +175,9 @@ public:
 	 * @tparam ...Params The types of the arguments to perform the specified operation.
 	 */
 	template<typename... Args, typename... Params>
-	void addCommand(void(*command)(VkCommandBuffer, Params...), Args&&... args) {
+	CommandBuffer& addCommand(void(*command)(VkCommandBuffer, Params...), Args&&... args) {
 		command(commandBuffer, std::forward<Args>(args)...); 
+		return *this;
 	}
 
 
@@ -145,23 +189,68 @@ public:
 	 * @tparam ...Command The tuples, each containing the Vulkan function and its arguments (of type ...Args).
 	 */
 	template<typename... Args, template<typename...> class... Command> requires (std::same_as<Command<>, std::tuple<>> && ...)
-		void addCommands(Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) {
+	CommandBuffer& addCommands(Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) {
 		//this is tricky... call the function addCommand and pass as arguments (perfect forwarding) the objects in the each tuple received as argument
 		(std::apply([this]<typename... Args>(Args&&... args) {
 			this->addCommand(std::forward<Args>(args)...);
 		}, commands), ...);
+		return *this;
 	}
 
 
-	void endCommand() {
+	CommandBuffer& endCommand() {
 		vkCmdEndRenderPass(commandBuffer);
 
 		if (VkResult result = vkEndCommandBuffer(commandBuffer); result != VK_SUCCESS) {
 			throw VulkanException("Failed to record command buffer!", result);
 		}
+
+		return *this;
 	}
 
+
+	CommandBuffer& sendCommand(Queue queue, const std::vector<VkSemaphore>& waitSemaphores, const std::vector<VkSemaphore>& signalSemaphores, const std::vector<VkPipelineStageFlags>& waitStages, const SynchronizationPrimitives::Fence& fence) {
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.waitSemaphoreCount = waitSemaphores.size();
+		submitInfo.pWaitSemaphores = waitSemaphores.size() != 0 ? waitSemaphores.data() : nullptr;
+		submitInfo.pWaitDstStageMask = waitStages.size() != 0 ? waitStages.data() : nullptr;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+		submitInfo.signalSemaphoreCount = signalSemaphores.size();
+		submitInfo.pSignalSemaphores = signalSemaphores.size() != 0 ? signalSemaphores.data() : nullptr;
+
+		if (VkResult result = vkQueueSubmit(+queue, 1, &submitInfo, +fence); result != VK_SUCCESS) {
+			throw VulkanException{ "Failed to submit the command buffer for the current frame", result };
+		}
+
+		return *this;
+	}
+
+
+	CommandBuffer& sendCommand(Queue queue) {
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submitInfo.waitSemaphoreCount = 0;
+		submitInfo.pWaitSemaphores = nullptr;
+		submitInfo.pWaitDstStageMask = nullptr;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+		submitInfo.signalSemaphoreCount = 0;
+		submitInfo.pSignalSemaphores = nullptr;
+
+		if (VkResult result = vkQueueSubmit(+queue, 1, &submitInfo, VK_NULL_HANDLE); result != VK_SUCCESS) {
+			throw VulkanException{ "Failed to submit the command buffer for the current frame", result };
+		}
+
+		return *this;
+	}
+
+
 private:
+
+	//Used only for move ctor
+	CommandBuffer() : commandBuffer{ VK_NULL_HANDLE }, commandBufferPool{ nullptr }, virtualGpu{ nullptr }{}
 
 	void allocateCommandBuffer(const LogicalDevice& virtualGpu, const CommandBufferPool& commandBufferPool) {
 		VkCommandBufferAllocateInfo allocInfo{};
@@ -177,7 +266,8 @@ private:
 
 
 	VkCommandBuffer commandBuffer;
-	const LogicalDevice& virtualGpu;
+	CommandBufferPool const* commandBufferPool;
+	LogicalDevice const * virtualGpu;
 };
 
 

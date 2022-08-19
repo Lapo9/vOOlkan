@@ -19,7 +19,7 @@ namespace Vulkan { class Image; class LogicalDevice; class PhysicalDevice; class
 class Vulkan::Image {
 	public:
 
-		Image(const VkImage& image, const LogicalDevice& virtualGpu, VkFormat format);
+		Image(const VkImage& image, const LogicalDevice& virtualGpu, VkFormat format, std::pair<unsigned int, unsigned int> resolution);
 
 		Image(const Image&) = delete;
 		Image& operator=(const Image&) = delete;
@@ -73,13 +73,18 @@ class Vulkan::Image {
 		 */
 		const std::map<std::string, ImageView>& getImageViews() const;
 
+
+
+		friend void swap(Image& lhs, Image& rhs);
+
+
 	protected:
 		//Used only by move assignment operator in order to create an empty image
 		Image();
 
 		//Used by child classes only
 		template<std::same_as<VkMemoryPropertyFlagBits>... P>
-		Image(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, VkFormat format, std::pair<unsigned int, unsigned int> resolution, VkImageTiling tiling, VkImageUsageFlags usage, P... memoryProperties) : virtualGpu{ &virtualGpu }, format{ format }, isSwapchainImage{ false } {
+		Image(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, VkFormat format, std::pair<unsigned int, unsigned int> resolution, VkImageTiling tiling, VkImageUsageFlags usage, P... memoryProperties) : virtualGpu{ &virtualGpu }, format{ format }, isSwapchainImage{ false }, layout{ VK_IMAGE_LAYOUT_UNDEFINED }, resolution{ resolution }{
 			VkImageCreateInfo imageInfo{};
 			imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 			imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -90,7 +95,7 @@ class Vulkan::Image {
 			imageInfo.arrayLayers = 1;
 			imageInfo.format = format;
 			imageInfo.tiling = tiling;
-			imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			imageInfo.initialLayout = layout;
 			imageInfo.usage = usage;
 			imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 			imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -117,6 +122,8 @@ class Vulkan::Image {
 		
 		VkImage image;
 		VkFormat format;
+		VkImageLayout layout;
+		std::pair<unsigned int, unsigned int> resolution;
 		std::map<std::string, ImageView> views;
 		VkDeviceMemory allocatedMemory;
 		LogicalDevice const* virtualGpu;
