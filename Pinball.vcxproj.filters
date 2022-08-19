@@ -28,6 +28,15 @@
     <Filter Include="Source Files\Buffers">
       <UniqueIdentifier>{dbd0a1a5-9329-427c-a733-a7aaf469d989}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Images">
+      <UniqueIdentifier>{47ff51ff-2e11-43b8-986f-08956565f49c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\shaders">
+      <UniqueIdentifier>{1b9c18ee-d3ae-4e50-bd28-33bf2d766a2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\textures">
+      <UniqueIdentifier>{74f917fc-83f2-43df-bccb-1565f74b7cad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Instance.h">
@@ -62,9 +71,6 @@
     </ClInclude>
     <ClInclude Include="src\SwapchainSurfaceFormat.h">
       <Filter>Source Files\SwapchainOptions</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Image.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ImageView.h">
       <Filter>Source Files</Filter>
@@ -162,11 +168,23 @@
     <ClInclude Include="src\UniformBuffer.h">
       <Filter>Source Files\Buffers</Filter>
     </ClInclude>
-    <ClInclude Include="src\DepthImage.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Binding.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StagingBuffer.h">
+      <Filter>Source Files\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DepthImage.h">
+      <Filter>Source Files\Images</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Image.h">
+      <Filter>Source Files\Images</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TextureImage.h">
+      <Filter>Source Files\Images</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Barriers.h">
+      <Filter>Source Files\SynchronizationPrimitives</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -184,9 +202,6 @@
     </ClCompile>
     <ClCompile Include="src\SwapchainSurfaceFormat.cpp">
       <Filter>Source Files\SwapchainOptions</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Image.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ImageView.cpp">
       <Filter>Source Files</Filter>
@@ -215,13 +230,21 @@
     <ClCompile Include="src\CommandBufferPool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Image.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\TestFrag.frag">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="shaders\TestVert.vert">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\shaders</Filter>
     </None>
+    <None Include="shaders\TestFrag.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\testTexture.jpg">
+      <Filter>Resource Files\textures</Filter>
+    </Image>
   </ItemGroup>
 </Project>

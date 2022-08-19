@@ -77,7 +77,7 @@ class Vulkan::Image {
 		//Used only by move assignment operator in order to create an empty image
 		Image();
 
-		//Used by child classes only (they also need a custom dtor)
+		//Used by child classes only
 		template<std::same_as<VkMemoryPropertyFlagBits>... P>
 		Image(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, VkFormat format, std::pair<unsigned int, unsigned int> resolution, VkImageTiling tiling, VkImageUsageFlags usage, P... memoryProperties) : virtualGpu{ &virtualGpu }, format{ format }, isSwapchainImage{ false } {
 			VkImageCreateInfo imageInfo{};

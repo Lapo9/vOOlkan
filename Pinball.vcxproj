@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="src\Attachment.h" />
     <ClInclude Include="src\AttachmentColorBlendingMode.h" />
+    <ClInclude Include="src\Barriers.h" />
     <ClInclude Include="src\Binding.h" />
     <ClInclude Include="src\Buffer.h" />
     <ClInclude Include="src\DepthImage.h" />
@@ -29,6 +30,8 @@
     <ClInclude Include="src\DescriptorSetLayout.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\Model.h" />
+    <ClInclude Include="src\StagingBuffer.h" />
+    <ClInclude Include="src\TextureImage.h" />
     <ClInclude Include="src\UniformBuffer.h" />
     <ClInclude Include="src\VertexBuffer.h" />
     <ClInclude Include="src\CommandBuffer.h" />
@@ -86,6 +89,9 @@
   <ItemGroup>
     <None Include="shaders\TestFrag.frag" />
     <None Include="shaders\TestVert.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\testTexture.jpg" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
