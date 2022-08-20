@@ -23,10 +23,7 @@ class Vulkan::DescriptorSet {
 public:
 
 	/**
-	 * @brief This ctor sets the pointers into the buffer in a linear way, by grouping the resources in a per-object fashion. Padding is considered.
-	 * @details e.g. data1 -> 40bytes, data2 -> 6bytes, data3 -> 10bytes, alignment = 16bytes.
-	 *			data1 starting position = 0, data2 starting position = 48, data3 starting position = 64.
-	 *			Of course the data in the buffer must respect this layout.
+	 * @brief Builds a DescriptorSet by following the information of the passed-in set.
 	 * 
 	 * @param virtualGpu The LogicalDevice.
 	 * @param realGpu The PhysicalDevice.
@@ -69,12 +66,11 @@ public:
 	* @return The offsets.
 	*/
 	std::vector<uint32_t> getOffsets(unsigned int multiplier = 0) const {
-		auto bindingsInfo = set.getBindingsInfo();
-		int totalSize = 0; //dimension of the sum of all of the bindings of one object
-		for (const auto& bindingInfo : bindingsInfo) {
-			totalSize += bindingInfo.size;
+		std::vector<uint32_t> res;
+		for (const auto& bindingInfo : set.getBindingsInfo()) {
+			res.push_back(bindingInfo.dynamicDistance * multiplier);
 		}
-		return std::vector<uint32_t>(set.getAmountOfBindings(), totalSize * multiplier);
+		return res;
 	}
 
 

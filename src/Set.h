@@ -13,6 +13,11 @@
 
 namespace Vulkan {
 
+	//FROMHERE probably rename this DynamicSet and create also StaticSet and ImageSet. And a Set parent class.
+	/**
+	 * @brief A Set is a set of bindings which can be read by the shader.
+	 * @details A Set keeps all the information about its bindings, such as their size, their buffer and the offset in such buffer. This way it is possible to instantiate a DescriptorSet starting from a Set only.
+	 */
 	class Set {
 	public:
 
@@ -41,6 +46,11 @@ namespace Vulkan {
 				currentOffset += paddingAmount; //padding
 				}(bindings), ...);
 
+			//the dynamic distance for bindings allocated in this way is always the same and equal to the total size of the bindings
+			for (auto& bindingInfo : bindingsInfo) {
+				bindingInfo.dynamicDistance = currentOffset;
+			}
+
 			createDescriptorSetLayout(bindings.second...);
 		}
 
@@ -55,13 +65,13 @@ namespace Vulkan {
 		 *			The layout of buf2 will be: ddddeeeeffff.
 		 *			The VkDescriptorSetLayout object will always be a dynamic buffer.
 		 * 
-		 * @param ...bindingsInfo Type to be bounded, reference to the buffer where the data of this type will reside, offset into such buffer.
+		 * @param ...bindingsInfo Type to be bounded, reference to the buffer where the data of this type will reside, offset into such buffer, dynamic distance between bindings of 2 contiguous objects, shader stage in which the binding is used.
 		 */
-		template<typename... Structs, template<typename, std::same_as<Buffers::UniformBuffer*>, std::same_as<int>, std::same_as<VkShaderStageFlagBits>>class... T> requires (std::same_as<T<Structs, Buffers::UniformBuffer*, int, VkShaderStageFlagBits>, std::tuple<Structs, Buffers::UniformBuffer*, int, VkShaderStageFlagBits>> && ...)
-			Set(const LogicalDevice& virtualGpu, T<Structs, Buffers::UniformBuffer*, int, VkShaderStageFlagBits>... bindingsInfo) : virtualGpu{ virtualGpu } {
-			(this->bindingsInfo.emplace_back(sizeof(std::get<0>(bindingsInfo)), *std::get<1>(bindingsInfo), std::get<2>(bindingsInfo)), ...);
+		template<typename... Structs, template<typename, std::same_as<Buffers::UniformBuffer*>, std::same_as<int>, std::same_as<int>, std::same_as<VkShaderStageFlagBits>>class... T> requires (std::same_as<T<Structs, Buffers::UniformBuffer*, int, int, VkShaderStageFlagBits>, std::tuple<Structs, Buffers::UniformBuffer*, int, int, VkShaderStageFlagBits>> && ...)
+			Set(const LogicalDevice& virtualGpu, T<Structs, Buffers::UniformBuffer*, int, int, VkShaderStageFlagBits>... bindingsInfo) : virtualGpu{ virtualGpu } {
+			(this->bindingsInfo.emplace_back(sizeof(std::get<0>(bindingsInfo)), *std::get<1>(bindingsInfo), std::get<2>(bindingsInfo), std::get<3>(bindingsInfo)), ...);
 		
-			createDescriptorSetLayout(std::get<3>(bindingsInfo)...);
+			createDescriptorSetLayout(std::get<4>(bindingsInfo)...);
 		}
 
 
@@ -79,6 +89,7 @@ namespace Vulkan {
 			int size; //the size of the binding
 			const Buffers::UniformBuffer& buffer; //reference to the buffer of the binding
 			int offset; //offset in his buffer of the binding
+			int dynamicDistance; //distance between this binding in 2 different objects (e.g. AAAABB AAAABB distA=6, distB=6. AAAA AAAA BB BB distA=4, distB=2)
 		};
 
 
@@ -98,11 +109,17 @@ namespace Vulkan {
 		}
 
 
+		/**
+		 * @brief Returns the size, offset and buffer of each binding in this set.
+		 */
 		const std::vector<BindingInfo>& getBindingsInfo() const {
 			return bindingsInfo;
 		}		
 		
 		
+		/**
+		 * @brief Returns the size, offset and buffer of the binding number i of this set.
+		 */
 		const BindingInfo& getBindingInfo(int i) const {
 			return bindingsInfo[i];
 		}
@@ -110,6 +127,7 @@ namespace Vulkan {
 
 	private:
 
+		//Creates the VkDescriptorSetLayout Vulkan object for this set
 		template<std::same_as<VkShaderStageFlagBits>... ShaderStages>
 		void createDescriptorSetLayout(ShaderStages... shaderStages) {
 			//create info structs for each binding
