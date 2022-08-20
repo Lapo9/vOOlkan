@@ -30,6 +30,7 @@
 #include "Rasterizer.h"
 #include "RenderPass.h"
 #include "Semaphore.h"
+#include "Set.h"
 #include "Shader.h"
 #include "Subpass.h"
 #include "Swapchain.h"

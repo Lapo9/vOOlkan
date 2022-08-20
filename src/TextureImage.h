@@ -12,14 +12,16 @@
 #include "CommandBuffer.h"
 #include "CommandBufferPool.h"
 #include "Barriers.h"
+#include "TextureSampler.h"
 
 
 namespace Vulkan { class TextureImage; }
 
 class Vulkan::TextureImage : public Vulkan::Image {
 public:
-	TextureImage(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, const CommandBufferPool& commandBufferPool, std::pair<unsigned int, unsigned int> resolution, std::string pathToTexture)
-		: Image{ virtualGpu, realGpu, VK_FORMAT_R8G8B8A8_SRGB, resolution, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT }
+    TextureImage(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, const CommandBufferPool& commandBufferPool, std::pair<unsigned int, unsigned int> resolution, std::string pathToTexture)
+        : Image{ virtualGpu, realGpu, VK_FORMAT_R8G8B8A8_SRGB, resolution, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT },
+        textureSampler{ virtualGpu, realGpu }
 	{
         //load image in CPU memory
         int width, height, channels;
@@ -46,8 +48,8 @@ public:
         //change image layout to a layout suitable for sampling on the GPU
         transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBufferPool);
 
-
-		generateImageView("base", virtualGpu, VK_IMAGE_ASPECT_DEPTH_BIT); //FROMHERE create the right views for a texture image
+        //create the image view
+		generateImageView("base", virtualGpu, VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
 	TextureImage(const TextureImage&) = delete;
@@ -70,7 +72,7 @@ public:
         
         SynchronizationPrimitives::ImageMemoryBarrier barrier{ *this, layout, newLayout };
         CommandBuffer commandBuffer{ *virtualGpu, commandBufferPool };
-        commandBuffer.addCommand(vkCmdPipelineBarrier, transitionInfo.sourceStage, transitionInfo.destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier)
+        commandBuffer.addCommand(vkCmdPipelineBarrier, transitionInfo.sourceStage, transitionInfo.destinationStage, 0, 0, nullptr, 0, nullptr, 1, &+barrier)
             .endCommand()
             .sendCommand((*virtualGpu)[QueueFamily::GRAPHICS]);
         vkQueueWaitIdle(+(*virtualGpu)[QueueFamily::GRAPHICS]); //TODO not best for performance
@@ -104,6 +106,14 @@ public:
 
         vkQueueWaitIdle(+(*virtualGpu)[QueueFamily::GRAPHICS]); //TODO not best for performance
     }
+
+
+    const TextureSampler& getSampler() const {
+        return textureSampler;
+    }
+
+private:
+    TextureSampler textureSampler; //how the image is filtered before accessing (e.g. anisotropic)
 
 };
 

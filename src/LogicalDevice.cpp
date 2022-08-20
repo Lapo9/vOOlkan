@@ -29,7 +29,9 @@ Vulkan::LogicalDevice::LogicalDevice(const PhysicalDevice& physicalGpu) {
 	}
 
 
-	VkPhysicalDeviceFeatures deviceFeatures{}; //advanced features we need (nothing at the moment)
+	VkPhysicalDeviceFeatures deviceFeatures{}; //advanced features we need
+	deviceFeatures.samplerAnisotropy = VK_TRUE; //TODO we should check in the PhysicalDevice::isSuitable if anisotropic is supported (but it always is on modern GPUs)
+
 	auto requiredDeviceExtensions = physicalGpu.getRequiredDeviceExtensions();
 	//struct containing info for the creation of the logical device based on the choosen physical device
 	VkDeviceCreateInfo createInfo{};

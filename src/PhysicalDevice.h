@@ -40,6 +40,12 @@ class Vulkan::PhysicalDevice {
 		std::vector<const char*> getRequiredDeviceExtensions() const;
 
 
+		VkPhysicalDeviceProperties getProperties() const {
+			VkPhysicalDeviceProperties limits;
+			vkGetPhysicalDeviceProperties(gpu, &limits);
+			return limits;
+		}
+
 
 	private:
 		//constructor only used to pass around PhysicalDevices to functions which require a PhysicalDevice instead of a VkPhysicalDevice

@@ -17,23 +17,35 @@ class Vulkan::DescriptorSetPool {
 public:
 
 	/**
-	 * @brief Creates a DescriptorSetPool object of the specified size.
+	 * @brief Creates a DescriptorSetPool object of the specified size. There is one pool of size size for each type.
 	 * 
 	 * @param virtualGpu The LogicalDevice.
-	 * @param type The type of DescriptorSet(s) that this pool can allocate.
-	 * @param size The maximum number of DescriptorSet(s) that this pool can allocate.
+	 * @param types The types of DescriptorSet that this pool can allocate.
+	 * @param size The maximum number of DescriptorSet(s) that this pool can allocate per each type.
 	 */
-	DescriptorSetPool(const LogicalDevice& virtualGpu, VkDescriptorType type, unsigned int size) : virtualGpu{ virtualGpu } {
-		VkDescriptorPoolSize poolSize{};
-		poolSize.type = type;
-		poolSize.descriptorCount = static_cast<uint32_t>(size);
+	template<std::same_as<VkDescriptorType>... DT>
+	DescriptorSetPool(const LogicalDevice& virtualGpu, unsigned int size, DT... types) : virtualGpu{ virtualGpu } {
+		//varaargs to vector
+		std::vector<VkDescriptorType> typesArray;
+		(typesArray.push_back(types), ...);
 
+		//for each type create the info struct for each type
+		std::vector<VkDescriptorPoolSize> typesInfo;
+		for (const auto& poolType : typesArray) {
+			VkDescriptorPoolSize poolSize;
+			poolSize.type = poolType;
+			poolSize.descriptorCount = static_cast<uint32_t>(size);
+			typesInfo.push_back(poolSize);
+		}
+
+		//struct to create the pool
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		poolInfo.poolSizeCount = 1;
-		poolInfo.pPoolSizes = &poolSize;
+		poolInfo.poolSizeCount = typesInfo.size();
+		poolInfo.pPoolSizes = typesInfo.data();
 		poolInfo.maxSets = static_cast<uint32_t>(size);
 
+		//actually create the pool
 		if (VkResult result = vkCreateDescriptorPool(+virtualGpu, &poolInfo, nullptr, &descriptorPool); result != VK_SUCCESS) {
 			throw VulkanException("Failed to create descriptor pool!", result);
 		}

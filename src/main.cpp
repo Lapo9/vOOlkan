@@ -117,6 +117,20 @@ int main() {
 			std::vector<uint32_t>{0, 1, 2, 0, 2, 3}
 		};
 
+
+
+
+
+		struct A {
+			int a, b;
+		} a;
+		Vulkan::Buffers::UniformBuffer ub{ virtualGpu, realGpu, 256 };
+		//Vulkan::Set> test1{ ub };
+		//Vulkan::Set test2{ std::tuple{a, &ub, 0}};
+
+
+
+
 		//create vertex buffer for models
 		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size() + model2.getVertices().size() + model3.getVertices().size()) * sizeof(model1.getVertices()[0])};
 		vertexBuffer.fillBuffer(model1, model2, model3);

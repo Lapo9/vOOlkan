@@ -8,6 +8,7 @@
 #include "LogicalDevice.h"
 #include "PhysicalDevice.h"
 #include "UniformBuffer.h"
+#include "TextureImage.h"
 #include "VulkanException.h"
 
 
@@ -52,9 +53,7 @@ public:
 		int offset = 0;
 
 		//get minimum alignment for the GPU memory, used for padding
-		VkPhysicalDeviceProperties limits;
-		vkGetPhysicalDeviceProperties(+realGpu, &limits);
-		int alignment = limits.limits.minUniformBufferOffsetAlignment;
+		int alignment = realGpu.getProperties().limits.minUniformBufferOffsetAlignment;
 
 		for (int i = 0; i < layout.getAmountOfBindings(); ++i) {
 			descriptorsInfo.emplace_back(fillDescriptorSet(i, buffer, offset, layout.getSize(i), descriptorsBufferInfo[i]));
@@ -119,6 +118,22 @@ private:
 		return descriptorInfo;
 	}
 
+
+
+	VkWriteDescriptorSet fillDescriptorSet(unsigned int binding, const TextureImage& texture, VkDescriptorImageInfo imageInfo) {
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = +texture["base"];
+		imageInfo.sampler = +texture.getSampler();
+
+		VkWriteDescriptorSet descriptorInfo{};
+		descriptorInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorInfo.dstSet = descriptorSet;
+		descriptorInfo.dstBinding = binding;
+		descriptorInfo.dstArrayElement = 0;
+		descriptorInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		descriptorInfo.descriptorCount = 1;
+		descriptorInfo.pImageInfo = &imageInfo;
+	}
 
 
 	VkDescriptorSet descriptorSet;

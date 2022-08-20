@@ -168,7 +168,7 @@
     <ClInclude Include="src\UniformBuffer.h">
       <Filter>Source Files\Buffers</Filter>
     </ClInclude>
-    <ClInclude Include="src\Binding.h">
+    <ClInclude Include="src\Set.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\StagingBuffer.h">
@@ -185,6 +185,9 @@
     </ClInclude>
     <ClInclude Include="src\Barriers.h">
       <Filter>Source Files\SynchronizationPrimitives</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TextureSampler.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -66,7 +66,7 @@ public:
 		pipeline{ pipeline }, 
 		swapchain{ swapchain },
 		commandBufferPool{ virtualGpu } ,
-		descriptorSetPool{ virtualGpu, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, framesInFlight*10 }{
+		descriptorSetPool{ virtualGpu, framesInFlight*10, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER }{
 
 		framebuffers = Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain, depthBuffer["base"]);
 		for (unsigned int i = 0; i < framesInFlight; ++i) {

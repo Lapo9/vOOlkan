@@ -28,7 +28,7 @@ public:
 private:
 	std::vector<PipelineOptions::Vertex<Components...>> vertices;
 	std::vector<uint32_t> indexes;
-	std::vector<int> uniforms;
+	std::vector<int> uniforms; //TODO
 };
 
 #endif

@@ -67,7 +67,7 @@ public:
 			throw VulkanException("Unsupported layout transition!");
 		}
 
-		return MaskInfo{ sourceStage, destinationStage, sourceMask, destinationMask };
+		return TransitionInfo{ sourceStage, destinationStage, sourceMask, destinationMask };
 	}
 
 
