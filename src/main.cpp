@@ -51,11 +51,19 @@ int main() {
 		//vertices types descriptor
 		Vulkan::PipelineOptions::PipelineVertexArrays vertexTypesDescriptor{ MyVertex{} };
 
-		//uniform descriptors layouts
-		Vulkan::DescriptorSetLayout globalLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 256}, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, 64} };
-		Vulkan::DescriptorSetLayout perObjectLayout{ virtualGpu, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(16 * sizeof(float))}, std::tuple{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_ALL, int(4 * sizeof(float))} };
-		
 
+		//uniform buffers
+		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
+		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 1024 * sizeof(float) };
+
+		//uniform sets layouts
+		using Lights = struct { glm::mat4 light1; };
+		using Mvp = struct { glm::mat4 mvp; };
+		using Color = struct { glm::vec4 rgb; };
+
+		Vulkan::Set globalSet{ realGpu, virtualGpu, globalUniformBuffer, std::pair{Lights{}, VK_SHADER_STAGE_ALL} };
+		Vulkan::Set perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{Mvp{}, VK_SHADER_STAGE_ALL}, std::pair{Color{}, VK_SHADER_STAGE_ALL} };
+		
 
 
 		//pipeline options
@@ -63,7 +71,7 @@ int main() {
 		Vulkan::PipelineOptions::DepthStencil depthStencil{};
 		Vulkan::PipelineOptions::DynamicState dynamicState{};
 		Vulkan::PipelineOptions::InputAssembly inputAssembly{};
-		Vulkan::PipelineOptions::PipelineLayout pipelineLayout{virtualGpu, globalLayout, perObjectLayout};
+		Vulkan::PipelineOptions::PipelineLayout pipelineLayout{ virtualGpu, globalSet, perObjectSet };
 		Vulkan::PipelineOptions::Rasterizer rasterizer{ false };
 		Vulkan::PipelineOptions::Viewport viewport{};
 
@@ -73,22 +81,13 @@ int main() {
 
 		//pipeline
 		Vulkan::Pipeline pipeline{ virtualGpu, renderPass, 0, std::vector{&vertexShader, &fragmentShader},vertexTypesDescriptor, pipelineLayout, rasterizer, inputAssembly, multisampler, depthStencil, dynamicState, viewport};
-
-
-
-
-		//uniform buffers
-		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
-		globalUniformBuffer.fillBuffer(std::vector( 2048, 0.5f ));
-
-		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 1024 * sizeof(float) };
 		
 
 
 
 	
 		//create drawer
-		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, swapchain, depthBuffer, renderPass, pipeline, globalUniformBuffer, perObjectUniformBuffer };
+		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, swapchain, depthBuffer, renderPass, pipeline, globalSet, perObjectSet };
 
 		//create models
 		Vulkan::Model model1{ std::vector<MyVertex>{
@@ -116,18 +115,6 @@ int main() {
 		},
 			std::vector<uint32_t>{0, 1, 2, 0, 2, 3}
 		};
-
-
-
-
-
-		struct A {
-			int a, b;
-		} a;
-		Vulkan::Buffers::UniformBuffer ub{ virtualGpu, realGpu, 256 };
-		//Vulkan::Set> test1{ ub };
-		//Vulkan::Set test2{ std::tuple{a, &ub, 0}};
-
 
 
 

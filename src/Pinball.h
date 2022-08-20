@@ -8,7 +8,6 @@
 #include "DepthImage.h"
 #include "DepthStencil.h"
 #include "DescriptorSet.h"
-#include "DescriptorSetLayout.h"
 #include "DescriptorSetPool.h"
 #include "Drawer.h"
 #include "DynamicState.h"

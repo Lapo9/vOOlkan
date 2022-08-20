@@ -27,13 +27,13 @@ namespace Vulkan {
 		 * 
 		 * @param buffer Reference to the buffer where, in the future, the data will be stored.
 		 */
-		template<typename Struct, template<std::same_as<Struct>, std::same_as<VkShaderStageFlagBits>>class... Bindings> requires (std::same_as<Bindings<Struct, VkShaderStageFlagBits>, std::pair<Struct, VkShaderStageFlagBits>> && ...)
-		Set(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const Buffers::UniformBuffer& buffer, Bindings<Struct, VkShaderStageFlagBits>... bindings) : virtualGpu{ virtualGpu } {
+		template<typename... Structs, template<typename, std::same_as<VkShaderStageFlagBits>>class... Bindings> requires (std::same_as<Bindings<Structs, VkShaderStageFlagBits>, std::pair<Structs, VkShaderStageFlagBits>> && ...)
+		Set(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const Buffers::UniformBuffer& buffer, Bindings<Structs, VkShaderStageFlagBits>... bindings) : virtualGpu{ virtualGpu } {
 			//get minimum alignment for the GPU memory, used for padding
 			int alignment = realGpu.getProperties().limits.minUniformBufferOffsetAlignment;
 			int currentOffset = 0;
 
-			([this, &currentOffset, &buffer, alignment](Bindings binding) {
+			([this, &currentOffset, &buffer, alignment](std::pair<Structs, VkShaderStageFlagBits> binding) {
 				this->bindingsInfo.emplace_back(sizeof(binding.first), buffer, currentOffset);
 
 				currentOffset += sizeof(binding.first);
@@ -57,8 +57,8 @@ namespace Vulkan {
 		 * 
 		 * @param ...bindingsInfo Type to be bounded, reference to the buffer where the data of this type will reside, offset into such buffer.
 		 */
-		template<typename Struct, template<std::same_as<Struct>, std::same_as<Buffers::UniformBuffer*>, std::same_as<int>, std::same_as<VkShaderStageFlagBits>>class... T> requires (std::same_as<T<Struct, Buffers::UniformBuffer*, int, VkShaderStageFlagBits>, std::tuple<Struct, Buffers::UniformBuffer*, int, VkShaderStageFlagBits>> && ...)
-			Set(const LogicalDevice& virtualGpu, T<Struct, Buffers::UniformBuffer*, int, VkShaderStageFlagBits>... bindingsInfo) : virtualGpu{ virtualGpu } {
+		template<typename... Structs, template<typename, std::same_as<Buffers::UniformBuffer*>, std::same_as<int>, std::same_as<VkShaderStageFlagBits>>class... T> requires (std::same_as<T<Structs, Buffers::UniformBuffer*, int, VkShaderStageFlagBits>, std::tuple<Structs, Buffers::UniformBuffer*, int, VkShaderStageFlagBits>> && ...)
+			Set(const LogicalDevice& virtualGpu, T<Structs, Buffers::UniformBuffer*, int, VkShaderStageFlagBits>... bindingsInfo) : virtualGpu{ virtualGpu } {
 			(this->bindingsInfo.emplace_back(sizeof(std::get<0>(bindingsInfo)), *std::get<1>(bindingsInfo), std::get<2>(bindingsInfo)), ...);
 		
 			createDescriptorSetLayout(std::get<3>(bindingsInfo)...);
@@ -76,10 +76,37 @@ namespace Vulkan {
 
 
 		struct BindingInfo {
-			int bindingSize; //the size of the binding
-			Buffers::UniformBuffer& buffer; //reference to the buffer of the binding
+			int size; //the size of the binding
+			const Buffers::UniformBuffer& buffer; //reference to the buffer of the binding
 			int offset; //offset in his buffer of the binding
 		};
+
+
+
+		const VkDescriptorSetLayout& operator+() const {
+			return descriptorSetLayout;
+		}
+
+
+		/**
+		 * @brief Returns the number of bindings in this set.
+		 *
+		 * @return The number of bindings in this set..
+		 */
+		int getAmountOfBindings() const {
+			return bindingsInfo.size();
+		}
+
+
+		const std::vector<BindingInfo>& getBindingsInfo() const {
+			return bindingsInfo;
+		}		
+		
+		
+		const BindingInfo& getBindingInfo(int i) const {
+			return bindingsInfo[i];
+		}
+
 
 	private:
 

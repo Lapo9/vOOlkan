@@ -27,7 +27,6 @@
     <ClInclude Include="src\DepthImage.h" />
     <ClInclude Include="src\DescriptorSetPool.h" />
     <ClInclude Include="src\DescriptorSet.h" />
-    <ClInclude Include="src\DescriptorSetLayout.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\StagingBuffer.h" />

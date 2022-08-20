@@ -6,8 +6,8 @@
 
 #include "PipelineLayout.h"
 #include "LogicalDevice.h"
-#include "DescriptorSetLayout.h"
 #include "VulkanException.h"
+#include "Set.h"
 
 
 namespace Vulkan::PipelineOptions { class PipelineLayout; }
@@ -19,12 +19,11 @@ namespace Vulkan::PipelineOptions { class PipelineLayout; }
 class Vulkan::PipelineOptions::PipelineLayout {
 public:
 
-	template<std::same_as<DescriptorSetLayout>... DSL>
-	PipelineLayout(const LogicalDevice& virtualGpu, const DSL&... layouts) : virtualGpu{ virtualGpu } {
+	template<std::same_as<Set>... S>
+	PipelineLayout(const LogicalDevice& virtualGpu, const S&... sets) : virtualGpu{ virtualGpu } {
 		//put the descriptor set layouts in a vector
 		std::vector<VkDescriptorSetLayout> rawLayouts;
-		(rawLayouts.emplace_back(+layouts), ...);
-		(descriptorSetsLayouts.push_back(&layouts), ...);
+		(rawLayouts.emplace_back(+sets), ...);
 		
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -53,14 +52,9 @@ public:
 	}
 
 
-	const DescriptorSetLayout& getLayout(unsigned int i) const {
-		return *(descriptorSetsLayouts[i]);
-	}
-
 private:
 	VkPipelineLayout pipelineLayout;
 	const LogicalDevice& virtualGpu;
-	std::vector<const DescriptorSetLayout*> descriptorSetsLayouts;
 };
 
 
