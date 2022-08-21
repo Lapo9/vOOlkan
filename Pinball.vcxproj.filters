@@ -37,6 +37,9 @@
     <Filter Include="Resource Files\textures">
       <UniqueIdentifier>{74f917fc-83f2-43df-bccb-1565f74b7cad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\DescriptorSetOptions">
+      <UniqueIdentifier>{bb391eb2-8085-49a9-8a74-81c642ace6df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Instance.h">
@@ -156,17 +159,8 @@
     <ClInclude Include="src\IndexBuffer.h">
       <Filter>Source Files\Buffers</Filter>
     </ClInclude>
-    <ClInclude Include="src\DescriptorSet.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\DescriptorSetPool.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\UniformBuffer.h">
       <Filter>Source Files\Buffers</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Set.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\StagingBuffer.h">
       <Filter>Source Files\Buffers</Filter>
@@ -185,6 +179,21 @@
     </ClInclude>
     <ClInclude Include="src\TextureSampler.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DynamicDescriptorSet.h">
+      <Filter>Source Files\DescriptorSetOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DescriptorSetPool.h">
+      <Filter>Source Files\DescriptorSetOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DynamicSet.h">
+      <Filter>Source Files\DescriptorSetOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DescriptorSet.h">
+      <Filter>Source Files\DescriptorSetOptions</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Set.h">
+      <Filter>Source Files\DescriptorSetOptions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

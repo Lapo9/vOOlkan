@@ -19,6 +19,7 @@
 #include "IndexBuffer.h"
 #include "DescriptorSetPool.h"
 #include "DescriptorSet.h"
+#include "DynamicDescriptorSet.h"
 #include "VulkanException.h"
 
 
@@ -51,8 +52,8 @@ public:
 		DepthImage& depthBuffer,
 		const PipelineOptions::RenderPass& renderPass, 
 		const Pipeline& pipeline, 
-		const Set& globalSet,
-		const Set& perObjectSet,
+		const DynamicSet& globalSet,
+		const DynamicSet& perObjectSet,
 		unsigned int framesInFlight = 2) 
 		:
 		framesInFlight{ framesInFlight },
@@ -263,8 +264,8 @@ private:
 	std::vector<SynchronizationPrimitives::Semaphore> imageAvailableSemaphores; //tells when an image is occupied by rendering
 	std::vector<SynchronizationPrimitives::Semaphore> renderFinishedSemaphores; //tells when the rendeing of the image ends
 	std::vector<CommandBuffer> commandBuffers;
-	std::vector<DescriptorSet> globalDescriptorSets; //descriptor sets (one per frame in flight) for the global info
-	std::vector<DescriptorSet> perObjectDescriptorSets; //descriptor sets (one per frame in flight) for the per-object info
+	std::vector<DynamicDescriptorSet> globalDescriptorSets; //descriptor sets (one per frame in flight) for the global info
+	std::vector<DynamicDescriptorSet> perObjectDescriptorSets; //descriptor sets (one per frame in flight) for the per-object info
 };
 
 #endif
