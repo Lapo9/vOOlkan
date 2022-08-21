@@ -195,6 +195,9 @@
     <ClInclude Include="src\DescriptorSetBindingCreationInfo.h">
       <Filter>Source Files\DescriptorSetOptions</Filter>
     </ClInclude>
+    <ClInclude Include="src\StaticSet.h">
+      <Filter>Source Files\DescriptorSetOptions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -240,6 +243,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Image.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DescriptorSetBindingCreationInfo.cpp">
+      <Filter>Source Files\DescriptorSetOptions</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureImage.cpp">
       <Filter>Source Files\Images</Filter>
     </ClCompile>
   </ItemGroup>

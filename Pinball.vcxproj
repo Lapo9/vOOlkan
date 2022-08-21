@@ -32,6 +32,7 @@
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\Set.h" />
     <ClInclude Include="src\StagingBuffer.h" />
+    <ClInclude Include="src\StaticSet.h" />
     <ClInclude Include="src\TextureImage.h" />
     <ClInclude Include="src\TextureSampler.h" />
     <ClInclude Include="src\UniformBuffer.h" />
@@ -73,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CommandBufferPool.cpp" />
+    <ClCompile Include="src\DescriptorSetBindingCreationInfo.cpp" />
     <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\ImageView.cpp" />
     <ClCompile Include="src\Instance.cpp" />
@@ -85,6 +87,7 @@
     <ClCompile Include="src\SwapchainCapabilities.cpp" />
     <ClCompile Include="src\SwapchainPresentMode.cpp" />
     <ClCompile Include="src\SwapchainSurfaceFormat.cpp" />
+    <ClCompile Include="src\TextureImage.cpp" />
     <ClCompile Include="src\Window.cpp" />
     <ClCompile Include="src\WindowSurface.cpp" />
   </ItemGroup>

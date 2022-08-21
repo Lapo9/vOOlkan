@@ -3,51 +3,33 @@
 
 #include <vulkan/vulkan.h>
 
-#include "UniformBuffer.h"
 
-
-namespace Vulkan { class DescriptorSetBindingCreationInfo; }
+namespace Vulkan { class DescriptorSetBindingCreationInfo; class TextureImage; namespace Buffers { class UniformBuffer; } }
 
 
 class Vulkan::DescriptorSetBindingCreationInfo {
 public:
-	DescriptorSetBindingCreationInfo(unsigned int binding, const VkDescriptorSet& descriptorSet, int size, const Buffers::UniformBuffer& buffer, int offset) : descriptorInfo{}, bufferInfo{} {
-		bufferInfo.buffer = +buffer;
-		bufferInfo.offset = offset;
-		bufferInfo.range = size;
+	DescriptorSetBindingCreationInfo(unsigned int binding, const VkDescriptorSet& descriptorSet, int size, const Buffers::UniformBuffer& buffer, int offset);
 
-		descriptorInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorInfo.dstSet = descriptorSet;
-		descriptorInfo.dstBinding = binding;
-		descriptorInfo.dstArrayElement = 0;
-		descriptorInfo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-		descriptorInfo.descriptorCount = 1;
-		descriptorInfo.pBufferInfo = &bufferInfo;
-		descriptorInfo.pNext = nullptr;
-	}
+
+	DescriptorSetBindingCreationInfo(unsigned int binding, const VkDescriptorSet& descriptorSet, const TextureImage& texture);
 
 
 	DescriptorSetBindingCreationInfo(const DescriptorSetBindingCreationInfo&) = delete;
 	DescriptorSetBindingCreationInfo& operator=(const DescriptorSetBindingCreationInfo&) = delete;
 	DescriptorSetBindingCreationInfo& operator=(DescriptorSetBindingCreationInfo&&) = delete;
 
-	DescriptorSetBindingCreationInfo(DescriptorSetBindingCreationInfo&& movedFrom) noexcept {
-		descriptorInfo = movedFrom.descriptorInfo;
-		bufferInfo = movedFrom.bufferInfo;
-
-		descriptorInfo.pBufferInfo = &bufferInfo;
-	}
+	DescriptorSetBindingCreationInfo(DescriptorSetBindingCreationInfo&& movedFrom) noexcept;
 
 
 
-	const VkWriteDescriptorSet& operator+() const {
-		return descriptorInfo;
-	}
+	const VkWriteDescriptorSet& operator+() const;
 
 
-//private:
+private:
 	VkWriteDescriptorSet descriptorInfo;
 	VkDescriptorBufferInfo bufferInfo;
+	VkDescriptorImageInfo imageInfo;
 };
 
 

@@ -81,8 +81,9 @@ namespace Vulkan {
 		 * 
 		 * @param ...bindingsInfo Type to be bounded, reference to the buffer where the data of this type will reside, offset into such buffer, dynamic distance between bindings of 2 contiguous objects, shader stage in which the binding is used.
 		 */
-		template<typename... Structs, template<typename, std::same_as<Buffers::UniformBuffer*>, std::same_as<int>, std::same_as<int>, std::same_as<VkShaderStageFlagBits>>class... T> requires (std::same_as<T<Structs, Buffers::UniformBuffer*, int, int, VkShaderStageFlagBits>, std::tuple<Structs, Buffers::UniformBuffer*, int, int, VkShaderStageFlagBits>> && ...)
-			DynamicSet(const LogicalDevice& virtualGpu, T<Structs, Buffers::UniformBuffer*, int, int, VkShaderStageFlagBits>... bindingsInfo) : Set{ virtualGpu } {
+		template<typename... Structs, typename... T> requires 
+			(std::same_as<T, std::tuple<Structs, Buffers::UniformBuffer*, int, int, VkShaderStageFlagBits>> && ...)
+			DynamicSet(const LogicalDevice& virtualGpu, T... bindingsInfo) : Set{ virtualGpu } {
 			(this->bindingsInfo.push_back(std::make_unique<DynamicSetBindingInfo>(sizeof(std::get<0>(bindingsInfo)), *std::get<1>(bindingsInfo), std::get<2>(bindingsInfo), std::get<3>(bindingsInfo))), ...);
 		
 			createDescriptorSetLayout(std::pair{ std::get<4>(bindingsInfo), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC }...);

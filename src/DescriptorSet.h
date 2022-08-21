@@ -49,7 +49,6 @@ namespace Vulkan {
 			std::vector<DescriptorSetBindingCreationInfo> descriptorsInfo;
 			for (int i = 0; i < set.getAmountOfBindings(); ++i) {
 				descriptorsInfo.push_back(set.getBindingInfo(i).generateDescriptorSetBindingInfo(i, descriptorSet));
-				int x = 2;
 			}
 
 			std::vector<VkWriteDescriptorSet> rawDescriptorsInfo;
