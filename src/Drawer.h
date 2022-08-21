@@ -19,7 +19,6 @@
 #include "IndexBuffer.h"
 #include "DescriptorSetPool.h"
 #include "DescriptorSet.h"
-#include "DynamicDescriptorSet.h"
 #include "VulkanException.h"
 
 
@@ -75,8 +74,8 @@ public:
 			imageAvailableSemaphores.emplace_back(virtualGpu);
 			renderFinishedSemaphores.emplace_back(virtualGpu);
 			commandBuffers.emplace_back(virtualGpu, commandBufferPool);
-			globalDescriptorSets.emplace_back(virtualGpu, realGpu, descriptorSetPool, globalSet);
-			perObjectDescriptorSets.emplace_back(virtualGpu, realGpu, descriptorSetPool, perObjectSet);
+			globalDescriptorSets.emplace_back(virtualGpu, descriptorSetPool, globalSet);
+			perObjectDescriptorSets.emplace_back(virtualGpu, descriptorSetPool, perObjectSet);
 		}
 	}
 
@@ -175,9 +174,9 @@ public:
 		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);		
 		commandBuffers[currentFrame].addCommand(vkCmdBindVertexBuffers, 0, 1, vertexBuffers, offsets);
 		commandBuffers[currentFrame].addCommand(vkCmdBindIndexBuffer, +indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-		commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 0, 1, &+globalDescriptorSets[currentFrame], globalDescriptorSets[currentFrame].getAmountOfBindings(), globalDescriptorSets[currentFrame].getOffsets().data()); //TODO at the moment the binding of the global descriptors is dynamic, but it should be static (not a big deal really)
+		commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 0, 1, &+globalDescriptorSets[currentFrame], globalDescriptorSets[currentFrame].getSet().getAmountOfBindings(), globalDescriptorSets[currentFrame].getSet().getDynamicDistances().data()); //TODO at the moment the binding of the global descriptors is dynamic, but it should be static (not a big deal really)
 		for (int i = 0; i < indexBuffer.getModelsCount(); ++i) {
-			commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 1, 1, &+perObjectDescriptorSets[currentFrame], perObjectDescriptorSets[currentFrame].getAmountOfBindings(), perObjectDescriptorSets[currentFrame].getOffsets(i).data());
+			commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 1, 1, &+perObjectDescriptorSets[currentFrame], perObjectDescriptorSets[currentFrame].getSet().getAmountOfBindings(), perObjectDescriptorSets[currentFrame].getSet().getDynamicDistances(i).data());
 			commandBuffers[currentFrame].addCommand(vkCmdDrawIndexed, indexBuffer.getModelIndexesCount(i), 1, indexBuffer.getModelOffset(i), 0, 0);
 		}
 		commandBuffers[currentFrame].endCommand();
@@ -264,8 +263,8 @@ private:
 	std::vector<SynchronizationPrimitives::Semaphore> imageAvailableSemaphores; //tells when an image is occupied by rendering
 	std::vector<SynchronizationPrimitives::Semaphore> renderFinishedSemaphores; //tells when the rendeing of the image ends
 	std::vector<CommandBuffer> commandBuffers;
-	std::vector<DynamicDescriptorSet> globalDescriptorSets; //descriptor sets (one per frame in flight) for the global info
-	std::vector<DynamicDescriptorSet> perObjectDescriptorSets; //descriptor sets (one per frame in flight) for the per-object info
+	std::vector<DescriptorSet<DynamicSet>> globalDescriptorSets; //descriptor sets (one per frame in flight) for the global info
+	std::vector<DescriptorSet<DynamicSet>> perObjectDescriptorSets; //descriptor sets (one per frame in flight) for the per-object info
 };
 
 #endif

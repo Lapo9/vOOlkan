@@ -10,6 +10,7 @@
 #include "DescriptorSet.h"
 #include "DescriptorSetPool.h"
 #include "Drawer.h"
+#include "DynamicSet.h"
 #include "DynamicState.h"
 #include "Fence.h"
 #include "Framebuffer.h"

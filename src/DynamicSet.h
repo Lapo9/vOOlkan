@@ -14,19 +14,26 @@
 
 namespace Vulkan {
 
-	struct DynamicSetBindingInfo {
-		int size; //the size of the binding
-		const Buffers::UniformBuffer& buffer; //reference to the buffer of the binding
-		int offset; //offset in his buffer of the binding
-		int dynamicDistance; //distance between this binding in 2 different objects (e.g. AAAABB AAAABB distA=6, distB=6. AAAA AAAA BB BB distA=4, distB=2)
-	};
-
 	/**
 	 * @brief A DynamicSet is a set of bindings which can be read by the shader.
 	 * @details A DynamicSet keeps all the information about its bindings, such as their size, their buffer and the offset in such buffer. This way it is possible to instantiate a DescriptorSet starting from a DynamicSet only.
 	 */
-	class DynamicSet : public Set<DynamicSetBindingInfo> {
+	class DynamicSet : public Set {
 	public:
+
+		struct DynamicSetBindingInfo : public Set::BindingInfo {
+			DynamicSetBindingInfo(int size, const Buffers::UniformBuffer& buffer, int offset, int dynamicDistance = 0) : size{ size }, buffer{ buffer }, offset{ offset }, dynamicDistance{ dynamicDistance }{}
+
+			DescriptorSetBindingCreationInfo generateDescriptorSetBindingInfo(unsigned int binding, const VkDescriptorSet& descriptorSet) const override {
+				return DescriptorSetBindingCreationInfo{ binding, descriptorSet, size, buffer, offset };
+			}
+
+			int size; //the size of the binding
+			const Buffers::UniformBuffer& buffer; //reference to the buffer of the binding
+			int offset; //offset in his buffer of the binding
+			int dynamicDistance; //distance between this binding in 2 different objects (e.g. AAAABB AAAABB distA=6, distB=6. AAAA AAAA BB BB distA=4, distB=2)
+		};
+
 
 		/**
 		 * @brief Creates a DynamicSet where each binding is allocated in the same buffer. The first binding will be first in the buffer, and so on.
@@ -46,7 +53,7 @@ namespace Vulkan {
 			int currentOffset = 0;
 
 			([this, &currentOffset, &buffer, alignment](std::pair<Structs, VkShaderStageFlagBits> binding) {
-				this->bindingsInfo.emplace_back(sizeof(binding.first), buffer, currentOffset);
+				this->bindingsInfo.push_back(std::make_unique<DynamicSetBindingInfo>(sizeof(binding.first), buffer, currentOffset));
 
 				currentOffset += sizeof(binding.first);
 				int paddingAmount = (alignment - (currentOffset % alignment)) % alignment; //number of padding bytes
@@ -55,7 +62,7 @@ namespace Vulkan {
 
 			//the dynamic distance for bindings allocated in this way is always the same and equal to the total size of the bindings
 			for (auto& bindingInfo : bindingsInfo) {
-				bindingInfo.dynamicDistance = currentOffset;
+				static_cast<DynamicSetBindingInfo*>(bindingInfo.get())->dynamicDistance = currentOffset;
 			}
 
 			createDescriptorSetLayout(std::pair{ bindings.second, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC }...);
@@ -76,9 +83,21 @@ namespace Vulkan {
 		 */
 		template<typename... Structs, template<typename, std::same_as<Buffers::UniformBuffer*>, std::same_as<int>, std::same_as<int>, std::same_as<VkShaderStageFlagBits>>class... T> requires (std::same_as<T<Structs, Buffers::UniformBuffer*, int, int, VkShaderStageFlagBits>, std::tuple<Structs, Buffers::UniformBuffer*, int, int, VkShaderStageFlagBits>> && ...)
 			DynamicSet(const LogicalDevice& virtualGpu, T<Structs, Buffers::UniformBuffer*, int, int, VkShaderStageFlagBits>... bindingsInfo) : Set{ virtualGpu } {
-			(this->bindingsInfo.emplace_back(sizeof(std::get<0>(bindingsInfo)), *std::get<1>(bindingsInfo), std::get<2>(bindingsInfo), std::get<3>(bindingsInfo)), ...);
+			(this->bindingsInfo.push_back(std::make_unique<DynamicSetBindingInfo>(sizeof(std::get<0>(bindingsInfo)), *std::get<1>(bindingsInfo), std::get<2>(bindingsInfo), std::get<3>(bindingsInfo))), ...);
 		
 			createDescriptorSetLayout(std::pair{ std::get<4>(bindingsInfo), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC }...);
+		}
+
+
+
+		std::vector<uint32_t> getDynamicDistances(int i = 0) const {
+			std::vector<uint32_t> res;
+
+			for (const auto& binding : bindingsInfo) {
+				res.push_back(static_cast<DynamicSetBindingInfo*>(binding.get())->dynamicDistance * i);
+			}
+
+			return res;
 		}
 
 	};

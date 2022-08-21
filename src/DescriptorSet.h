@@ -20,26 +20,9 @@ namespace Vulkan {
 	 * @brief A DescriptorSet is an object which holds the handles (pointers) to the bindings (variables) in a specific set.
 	 * @details If the layout of the set is { Data 40bytes, Data 6bytes, Data 10bytes }, then, by default, the descriptor set will hold 3 pointers into a UniformBuffer.
 	 */
-	template<typename BindingsInfo, std::derived_from<Vulkan::Set<BindingsInfo>> Set>
+	template<std::derived_from<Vulkan::Set> Set>
 	class DescriptorSet {
 	public:
-
-		const VkDescriptorSet& operator+() const {
-			return descriptorSet;
-		}
-
-
-		/**
-		 * @brief Returns how many dynamic bindings are present in this descriptor set.
-		 *
-		 * @return How many dynamic bindings are present in this descriptor set.
-		 */
-		int getAmountOfBindings() const {
-			return set.getAmountOfBindings();
-		}
-
-
-	protected:
 
 		/**
 		 * @brief Builds a DescriptorSet by following the information of the passed-in set.
@@ -50,6 +33,7 @@ namespace Vulkan {
 		 * @param set The set from which to create this descriptor set. A DynamicSet has all the info about the layout of the bindings, such as their size and the buffers where they must be stored.
 		 */
 		DescriptorSet(const LogicalDevice& virtualGpu, const DescriptorSetPool& descriptorPool, const Set& set) : set{ set } {
+			//create the descriptor set
 			VkDescriptorSetAllocateInfo allocInfo{};
 			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 			allocInfo.descriptorPool = +descriptorPool;
@@ -59,9 +43,38 @@ namespace Vulkan {
 			if (VkResult result = vkAllocateDescriptorSets(+virtualGpu, &allocInfo, &descriptorSet); result != VK_SUCCESS) {
 				throw VulkanException("Failed to allocate descriptor sets!", result);
 			}
+
+
+			//fill the descriptor set's bindings
+			std::vector<DescriptorSetBindingCreationInfo> descriptorsInfo;
+			for (int i = 0; i < set.getAmountOfBindings(); ++i) {
+				descriptorsInfo.push_back(set.getBindingInfo(i).generateDescriptorSetBindingInfo(i, descriptorSet));
+				int x = 2;
+			}
+
+			std::vector<VkWriteDescriptorSet> rawDescriptorsInfo;
+			for (const auto& descriptorInfo : descriptorsInfo) {
+				rawDescriptorsInfo.push_back(+descriptorInfo);
+			}
+
+			vkUpdateDescriptorSets(+virtualGpu, rawDescriptorsInfo.size(), rawDescriptorsInfo.data(), 0, nullptr);
 		}
 
 
+		const VkDescriptorSet& operator+() const {
+			return descriptorSet;
+		}
+
+
+		/**
+		 * @brief Returns the underlying set of this descriptor set.
+		 */
+		const Set& getSet() const {
+			return set;
+		}
+
+
+	private:
 		VkDescriptorSet descriptorSet;
 		const Set& set;
 	};

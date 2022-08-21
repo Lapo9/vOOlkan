@@ -9,6 +9,7 @@
 #include "UniformBuffer.h"
 #include "LogicalDevice.h"
 #include "PhysicalDevice.h"
+#include "DescriptorSetBindingCreationInfo.h"
 
 
 namespace Vulkan {
@@ -18,7 +19,6 @@ namespace Vulkan {
 	 * @brief A Set is a set of bindings which can be read by the shader.
 	 * @details A Set keeps all the information about its bindings, such as their size, their buffer and the offset in such buffer. This way it is possible to instantiate a DescriptorSet starting from a Set only.
 	 */
-	template <typename BindingInfo>
 	class Set {
 	public:
 
@@ -38,6 +38,11 @@ namespace Vulkan {
 		}
 
 
+		struct BindingInfo {
+			virtual DescriptorSetBindingCreationInfo generateDescriptorSetBindingInfo(unsigned int binding, const VkDescriptorSet& descriptorSet) const = 0;
+		};
+
+
 		/**
 		 * @brief Returns the number of bindings in this set.
 		 *
@@ -51,7 +56,7 @@ namespace Vulkan {
 		/**
 		 * @brief Returns the size, offset and buffer of each binding in this set.
 		 */
-		const std::vector<BindingInfo>& getBindingsInfo() const {
+		const std::vector<std::unique_ptr<BindingInfo>>& getBindingsInfo() const {
 			return bindingsInfo;
 		}
 
@@ -60,7 +65,7 @@ namespace Vulkan {
 		 * @brief Returns the size, offset and buffer of the binding number i of this set.
 		 */
 		const BindingInfo& getBindingInfo(int i) const {
-			return bindingsInfo[i];
+			return *bindingsInfo[i];
 		}
 
 
@@ -97,7 +102,7 @@ namespace Vulkan {
 
 
 		VkDescriptorSetLayout descriptorSetLayout;
-		std::vector<BindingInfo> bindingsInfo;
+		std::vector<std::unique_ptr<BindingInfo>> bindingsInfo;
 		const LogicalDevice& virtualGpu;
 
 	};
