@@ -34,13 +34,13 @@ Vulkan::TextureImage::TextureImage(const LogicalDevice& virtualGpu, const Physic
     stbi_image_free(pixels); //release memory arei in CPU (the image is now in the buffer)
 
     //change the layout of the image in order to be able to receive data from a buffer
-    transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBufferPool);
+    //transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBufferPool);
 
     //fill the image with the data of the staging buffer
     fillImage(stagingBuffer, commandBufferPool);
 
     //change image layout to a layout suitable for sampling on the GPU
-    transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBufferPool);
+    //transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBufferPool);
 
     //create the image view
     generateImageView("base", virtualGpu, VK_IMAGE_ASPECT_COLOR_BIT);

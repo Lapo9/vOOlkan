@@ -67,7 +67,7 @@ int main() {
 		using Mvp = struct { glm::mat4 mvp; };
 		using Color = struct { glm::vec4 rgb; };
 
-		Vulkan::StaticSet globalSet{ virtualGpu, std::tuple{ VK_SHADER_STAGE_ALL, Lights{}, &globalUniformBuffer, 0 } };
+		Vulkan::StaticSet globalSet{ virtualGpu, std::tuple{ VK_SHADER_STAGE_ALL, &texture}, std::tuple{ VK_SHADER_STAGE_ALL, Lights{}, &globalUniformBuffer, 0 } };
 		Vulkan::DynamicSet perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, Mvp{}}, std::pair{VK_SHADER_STAGE_ALL, Color{}} };
 		
 

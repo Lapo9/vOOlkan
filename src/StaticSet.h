@@ -63,7 +63,7 @@ namespace Vulkan {
 			StaticSet(const LogicalDevice& virtualGpu, const T&... bindingsInfo) : Set{ virtualGpu } {
 			(this->bindingsInfo.push_back(createBindingInfo(bindingsInfo)), ...);
 
-			createDescriptorSetLayout(std::pair{ std::get<0>(bindingsInfo), std::same_as<T, std::tuple<TextureImage, VkShaderStageFlagBits>> ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }...);
+			createDescriptorSetLayout(std::pair{ std::get<0>(bindingsInfo), std::same_as<T, std::tuple<VkShaderStageFlagBits, TextureImage*>> ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }...);
 		}
 
 

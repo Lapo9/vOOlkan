@@ -5,7 +5,7 @@
 #include "TextureImage.h"
 
 
-Vulkan::DescriptorSetBindingCreationInfo::DescriptorSetBindingCreationInfo(unsigned int binding, const VkDescriptorSet& descriptorSet, int size, const Buffers::UniformBuffer& buffer, int offset) {
+Vulkan::DescriptorSetBindingCreationInfo::DescriptorSetBindingCreationInfo(unsigned int binding, const VkDescriptorSet& descriptorSet, int size, const Buffers::UniformBuffer& buffer, int offset, int dynamicDistance) {
 	bufferInfo.buffer = +buffer;
 	bufferInfo.offset = offset;
 	bufferInfo.range = size;
@@ -22,6 +22,23 @@ Vulkan::DescriptorSetBindingCreationInfo::DescriptorSetBindingCreationInfo(unsig
 }
 
 
+Vulkan::DescriptorSetBindingCreationInfo::DescriptorSetBindingCreationInfo(unsigned int binding, const VkDescriptorSet& descriptorSet, int size, const Buffers::UniformBuffer& buffer, int offset) {
+	bufferInfo.buffer = +buffer;
+	bufferInfo.offset = offset;
+	bufferInfo.range = size;
+
+	descriptorInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorInfo.dstSet = descriptorSet;
+	descriptorInfo.dstBinding = binding;
+	descriptorInfo.dstArrayElement = 0;
+	descriptorInfo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	descriptorInfo.descriptorCount = 1;
+	descriptorInfo.pBufferInfo = &bufferInfo;
+	descriptorInfo.pImageInfo = nullptr;
+	descriptorInfo.pNext = nullptr;
+}
+
+
 Vulkan::DescriptorSetBindingCreationInfo::DescriptorSetBindingCreationInfo(unsigned int binding, const VkDescriptorSet& descriptorSet, const TextureImage& texture) {
 	imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	imageInfo.imageView = +texture["base"];
@@ -31,7 +48,7 @@ Vulkan::DescriptorSetBindingCreationInfo::DescriptorSetBindingCreationInfo(unsig
 	descriptorInfo.dstSet = descriptorSet;
 	descriptorInfo.dstBinding = binding;
 	descriptorInfo.dstArrayElement = 0;
-	descriptorInfo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+	descriptorInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	descriptorInfo.descriptorCount = 1;
 	descriptorInfo.pBufferInfo = nullptr;
 	descriptorInfo.pImageInfo = &imageInfo;

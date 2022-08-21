@@ -9,6 +9,9 @@ namespace Vulkan { class DescriptorSetBindingCreationInfo; class TextureImage; n
 
 class Vulkan::DescriptorSetBindingCreationInfo {
 public:
+	DescriptorSetBindingCreationInfo(unsigned int binding, const VkDescriptorSet& descriptorSet, int size, const Buffers::UniformBuffer& buffer, int offset, int dynamicDistance);
+	
+	
 	DescriptorSetBindingCreationInfo(unsigned int binding, const VkDescriptorSet& descriptorSet, int size, const Buffers::UniformBuffer& buffer, int offset);
 
 

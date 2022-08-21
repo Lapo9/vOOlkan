@@ -25,7 +25,7 @@ namespace Vulkan {
 			DynamicSetBindingInfo(int size, const Buffers::UniformBuffer& buffer, int offset, int dynamicDistance = 0) : size{ size }, buffer{ buffer }, offset{ offset }, dynamicDistance{ dynamicDistance }{}
 
 			DescriptorSetBindingCreationInfo generateDescriptorSetBindingInfo(unsigned int binding, const VkDescriptorSet& descriptorSet) const override {
-				return DescriptorSetBindingCreationInfo{ binding, descriptorSet, size, buffer, offset };
+				return DescriptorSetBindingCreationInfo{ binding, descriptorSet, size, buffer, offset, dynamicDistance };
 			}
 
 			int size; //the size of the binding
