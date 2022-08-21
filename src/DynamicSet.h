@@ -46,16 +46,16 @@ namespace Vulkan {
 		 * 
 		 * @param buffer Reference to the buffer where, in the future, the data will be stored.
 		 */
-		template<typename... Structs, template<typename, std::same_as<VkShaderStageFlagBits>>class... Bindings> requires (std::same_as<Bindings<Structs, VkShaderStageFlagBits>, std::pair<Structs, VkShaderStageFlagBits>> && ...)
-		DynamicSet(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const Buffers::UniformBuffer& buffer, Bindings<Structs, VkShaderStageFlagBits>... bindings) : Set{ virtualGpu } {
+		template<typename... Structs, template<typename, typename>class... Bindings> requires (std::same_as<Bindings<VkShaderStageFlagBits, Structs>, std::pair<VkShaderStageFlagBits, Structs>> && ...)
+		DynamicSet(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const Buffers::UniformBuffer& buffer, Bindings<VkShaderStageFlagBits, Structs>... bindings) : Set{ virtualGpu } {
 			//get minimum alignment for the GPU memory, used for padding
 			int alignment = realGpu.getProperties().limits.minUniformBufferOffsetAlignment;
 			int currentOffset = 0;
 
-			([this, &currentOffset, &buffer, alignment](std::pair<Structs, VkShaderStageFlagBits> binding) {
-				this->bindingsInfo.push_back(std::make_unique<DynamicSetBindingInfo>(sizeof(binding.first), buffer, currentOffset));
+			([this, &currentOffset, &buffer, alignment](std::pair<VkShaderStageFlagBits, Structs> binding) {
+				this->bindingsInfo.push_back(std::make_unique<DynamicSetBindingInfo>(sizeof(binding.second), buffer, currentOffset));
 
-				currentOffset += sizeof(binding.first);
+				currentOffset += sizeof(binding.second);
 				int paddingAmount = (alignment - (currentOffset % alignment)) % alignment; //number of padding bytes
 				currentOffset += paddingAmount; //padding
 				}(bindings), ...);
@@ -65,7 +65,7 @@ namespace Vulkan {
 				static_cast<DynamicSetBindingInfo*>(bindingInfo.get())->dynamicDistance = currentOffset;
 			}
 
-			createDescriptorSetLayout(std::pair{ bindings.second, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC }...);
+			createDescriptorSetLayout(std::pair{ bindings.first, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC }...);
 		}
 
 
@@ -79,14 +79,14 @@ namespace Vulkan {
 		 *			The layout of buf2 will be: ddddeeeeffff.
 		 *			The VkDescriptorSetLayout object will always be a dynamic buffer.
 		 * 
-		 * @param ...bindingsInfo Type to be bounded, reference to the buffer where the data of this type will reside, offset into such buffer, dynamic distance between bindings of 2 contiguous objects, shader stage in which the binding is used.
+		 * @param ...bindingsInfo Shader stage in which the binding is used, type to be bounded, reference to the buffer where the data of this type will reside, offset into such buffer, dynamic distance between bindings of 2 contiguous objects.
 		 */
 		template<typename... Structs, typename... T> requires 
-			(std::same_as<T, std::tuple<Structs, Buffers::UniformBuffer*, int, int, VkShaderStageFlagBits>> && ...)
+			(std::same_as<T, std::tuple<VkShaderStageFlagBits, Structs, Buffers::UniformBuffer*, int, int>> && ...)
 			DynamicSet(const LogicalDevice& virtualGpu, T... bindingsInfo) : Set{ virtualGpu } {
-			(this->bindingsInfo.push_back(std::make_unique<DynamicSetBindingInfo>(sizeof(std::get<0>(bindingsInfo)), *std::get<1>(bindingsInfo), std::get<2>(bindingsInfo), std::get<3>(bindingsInfo))), ...);
+			(this->bindingsInfo.push_back(std::make_unique<DynamicSetBindingInfo>(sizeof(std::get<1>(bindingsInfo)), *std::get<2>(bindingsInfo), std::get<3>(bindingsInfo), std::get<4>(bindingsInfo))), ...);
 		
-			createDescriptorSetLayout(std::pair{ std::get<4>(bindingsInfo), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC }...);
+			createDescriptorSetLayout(std::pair{ std::get<0>(bindingsInfo), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC }...);
 		}
 
 

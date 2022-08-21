@@ -7,7 +7,7 @@
 #include "PipelineLayout.h"
 #include "LogicalDevice.h"
 #include "VulkanException.h"
-#include "DynamicSet.h"
+#include "Set.h"
 
 
 namespace Vulkan::PipelineOptions { class PipelineLayout; }
@@ -19,7 +19,7 @@ namespace Vulkan::PipelineOptions { class PipelineLayout; }
 class Vulkan::PipelineOptions::PipelineLayout {
 public:
 
-	template<std::same_as<DynamicSet>... S>
+	template<typename... S> requires (std::derived_from<S, Set> && ...)
 	PipelineLayout(const LogicalDevice& virtualGpu, const S&... sets) : virtualGpu{ virtualGpu } {
 		//put the descriptor set layouts in a vector
 		std::vector<VkDescriptorSetLayout> rawLayouts;

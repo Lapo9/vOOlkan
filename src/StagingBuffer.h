@@ -20,7 +20,7 @@ public:
 
 
 
-    void fillBuffer(void* data, size_t size) {
+    void fillBuffer(unsigned char* data, size_t size) {
         void* rawData;
         vkMapMemory(+virtualGpu, bufferMemory, 0, size, 0, &rawData);
         memcpy(rawData, data, size);

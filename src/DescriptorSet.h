@@ -6,6 +6,8 @@
 
 #include "DescriptorSetPool.h"
 #include "Set.h"
+#include "DynamicSet.h"
+#include "StaticSet.h"
 #include "LogicalDevice.h"
 #include "PhysicalDevice.h"
 #include "UniformBuffer.h"
@@ -20,7 +22,7 @@ namespace Vulkan {
 	 * @brief A DescriptorSet is an object which holds the handles (pointers) to the bindings (variables) in a specific set.
 	 * @details If the layout of the set is { Data 40bytes, Data 6bytes, Data 10bytes }, then, by default, the descriptor set will hold 3 pointers into a UniformBuffer.
 	 */
-	template<std::derived_from<Vulkan::Set> Set>
+	template<std::derived_from<Vulkan::Set> S>
 	class DescriptorSet {
 	public:
 
@@ -32,7 +34,7 @@ namespace Vulkan {
 		 * @param descriptorPool The pool from which allocate the buffers.
 		 * @param set The set from which to create this descriptor set. A DynamicSet has all the info about the layout of the bindings, such as their size and the buffers where they must be stored.
 		 */
-		DescriptorSet(const LogicalDevice& virtualGpu, const DescriptorSetPool& descriptorPool, const Set& set) : set{ set } {
+		DescriptorSet(const LogicalDevice& virtualGpu, const DescriptorSetPool& descriptorPool, const S& set) : set{ set } {
 			//create the descriptor set
 			VkDescriptorSetAllocateInfo allocInfo{};
 			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -68,14 +70,14 @@ namespace Vulkan {
 		/**
 		 * @brief Returns the underlying set of this descriptor set.
 		 */
-		const Set& getSet() const {
+		const S& getSet() const {
 			return set;
 		}
 
 
 	private:
 		VkDescriptorSet descriptorSet;
-		const Set& set;
+		const S& set;
 	};
 }
 

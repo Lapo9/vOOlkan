@@ -20,6 +20,9 @@
 #include "DescriptorSetPool.h"
 #include "DescriptorSet.h"
 #include "VulkanException.h"
+#include "Set.h"
+#include "DynamicSet.h"
+#include "StaticSet.h"
 
 
 namespace Vulkan { class Drawer; }
@@ -49,9 +52,10 @@ public:
 		const WindowSurface& windowSurface,
 		Swapchain& swapchain,
 		DepthImage& depthBuffer,
+		const CommandBufferPool& commandBufferPool,
 		const PipelineOptions::RenderPass& renderPass, 
 		const Pipeline& pipeline, 
-		const DynamicSet& globalSet,
+		const StaticSet& globalSet,
 		const DynamicSet& perObjectSet,
 		unsigned int framesInFlight = 2) 
 		:
@@ -65,7 +69,7 @@ public:
 		renderPass{ renderPass }, 
 		pipeline{ pipeline }, 
 		swapchain{ swapchain },
-		commandBufferPool{ virtualGpu } ,
+		commandBufferPool{ commandBufferPool } ,
 		descriptorSetPool{ virtualGpu, framesInFlight*10, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER }{
 
 		framebuffers = Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain, depthBuffer["base"]);
@@ -89,7 +93,7 @@ public:
 	 * @tparam ...Args The types of the arguments to pass to each Vulkan function.
 	 * @tparam ...Command The tuples, each containing the Vulkan function and its arguments (of type ...Args).
 	 */
-	template<typename... Args, template<typename...> class... Command> requires (std::same_as<Command<>, std::tuple<>> && ...)
+	/*template<typename... Args, template<typename...> class... Command> requires (std::same_as<Command<>, std::tuple<>> && ...)
 	void draw(const Buffers::VertexBuffer& vertexBuffer, const Buffers::IndexBuffer& indexBuffer, Command<void(*)(VkCommandBuffer, Args...), Args...>&&... commands) {
 		uint32_t obtainedSwapchainImageIndex; //the index of the image of the swapchain we'll draw to
 		vkWaitForFences(+virtualGpu, 1, &+fences[currentFrame], VK_TRUE, UINT64_MAX); //wait until a swapchain image is free
@@ -146,7 +150,7 @@ public:
 
 		increaseCurrentFrame();
 	}
-
+	*/
 
 	/**
 	 * @brief Draws the vertexBuffer.
@@ -174,11 +178,12 @@ public:
 		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex], pipeline);		
 		commandBuffers[currentFrame].addCommand(vkCmdBindVertexBuffers, 0, 1, vertexBuffers, offsets);
 		commandBuffers[currentFrame].addCommand(vkCmdBindIndexBuffer, +indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-		commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 0, 1, &+globalDescriptorSets[currentFrame], globalDescriptorSets[currentFrame].getSet().getAmountOfBindings(), globalDescriptorSets[currentFrame].getSet().getDynamicDistances().data()); //TODO at the moment the binding of the global descriptors is dynamic, but it should be static (not a big deal really)
+		commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 0, 1, &+globalDescriptorSets[currentFrame], 0, nullptr); //TODO at the moment the binding of the global descriptors is dynamic, but it should be static (not a big deal really)
 		for (int i = 0; i < indexBuffer.getModelsCount(); ++i) {
 			commandBuffers[currentFrame].addCommand(vkCmdBindDescriptorSets, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline.getLayout(), 1, 1, &+perObjectDescriptorSets[currentFrame], perObjectDescriptorSets[currentFrame].getSet().getAmountOfBindings(), perObjectDescriptorSets[currentFrame].getSet().getDynamicDistances(i).data());
 			commandBuffers[currentFrame].addCommand(vkCmdDrawIndexed, indexBuffer.getModelIndexesCount(i), 1, indexBuffer.getModelOffset(i), 0, 0);
 		}
+		commandBuffers[currentFrame].addCommand(vkCmdEndRenderPass);
 		commandBuffers[currentFrame].endCommand();
 
 		//submit the command buffer to a queue
@@ -252,18 +257,18 @@ private:
 	const WindowSurface& windowSurface;
 	const PipelineOptions::RenderPass& renderPass;
 	const Pipeline& pipeline;
+	const CommandBufferPool& commandBufferPool; 
 
 	Swapchain& swapchain;
 	DepthImage& depthBuffer;
 	std::vector<Framebuffer> framebuffers;
-	CommandBufferPool commandBufferPool; //this MUST be placed before std::vector<CommandBuffer> commandBuffers, because it must be destroyed later: "Non-static data members shall be initialized in the order they were declared in the class definition (again regardless of the order of the mem-initializers)." cit. 12.6.2 C++20
 	DescriptorSetPool descriptorSetPool;
 
 	std::vector<SynchronizationPrimitives::Fence> fences;
 	std::vector<SynchronizationPrimitives::Semaphore> imageAvailableSemaphores; //tells when an image is occupied by rendering
 	std::vector<SynchronizationPrimitives::Semaphore> renderFinishedSemaphores; //tells when the rendeing of the image ends
 	std::vector<CommandBuffer> commandBuffers;
-	std::vector<DescriptorSet<DynamicSet>> globalDescriptorSets; //descriptor sets (one per frame in flight) for the global info
+	std::vector<DescriptorSet<StaticSet>> globalDescriptorSets; //descriptor sets (one per frame in flight) for the global info
 	std::vector<DescriptorSet<DynamicSet>> perObjectDescriptorSets; //descriptor sets (one per frame in flight) for the per-object info
 };
 

@@ -32,6 +32,7 @@
 #include "Semaphore.h"
 #include "Set.h"
 #include "Shader.h"
+#include "StaticSet.h"
 #include "Subpass.h"
 #include "Swapchain.h"
 #include "SwapchainCapabilities.h"

@@ -26,6 +26,9 @@ int main() {
 		//swapchain
 		Vulkan::Swapchain swapchain{ realGpu, virtualGpu, windowSurface, window };
 
+		//command buffer pool
+		Vulkan::CommandBufferPool commandBufferPool{ virtualGpu };
+
 		//depth image view
 		Vulkan::DepthImage depthBuffer{ virtualGpu, realGpu, swapchain.getResolution() };
 
@@ -56,13 +59,16 @@ int main() {
 		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
 		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 1024 * sizeof(float) };
 
+		//texture image
+		Vulkan::TextureImage texture{ virtualGpu, realGpu, commandBufferPool, std::pair(512, 512), "textures/testTexture.jpg" };
+
 		//uniform sets layouts
 		using Lights = struct { glm::mat4 light1; };
 		using Mvp = struct { glm::mat4 mvp; };
 		using Color = struct { glm::vec4 rgb; };
 
-		Vulkan::DynamicSet globalSet{ realGpu, virtualGpu, globalUniformBuffer, std::pair{Lights{}, VK_SHADER_STAGE_ALL}, std::pair{Lights{}, VK_SHADER_STAGE_ALL} };
-		Vulkan::DynamicSet perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{Mvp{}, VK_SHADER_STAGE_ALL}, std::pair{Color{}, VK_SHADER_STAGE_ALL} };
+		Vulkan::StaticSet globalSet{ virtualGpu, std::tuple{ VK_SHADER_STAGE_ALL, Lights{}, &globalUniformBuffer, 0 } };
+		Vulkan::DynamicSet perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, Mvp{}}, std::pair{VK_SHADER_STAGE_ALL, Color{}} };
 		
 
 
@@ -87,7 +93,7 @@ int main() {
 
 	
 		//create drawer
-		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, swapchain, depthBuffer, renderPass, pipeline, globalSet, perObjectSet };
+		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, swapchain, depthBuffer, commandBufferPool, renderPass, pipeline, globalSet, perObjectSet };
 
 		//create models
 		Vulkan::Model model1{ std::vector<MyVertex>{

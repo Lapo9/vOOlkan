@@ -146,8 +146,9 @@ public:
 		//initialize command buffer
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = 0;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		beginInfo.pInheritanceInfo = nullptr;
+
 		if (VkResult result = vkBeginCommandBuffer(commandBuffer, &beginInfo); result != VK_SUCCESS) {
 			throw VulkanException("Failed to begin recording command buffer!", result);
 		}
@@ -199,8 +200,6 @@ public:
 
 
 	CommandBuffer& endCommand() {
-		vkCmdEndRenderPass(commandBuffer);
-
 		if (VkResult result = vkEndCommandBuffer(commandBuffer); result != VK_SUCCESS) {
 			throw VulkanException("Failed to record command buffer!", result);
 		}

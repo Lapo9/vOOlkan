@@ -19,7 +19,7 @@ namespace Vulkan {
 	 * @brief A DynamicSet is a set of bindings which can be read by the shader.
 	 * @details A DynamicSet keeps all the information about its bindings, such as their size, their buffer and the offset in such buffer. This way it is possible to instantiate a DescriptorSet starting from a DynamicSet only.
 	 */
-	class DynamicSet : public Set {
+	class StaticSet : public Set {
 	public:
 
 		struct StaticBufferBindingInfo : public Set::BindingInfo {
@@ -59,11 +59,11 @@ namespace Vulkan {
 		 * @param ...bindingsInfo
 		 */
 		template<typename... Structs, typename... T> requires
-			((std::same_as<T, std::tuple<Structs, Buffers::UniformBuffer*, int, VkShaderStageFlagBits>> || std::same_as<T, TextureImage>) && ...)
-			DynamicSet(const LogicalDevice& virtualGpu, T... bindingsInfo) : Set{ virtualGpu } {
-			(this->bindingsInfo.push_back(std::make_unique(createBindingInfo(bindingsInfo), ...);
+			((std::same_as<T, std::tuple<VkShaderStageFlagBits, Structs, Buffers::UniformBuffer*, int>> || std::same_as<T, std::tuple<VkShaderStageFlagBits, TextureImage*>>) && ...)
+			StaticSet(const LogicalDevice& virtualGpu, const T&... bindingsInfo) : Set{ virtualGpu } {
+			(this->bindingsInfo.push_back(createBindingInfo(bindingsInfo)), ...);
 
-			createDescriptorSetLayout(std::pair{ std::get<3>(bindingsInfo), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC }...);
+			createDescriptorSetLayout(std::pair{ std::get<0>(bindingsInfo), std::same_as<T, std::tuple<TextureImage, VkShaderStageFlagBits>> ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER }...);
 		}
 
 
@@ -71,13 +71,13 @@ namespace Vulkan {
 	private:
 
 		template<typename Struct>
-		static StaticBufferBindingInfo createBindingInfo(const std::tuple<Struct, Buffers::UniformBuffer*, int, VkShaderStageFlagBits>& info) {
-			return StaticBufferBindingInfo{ sizeof(std::get<0>(info)), std::get<1>(info), std::get<2>(info) };
+		static std::unique_ptr<StaticBufferBindingInfo> createBindingInfo(const std::tuple<VkShaderStageFlagBits, Struct, Buffers::UniformBuffer*, int>& info) {
+			return std::make_unique<StaticBufferBindingInfo>(sizeof(std::get<1>(info)), *std::get<2>(info), std::get<3>(info));
 		}
 
 
-		static ImageBindingInfo createBindingInfo(const TextureImage& info) {
-			return ImageBindingInfo{ info };
+		static std::unique_ptr<ImageBindingInfo> createBindingInfo(const std::tuple<VkShaderStageFlagBits, TextureImage*>& info) {
+			return std::make_unique<ImageBindingInfo>(*std::get<1>(info));
 		}
 
 	};
