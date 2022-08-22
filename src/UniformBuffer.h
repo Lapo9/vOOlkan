@@ -17,10 +17,8 @@ namespace Vulkan::Buffers { class UniformBuffer; }
  */
 class Vulkan::Buffers::UniformBuffer : public Buffer {
 public:
-	UniformBuffer(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, size_t size) : Buffer(virtualGpu, realGpu, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) {
-		auto limits = realGpu.getProperties();
-		alignment = limits.limits.minUniformBufferOffsetAlignment;
-	}
+	UniformBuffer(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, size_t size) : Buffer(virtualGpu, realGpu, size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) {}
+
 
 
 	/**
@@ -30,27 +28,16 @@ public:
 	 * 
 	 * @param ...data floats to insert into the buffer.
 	 */
-	template<std::same_as<std::vector<float>>... V>
-	void fillBuffer(const V&... data) {
-		std::vector<float> mergedData;
-		([&mergedData, this](const std::vector<float>& data) {
-			mergedData.insert(mergedData.end(), data.begin(), data.end());
-			int paddingAmount = (alignment - ((mergedData.size() * sizeof(float)) % alignment)) % alignment; //number of padding bytes
-			std::vector<float> padding(paddingAmount / sizeof(float), 0.0f); //number of padding floats (usually 1 float = 4 bytes)
-			mergedData.insert(mergedData.end(), padding.begin(), padding.end());
-			}(data), ...);
-
+	template<typename D>
+	void fillBuffer(const D& data, int offset = 0) {
 		void* rawData;
-		vkMapMemory(+virtualGpu, bufferMemory, 0, mergedData.size() * sizeof(mergedData[0]), 0, &rawData);
-		memcpy(rawData, mergedData.data(), mergedData.size() * sizeof(mergedData[0]));
+		vkMapMemory(+virtualGpu, bufferMemory, offset, sizeof(D), 0, &rawData);
+		memcpy(rawData, &data, sizeof(D));
 		vkUnmapMemory(+virtualGpu, bufferMemory);
 	}
 
 	//TODO overload fillBuffer with a function that takes in models and copies all of their uniform data into the buffer following a policy (such as AAAABB AAAABB or AAAA AAAA BB BB) which must be the same as the one choosen in the descriptor set
 
-
-private:
-	int alignment; //used for padding
 
 };
 

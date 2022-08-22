@@ -11,7 +11,7 @@
 
 
 
-void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta);
+void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set);
 
 
 int main() {
@@ -28,6 +28,9 @@ int main() {
 
 		//command buffer pool
 		Vulkan::CommandBufferPool commandBufferPool{ virtualGpu };
+
+		//texture image
+		Vulkan::TextureImage texture{ virtualGpu, realGpu, commandBufferPool, std::pair(512, 512), "textures/caTexture.jpg" };
 
 		//depth image view
 		Vulkan::DepthImage depthBuffer{ virtualGpu, realGpu, swapchain.getResolution() };
@@ -59,8 +62,6 @@ int main() {
 		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
 		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 1024 * sizeof(float) };
 
-		//texture image
-		Vulkan::TextureImage texture{ virtualGpu, realGpu, commandBufferPool, std::pair(512, 512), "textures/caTexture.jpg" };
 
 		//uniform sets layouts
 		using Lights = struct { glm::mat4 light1; };
@@ -137,7 +138,7 @@ int main() {
 		//draw cycle
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(perObjectUniformBuffer, 0.1f);
+			debugAnimation(perObjectUniformBuffer, 0.1f, perObjectSet);
 			drawer.draw(vertexBuffer, indexBuffer);
 		}
 		vkDeviceWaitIdle(+virtualGpu);
@@ -152,7 +153,7 @@ int main() {
 
 
 
-void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta){
+void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set){
 	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
@@ -194,24 +195,10 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta){
 	glm::mat4 mvp3 = perspective * view * model3;
 
 
-	std::vector<float> perObjectData1mvp;
-	std::vector<float> perObjectData2mvp;
-	std::vector<float> perObjectData3mvp;
+	glm::vec4 color1{ 1.0f, 0.0f, 0.0f, 0.0f};
+	glm::vec4 color2{ 0.0f, 1.0f, 0.0f, 0.0f};
+	glm::vec4 color3{ 0.0f, 0.0f, 1.0f, 0.0f};
 
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			perObjectData1mvp.push_back(mvp1[i][j]);
-			perObjectData2mvp.push_back(mvp2[i][j]);
-			perObjectData3mvp.push_back(mvp3[i][j]);
-		}
-	}
+	set.fillBuffer(buffer, std::tuple{ mvp1, color1 }, std::tuple{ mvp2, color2 }, std::tuple{ mvp3, color3 });
 
-
-
-	std::vector perObjectData1color{ 1.0f, 0.0f, 0.0f, 0.0f};
-	std::vector perObjectData2color{ 0.0f, 1.0f, 0.0f, 0.0f};
-	std::vector perObjectData3color{ 0.0f, 0.0f, 1.0f, 0.0f};
-
-
-	buffer.fillBuffer(perObjectData1mvp, perObjectData1color, perObjectData2mvp, perObjectData2color, perObjectData3mvp, perObjectData3color);
 }

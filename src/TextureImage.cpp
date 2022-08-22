@@ -40,7 +40,7 @@ Vulkan::TextureImage::TextureImage(const LogicalDevice& virtualGpu, const Physic
     fillImage(stagingBuffer, commandBufferPool);
 
     //change image layout to a layout suitable for sampling on the GPU
-    //transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBufferPool);
+    transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBufferPool);
 
     //create the image view
     generateImageView("base", virtualGpu, VK_IMAGE_ASPECT_COLOR_BIT);
