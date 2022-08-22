@@ -30,13 +30,13 @@ namespace Vulkan {
 			DynamicSetBindingInfo(int size, const Buffers::UniformBuffer& buffer, int offset, int dynamicDistance = 0) : size{ size }, buffer{ buffer }, offset{ offset }, dynamicDistance{ dynamicDistance }{}
 
 			/**
-			 * @brief Creates the struct for this used to create the descriptor set.
+			 * @brief Creates the struct for this binding used to create the descriptor set.
 			 * 
 			 * @param binding .
 			 * @param descriptorSet .
 			 * @return .
 			 */
-			DescriptorSetBindingCreationInfo generateDescriptorSetBindingInfo(unsigned int binding, const VkDescriptorSet& descriptorSet) const override {
+			DescriptorSetBindingCreationInfo generateDescriptorSetBindingInfo(const VkDescriptorSet& descriptorSet) const override {
 				return DescriptorSetBindingCreationInfo{ binding, descriptorSet, size, buffer, offset, dynamicDistance };
 			}
 
@@ -76,21 +76,25 @@ namespace Vulkan {
 			int alignment = realGpu.getProperties().limits.minUniformBufferOffsetAlignment;
 			int currentOffset = 0;
 
+			//for each binding
 			([this, &currentOffset, &buffer, alignment](std::pair<VkShaderStageFlagBits, Structs> binding) {
+				//allocate the binding info on the heap (we need a pointer for polymorphism)
 				auto tmp = std::make_unique<DynamicSetBindingInfo>(sizeof(binding.second), buffer, currentOffset);
-				bindingsPerBuffer[&buffer].push_back(tmp.get());
-				this->bindingsInfo.push_back(std::move(tmp));
+				bindingsPerBuffer[&buffer].push_back(tmp.get()); //add a pointer to this info struct in the right array (see comment next to the definition of this variable)
+				this->bindingsInfo.push_back(std::move(tmp)); //put the binding info in the binding info vector
 
-				currentOffset += sizeof(binding.second);
+				currentOffset += sizeof(binding.second); //increase the offset in the buffer by the size of the last binding
 				int paddingAmount = (alignment - (currentOffset % alignment)) % alignment; //number of padding bytes
-				currentOffset += paddingAmount; //padding
+				currentOffset += paddingAmount; //add the padding bytes to the offset. e.g. offset = 253, padding bytes = 3 ( (253+3) % 16 = 0, 16 is often the required alignment)
 				}(bindings), ...);
 
 			//the dynamic distance for bindings allocated in this way is always the same and equal to the total size of the bindings
-			for (auto& bindingInfo : bindingsInfo) {
-				static_cast<DynamicSetBindingInfo*>(bindingInfo.get())->dynamicDistance = currentOffset;
+			for (int i = 0; i < bindingsInfo.size(); ++i) {
+				static_cast<DynamicSetBindingInfo*>(bindingsInfo[i].get())->dynamicDistance = currentOffset;
+				bindingsInfo[i].get()->binding = i; //also set the binding index
 			}
 
+			//create the Vulkan layout struct used during pipeline creation
 			createDescriptorSetLayout(std::pair{ bindings.first, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC }...);
 		}
 
@@ -110,12 +114,16 @@ namespace Vulkan {
 		template<typename... Structs, typename... T> requires 
 			(std::same_as<T, std::tuple<VkShaderStageFlagBits, Structs, Buffers::UniformBuffer*, int, int>> && ...)
 			DynamicSet(const LogicalDevice& virtualGpu, T... bindingsInfo) : Set{ virtualGpu } {
+			//for each binding...
 			([this](T bindingInfo) {
+				//allocate the binding info on the heap (we need a pointer for polymorphism)
 				auto tmp = std::make_unique<DynamicSetBindingInfo>(sizeof(std::get<1>(bindingsInfo)), *std::get<2>(bindingsInfo), std::get<3>(bindingsInfo), std::get<4>(bindingsInfo));
-				bindingsPerBuffer[&(tmp->buffer)].push_back(tmp.get());
-				this->bindingsInfo.push_back(std::move(tmp));
+				bindingsPerBuffer[&(tmp->buffer)].push_back(tmp.get()); //add a pointer to this info struct in the right array (see comment next to the definition of this variable)
+				tmp->binding = bindingsInfo.size(); //set the index of this binding
+				this->bindingsInfo.push_back(std::move(tmp)); //add the pointer to the vector of binding info
 				}(bindingsInfo), ...);
 		
+			//create the Vulkan layout struct used during pipeline creation
 			createDescriptorSetLayout(std::pair{ std::get<0>(bindingsInfo), VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC }...);
 		}
 
@@ -167,8 +175,9 @@ namespace Vulkan {
 		//This function is used to perform a sort of constexpr for each loop on the tuple
 		template<int... TI, typename... T>
 		void fillBufferHelper(Buffers::UniformBuffer& buffer, std::integer_sequence<int, TI...>, const T&... tuplesOfData) const {
+			std::vector<DynamicSetBindingInfo*> bindingsInfo;
 			try {
-				auto& bindingsInfo = bindingsPerBuffer.at(&buffer); //get the info of the bindings of the buffer
+				bindingsInfo = bindingsPerBuffer.at(&buffer); //get the info of the bindings of the buffer
 			}
 			catch (const std::out_of_range&) {
 				throw VulkanException{ "Failed to fill the uniform buffer", "The buffer to be filled isn't used in this set" };

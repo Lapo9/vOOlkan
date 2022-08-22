@@ -50,7 +50,7 @@ namespace Vulkan {
 			//fill the descriptor set's bindings
 			std::vector<DescriptorSetBindingCreationInfo> descriptorsInfo;
 			for (int i = 0; i < set.getAmountOfBindings(); ++i) {
-				descriptorsInfo.push_back(set.getBindingInfo(i).generateDescriptorSetBindingInfo(i, descriptorSet));
+				descriptorsInfo.push_back(set.getBindingInfo(i).generateDescriptorSetBindingInfo(descriptorSet));
 			}
 
 			std::vector<VkWriteDescriptorSet> rawDescriptorsInfo;

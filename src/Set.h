@@ -14,7 +14,6 @@
 
 namespace Vulkan {
 
-	//FROMHERE probably rename this Set and create also StaticSet and ImageSet. And a Set parent class.
 	/**
 	 * @brief A Set is a set of bindings which can be read by the shader.
 	 * @details A Set keeps all the information about its bindings, such as their size, their buffer and the offset in such buffer. This way it is possible to instantiate a DescriptorSet starting from a Set only.
@@ -22,24 +21,33 @@ namespace Vulkan {
 	class Set {
 	public:
 
-		Set(const LogicalDevice& virtualGpu) : virtualGpu{ virtualGpu } {}
-
-		Set(const Set&) = delete;
-		Set& operator=(const Set&) = delete;
-		Set(Set&&) = delete;
-		Set& operator=(Set&&) = delete;
-
-		~Set() {
-			vkDestroyDescriptorSetLayout(+virtualGpu, descriptorSetLayout, nullptr);
-		}
-
+		/**
+		 * @brief Returns the underlying VkDescriptorSetLayout object.
+		 * 
+		 * @return The underlying VkDescriptorSetLayout object.
+		 */
 		const VkDescriptorSetLayout& operator+() const {
 			return descriptorSetLayout;
 		}
 
 
+		/**
+		 * @brief A struct containing all of the information of a specific binding. This class must be the base of other classes.
+		 */
 		struct BindingInfo {
-			virtual DescriptorSetBindingCreationInfo generateDescriptorSetBindingInfo(unsigned int binding, const VkDescriptorSet& descriptorSet) const = 0;
+
+			/**
+			 * @brief Creates the struct for this binding used to create the descriptor set.
+			 *
+			 * @param descriptorSet The descriptor set which is being filled with the returned struct..
+			 * @return Tthe struct for this binding used to create the descriptor set.
+			 */
+			virtual DescriptorSetBindingCreationInfo generateDescriptorSetBindingInfo(const VkDescriptorSet& descriptorSet) const = 0;
+			
+			/**
+			 * @brief The binding index.
+			 */
+			unsigned int binding;
 		};
 
 
@@ -70,6 +78,19 @@ namespace Vulkan {
 
 
 	protected:
+
+
+		Set(const LogicalDevice& virtualGpu) : virtualGpu{ virtualGpu } {}
+
+		Set(const Set&) = delete;
+		Set& operator=(const Set&) = delete;
+		Set(Set&&) = delete;
+		Set& operator=(Set&&) = delete;
+
+		~Set() {
+			vkDestroyDescriptorSetLayout(+virtualGpu, descriptorSetLayout, nullptr);
+		}
+
 
 		//Creates the VkDescriptorSetLayout Vulkan object for this set
 		template<std::same_as<std::pair<VkShaderStageFlagBits, VkDescriptorType>>... ShaderStages>

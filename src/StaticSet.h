@@ -16,16 +16,15 @@
 namespace Vulkan {
 
 	/**
-	 * @brief A DynamicSet is a set of bindings which can be read by the shader.
-	 * @details A DynamicSet keeps all the information about its bindings, such as their size, their buffer and the offset in such buffer. This way it is possible to instantiate a DescriptorSet starting from a DynamicSet only.
+	 * @brief In a static set there isn't the notion of 'object' (like in DynamicSet). Each binding is "single". It can also contain images.
 	 */
 	class StaticSet : public Set {
 	public:
-
+		//TODO comment
 		struct StaticBufferBindingInfo : public Set::BindingInfo {
 			StaticBufferBindingInfo(int size, const Buffers::UniformBuffer& buffer, int offset) : size{ size }, buffer{ buffer }, offset{ offset } {}
 
-			DescriptorSetBindingCreationInfo generateDescriptorSetBindingInfo(unsigned int binding, const VkDescriptorSet& descriptorSet) const override {
+			DescriptorSetBindingCreationInfo generateDescriptorSetBindingInfo(const VkDescriptorSet& descriptorSet) const override {
 				return DescriptorSetBindingCreationInfo{ binding, descriptorSet, size, buffer, offset };
 			}
 
@@ -38,7 +37,7 @@ namespace Vulkan {
 		struct ImageBindingInfo : public Set::BindingInfo {
 			ImageBindingInfo(const TextureImage& texture) : texture{ texture } {}
 
-			DescriptorSetBindingCreationInfo generateDescriptorSetBindingInfo(unsigned int binding, const VkDescriptorSet& descriptorSet) const override {
+			DescriptorSetBindingCreationInfo generateDescriptorSetBindingInfo(const VkDescriptorSet& descriptorSet) const override {
 				return DescriptorSetBindingCreationInfo{ binding, descriptorSet, texture };
 			}
 
@@ -71,14 +70,23 @@ namespace Vulkan {
 	private:
 
 		template<typename Struct>
-		static std::unique_ptr<StaticBufferBindingInfo> createBindingInfo(const std::tuple<VkShaderStageFlagBits, Struct, Buffers::UniformBuffer*, int>& info) {
-			return std::make_unique<StaticBufferBindingInfo>(sizeof(std::get<1>(info)), *std::get<2>(info), std::get<3>(info));
+		std::unique_ptr<StaticBufferBindingInfo> createBindingInfo(const std::tuple<VkShaderStageFlagBits, Struct, Buffers::UniformBuffer*, int>& info) {
+			auto tmp = std::make_unique<StaticBufferBindingInfo>(sizeof(std::get<1>(info)), *std::get<2>(info), std::get<3>(info));
+			tmp->binding = bindingsInfo.size();
+			bindingsPerBuffer[std::get<2>(info)].push_back(tmp.get());
+			return tmp;
 		}
 
 
-		static std::unique_ptr<ImageBindingInfo> createBindingInfo(const std::tuple<VkShaderStageFlagBits, TextureImage*>& info) {
-			return std::make_unique<ImageBindingInfo>(*std::get<1>(info));
+		std::unique_ptr<ImageBindingInfo> createBindingInfo(const std::tuple<VkShaderStageFlagBits, TextureImage*>& info) {
+			auto tmp = std::make_unique<ImageBindingInfo>(*std::get<1>(info));
+			tmp->binding = bindingsInfo.size();
+			return tmp;
 		}
+
+
+		std::map<const Buffers::UniformBuffer*, std::vector<StaticBufferBindingInfo*>> bindingsPerBuffer; //this map holds the bindings relative to each buffer used in the Set
+
 
 	};
 
