@@ -10,10 +10,13 @@ layout(set = 1, binding = 1) uniform Color {
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
+layout(location = 2) in vec2 inUv;
 
 layout(location = 0) out vec3 fragColor;
+layout(location = 1) out vec2 outUv;
 
 void main() {
     gl_Position = mvp.mvp * vec4(inPosition, 1.0f);
-    fragColor = color.rgb;
+    fragColor = inColor;
+    outUv = inUv;
 }

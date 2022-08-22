@@ -49,7 +49,7 @@ int main() {
 
 
 		//how a vertex is made up
-		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3>;
+		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>;
 
 		//vertices types descriptor
 		Vulkan::PipelineOptions::PipelineVertexArrays vertexTypesDescriptor{ MyVertex{} };
@@ -60,7 +60,7 @@ int main() {
 		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 1024 * sizeof(float) };
 
 		//texture image
-		Vulkan::TextureImage texture{ virtualGpu, realGpu, commandBufferPool, std::pair(512, 512), "textures/testTexture.jpg" };
+		Vulkan::TextureImage texture{ virtualGpu, realGpu, commandBufferPool, std::pair(512, 512), "textures/caTexture.jpg" };
 
 		//uniform sets layouts
 		using Lights = struct { glm::mat4 light1; };
@@ -97,27 +97,27 @@ int main() {
 
 		//create models
 		Vulkan::Model model1{ std::vector<MyVertex>{
-			{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-			{{0.0f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-			{{0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+			{{-1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
+			{{ 0.0f,  1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.5f, -0.1f}},
+			{{ 1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
 		},
 			std::vector<uint32_t>{0, 1, 2}
 		};
 
 		Vulkan::Model model2{ std::vector<MyVertex>{
-			{{-0.8f, -0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}},
-			{{-0.8f,  0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}},
-			{{0.8f,   0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}},
-			{{0.8f,  -0.5f,  0.0f}, {1.0f, 1.0f, 1.0f}},
+			{{-0.8f, -0.5f,  0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
+			{{-0.8f,  0.5f,  0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+			{{0.8f,   0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
+			{{0.8f,  -0.5f,  0.0f}, {1.0f, 0.7f, 0.0f}, {1.0f, 1.0f}},
 		},
 			std::vector<uint32_t>{0, 1, 2, 0, 2, 3}
 		};
 
 		Vulkan::Model model3{ std::vector<MyVertex>{
-			{{-1.0f, -0.3f,  0.0f}, {0.0f, 0.0f, 0.0f}},
-			{{-1.0f,  0.3f,  0.0f}, {1.0f, 0.0f, 0.0f}},
-			{{ 1.0f,  0.3f,  0.0f}, {0.5f, 0.0f, 1.0f}},
-			{{ 1.0f, -0.3f,  0.0f}, {1.0f, 0.0f, 0.5f}},
+			{{-1.0f, -0.3f,  0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.5f}},
+			{{-1.0f,  0.3f,  0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+			{{ 1.0f,  0.3f,  0.0f}, {0.5f, 0.0f, 1.0f}, {0.5f, 0.0f}},
+			{{ 1.0f, -0.3f,  0.0f}, {1.0f, 0.0f, 0.5f}, {0.5f, 0.5f}},
 		},
 			std::vector<uint32_t>{0, 1, 2, 0, 2, 3}
 		};
@@ -126,11 +126,11 @@ int main() {
 
 		//create vertex buffer for models
 		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size() + model2.getVertices().size() + model3.getVertices().size()) * sizeof(model1.getVertices()[0])};
-		vertexBuffer.fillBuffer(model1, model2, model3);
+		vertexBuffer.fillBuffer(model1 , model2, model3);
 
 		//create index buffer for model
 		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size() + model2.getIndexes().size() + model3.getIndexes().size()) * sizeof(model1.getIndexes()[0]) };
-		indexBuffer.fillBuffer(model1, model2, model3);
+		indexBuffer.fillBuffer(model1 , model2, model3);
 
 		std::cout << "\n";
 

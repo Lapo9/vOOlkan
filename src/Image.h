@@ -84,7 +84,7 @@ class Vulkan::Image {
 
 		//Used by child classes only
 		template<std::same_as<VkMemoryPropertyFlagBits>... P>
-		Image(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, VkFormat format, std::pair<unsigned int, unsigned int> resolution, VkImageTiling tiling, VkImageUsageFlags usage, P... memoryProperties) : virtualGpu{ &virtualGpu }, format{ format }, isSwapchainImage{ false }, layout{ VK_IMAGE_LAYOUT_GENERAL }, resolution{ resolution }{
+		Image(const LogicalDevice& virtualGpu, const PhysicalDevice& realGpu, VkFormat format, std::pair<unsigned int, unsigned int> resolution, VkImageTiling tiling, VkImageUsageFlags usage, P... memoryProperties) : virtualGpu{ &virtualGpu }, format{ format }, isSwapchainImage{ false }, layout{ VK_IMAGE_LAYOUT_UNDEFINED }, resolution{ resolution }{
 			VkImageCreateInfo imageInfo{};
 			imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 			imageInfo.imageType = VK_IMAGE_TYPE_2D;
