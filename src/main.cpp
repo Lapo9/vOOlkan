@@ -10,8 +10,8 @@
 #include "Pinball.h"
 
 
-
-void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set);
+template<typename Model>
+void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set, const std::vector<Model*>& models);
 
 
 int main() {
@@ -65,11 +65,9 @@ int main() {
 
 		//uniform sets layouts
 		using Lights = struct { glm::mat4 light1; };
-		using Mvp = struct { glm::mat4 mvp; };
-		using Color = struct { glm::vec4 rgb; };
 
 		Vulkan::StaticSet globalSet{ virtualGpu, std::tuple{ VK_SHADER_STAGE_ALL, &texture}, std::tuple{ VK_SHADER_STAGE_ALL, Lights{}, &globalUniformBuffer, 0 } };
-		Vulkan::DynamicSet perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, Mvp{}}, std::pair{VK_SHADER_STAGE_ALL, Color{}} };
+		Vulkan::DynamicSet perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, glm::mat4{}}, std::pair{VK_SHADER_STAGE_ALL, glm::vec4{}} };
 		
 
 
@@ -102,7 +100,11 @@ int main() {
 			{{ 0.0f,  1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.5f, -0.1f}},
 			{{ 1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
 		},
-			std::vector<uint32_t>{0, 1, 2}
+			std::vector<uint32_t>{0, 1, 2},
+				glm::vec3{0.0f},
+				glm::vec3{1.0f},
+				glm::vec3{0.0f, 0.0f, -9.0f},
+				glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}
 		};
 
 		Vulkan::Model model2{ std::vector<MyVertex>{
@@ -111,7 +113,11 @@ int main() {
 			{{0.8f,   0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
 			{{0.8f,  -0.5f,  0.0f}, {1.0f, 0.7f, 0.0f}, {1.0f, 1.0f}},
 		},
-			std::vector<uint32_t>{0, 1, 2, 0, 2, 3}
+			std::vector<uint32_t>{0, 1, 2, 0, 2, 3},
+				glm::vec3{0.0f},
+				glm::vec3{1.0f},
+				glm::vec3{0.5f, 0.0f, -1.0f},
+				glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}
 		};
 
 		Vulkan::Model model3{ std::vector<MyVertex>{
@@ -120,7 +126,11 @@ int main() {
 			{{ 1.0f,  0.3f,  0.0f}, {0.5f, 0.0f, 1.0f}, {0.5f, 0.0f}},
 			{{ 1.0f, -0.3f,  0.0f}, {1.0f, 0.0f, 0.5f}, {0.5f, 0.5f}},
 		},
-			std::vector<uint32_t>{0, 1, 2, 0, 2, 3}
+			std::vector<uint32_t>{0, 1, 2, 0, 2, 3},
+				glm::vec3{0.0f},
+				glm::vec3{1.0f},
+				glm::vec3{-0.5f, 0.0f, -1.2f},
+				glm::vec4{0.0f, 0.0f, 1.0f, 1.0f}
 		};
 
 
@@ -138,7 +148,7 @@ int main() {
 		//draw cycle
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(perObjectUniformBuffer, 0.1f, perObjectSet);
+			debugAnimation(perObjectUniformBuffer, 0.1f, perObjectSet, std::vector{ &model1, &model2, &model3 });
 			drawer.draw(vertexBuffer, indexBuffer);
 		}
 		vkDeviceWaitIdle(+virtualGpu);
@@ -152,8 +162,8 @@ int main() {
 }
 
 
-
-void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set){
+template<typename Model>
+void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set, const std::vector<Model*>& models){
 	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
@@ -169,36 +179,13 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const V
 		glm::translate(glm::mat4(1.0f), -Pos);
 
 
-	static glm::vec3 pos1 = glm::vec3(0.0f, 0.0f, -9.0f);
-	static glm::vec3 pos2 = glm::vec3(-0.5f, -0.5f, -1.5f);
-	static glm::vec3 pos3 = glm::vec3(0.2f, 0.0f, -1.5f);
+	Model& model1 = *models[0], &model2 = *models[1], &model3 = *models[2];
 
-	static float rotation1 = 0.0f;
-	static float rotation2 = 0.0f;
-	static float rotation3 = 0.0f;
+	model1.rotate(0.02f, glm::vec3{ 1.0f, 0.0f, 0.0f }).translate(glm::vec3{ 0.0f, 0.0f, 0.01f });
+	model2.rotate(0.027f, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	model3.rotate(0.012f, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
 
-	pos1 += glm::vec3(0.0f, 0.0f, 0.1f * delta);
-	rotation1 += 0.4f * delta;
-	rotation2 += 0.1f * delta;
-	rotation3 += 0.3f * delta;
-
-
-	glm::mat4 model1 = glm::translate(glm::mat4(1.0f), pos1) * glm::rotate(glm::mat4(1.0f), rotation1, glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 model2 = glm::translate(glm::mat4(1.0f), pos2) * glm::rotate(glm::mat4(1.0f), rotation2, glm::vec3(0.0f, 1.0f, 0.0f));;
-	glm::mat4 model3 = glm::translate(glm::mat4(1.0f), pos3) * glm::rotate(glm::mat4(1.0f), rotation3, glm::vec3(0.0f, 1.0f, 0.0f));;
-
-
-
-	glm::mat4 mvp1 = perspective * view * model1;
-	glm::mat4 mvp2 = perspective * view * model2;
-	glm::mat4 mvp3 = perspective * view * model3;
-
-
-	glm::vec4 color1{ 1.0f, 0.0f, 0.0f, 0.0f};
-	glm::vec4 color2{ 0.0f, 1.0f, 0.0f, 0.0f};
-	glm::vec4 color3{ 0.0f, 0.0f, 1.0f, 0.0f};
-
-	set.fillBuffer(buffer, std::tuple{ mvp1, color1 }, std::tuple{ mvp2, color2 }, std::tuple{ mvp3, color3 });
+	set.fillBuffer(buffer, model1.getUniforms(view, perspective), model2.getUniforms(view, perspective), model3.getUniforms(view, perspective));
 
 }

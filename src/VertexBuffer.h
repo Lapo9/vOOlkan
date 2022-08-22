@@ -21,8 +21,8 @@ public:
 	}
 
 
-        template<typename... C, template<typename...> class... M> requires (std::same_as<M<C...>, Model<C...>> && ...)
-    void fillBuffer(const M<C...>&... models) {
+        template<typename... C, typename... S, template<typename, typename...> class... M> requires (std::same_as<M<PipelineOptions::Vertex<C...>, S...>, Model<PipelineOptions::Vertex<C...>, S...>> && ...)
+    void fillBuffer(const M<PipelineOptions::Vertex<C...>, S...>&... models) {
         std::vector<PipelineOptions::Vertex<C...>> data{};
         (data.insert(data.end(), models.getVertices().begin(), models.getVertices().end()), ...); //copy all the vertices to one vector
       

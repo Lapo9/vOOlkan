@@ -17,6 +17,6 @@ layout(location = 1) out vec2 outUv;
 
 void main() {
     gl_Position = mvp.mvp * vec4(inPosition, 1.0f);
-    fragColor = inColor;
+    fragColor = color.rgb.rgb;
     outUv = inUv;
 }

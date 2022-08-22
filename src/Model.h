@@ -1,34 +1,126 @@
 #ifndef VULKAN_MODEL
 #define VULKAN_MODEL
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <vector>
+#include <tuple>
 
 #include "VertexInput.h"
 
 
-namespace Vulkan { template<typename... Components>class Model; }
+namespace Vulkan {
+
+	template<typename V>
+	concept IsVertex = requires(V v) {
+		{V::getDescriptors(0)} -> std::same_as<std::pair<VkVertexInputBindingDescription, std::vector<VkVertexInputAttributeDescription>>>;
+	};
 
 
-template<typename... Components>
-class Vulkan::Model {
-public:
+	template<IsVertex Vertex, typename... Structs>
+	class Model {
+	public:
 
-	Model(std::vector<PipelineOptions::Vertex<Components...>> vertices, std::vector<uint32_t> indexes) : vertices{ vertices }, indexes{ indexes } {
+		Model(std::vector<Vertex> vertices, std::vector<uint32_t> indexes, Structs... uniforms) : vertices{ vertices }, indexes{ indexes }, uniforms{ glm::mat4{1.0f}, uniforms... } {
+			
+		}
 
-	}
-	
-	const std::vector<PipelineOptions::Vertex<Components...>>& getVertices() const {
-		return vertices;
-	}
 
-	const std::vector<uint32_t>& getIndexes() const {
-		return indexes;
-	}
+		Model(std::vector<Vertex> vertices, std::vector<uint32_t> indexes, glm::vec3 rotation, glm::vec3 scale, glm::vec3 position, Structs... uniforms) : Model{ vertices, indexes, uniforms... } {
+			this->rotation = glm::quat(glm::vec3{ 0, rotation.y, 0 }) *
+				glm::quat(glm::vec3{ rotation.x, 0, 0 }) *
+				glm::quat(glm::vec3{ 0, 0, rotation.z });
 
-private:
-	std::vector<PipelineOptions::Vertex<Components...>> vertices;
-	std::vector<uint32_t> indexes;
-	std::vector<int> uniforms; //TODO
-};
+			this->scaleFactor = scale;
+			this->position = position;
+		}
+
+
+		const std::vector<Vertex>& getVertices() const {
+			return vertices;
+		}
+
+
+		const std::vector<uint32_t>& getIndexes() const {
+			return indexes;
+		}
+
+
+		Model& rotate(float angle, glm::vec3 axis) {
+			rotation = glm::rotate(rotation, angle, axis);
+			return *this;
+		}
+
+
+		Model& translate(glm::vec3 deltaSpace) {
+			position += deltaSpace;
+			return *this;
+		}
+
+
+		Model& scale(glm::vec3 deltaFactors) {
+			scale += deltaFactors;
+			return *this;
+		}
+
+
+		Model& scale(float deltaFactor) {
+			scale += glm::vec3{ deltaFactor, deltaFactor, deltaFactor };
+			return *this;
+		}
+
+
+		const glm::mat4& calculateMvpMatrix(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) const {
+			glm::mat4 modelMatrix =
+				glm::translate(glm::mat4{ 1.0f }, position) *
+				glm::scale(glm::mat4{ 1.0f }, scaleFactor) *
+				glm::mat4{ rotation };
+			return projectionMatrix * viewMatrix * modelMatrix;
+		}
+
+
+		std::tuple<glm::mat4, Structs...>& getUniforms(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) {
+			std::get<0>(uniforms) = calculateMvpMatrix(viewMatrix, projectionMatrix);
+			return uniforms;
+		}
+
+
+		template<unsigned int I>
+		auto& getUniform(const glm::mat4& viewMatrix = glm::mat4{}, const glm::mat4& projectionMatrix = glm::mat4{}) {
+			return std::get<I>(uniforms);
+		}
+
+		template<>
+		auto& getUniform<0>(const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) {
+			std::get<0>(uniforms) = calculateMvpMatrix(viewMatrix, projectionMatrix);
+			return std::get<0>(uniforms);
+		}
+
+
+		glm::vec3& getPosition() {
+			return position;
+		}
+
+
+		glm::vec3& getScaleFactor() {
+			return scaleFactor;
+		}
+
+
+		glm::quat& getRotation() {
+			return rotation;
+		}
+
+	private:
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indexes;
+		std::tuple<glm::mat4, Structs...> uniforms;
+
+		glm::vec3 position;
+		glm::quat rotation;
+		glm::vec3 scaleFactor;
+	};
+}
 
 #endif
