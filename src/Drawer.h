@@ -233,7 +233,7 @@ private:
 		vkDeviceWaitIdle(+virtualGpu); //wait for all the resources to be free
 
 		//recreate new swapchain
-		swapchain = Swapchain(realGpu, virtualGpu, windowSurface, window);
+		swapchain = Swapchain(realGpu, virtualGpu, windowSurface, window, swapchain);
 		depthBuffer = DepthImage{ virtualGpu, realGpu, swapchain.getResolution() };
 		framebuffers = Framebuffer::generateFramebufferForEachSwapchainImageView(virtualGpu, renderPass, swapchain, depthBuffer["base"]);
 		commandBuffers = std::vector<CommandBuffer>{};

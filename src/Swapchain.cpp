@@ -23,6 +23,17 @@ Vulkan::Swapchain::Swapchain(const PhysicalDevice& realGpu, const LogicalDevice&
 }
 
 
+Vulkan::Swapchain::Swapchain(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const WindowSurface& windowSurface, const Window& window, Swapchain& oldSwapchain) :
+	swapchainCapabilities{ realGpu, windowSurface },
+	swapchainSurfaceFormat{ realGpu, windowSurface },
+	swapchainPresentMode{ realGpu, windowSurface },
+	virtualGpu{ &virtualGpu } {
+	create(realGpu, virtualGpu, windowSurface, window, +oldSwapchain);
+
+	std::cout << "\n+ Swapchain created";
+}
+
+
 Vulkan::Swapchain::Swapchain() : swapchain{ VK_NULL_HANDLE }, virtualGpu{ nullptr }, images{}, swapchainPresentMode{}, swapchainCapabilities{}, swapchainSurfaceFormat{}{}
 
 
@@ -105,7 +116,7 @@ void Vulkan::Swapchain::saveSwapchainImages() {
 
 
 
-void Vulkan::Swapchain::create(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const WindowSurface& windowSurface, const Window& window) {
+void Vulkan::Swapchain::create(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const WindowSurface& windowSurface, const Window& window, VkSwapchainKHR oldSwapchain) {
 	//struct to create the swapchain with the specified properties
 	VkSwapchainCreateInfoKHR createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -120,7 +131,7 @@ void Vulkan::Swapchain::create(const PhysicalDevice& realGpu, const LogicalDevic
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	createInfo.presentMode = +swapchainPresentMode;
 	createInfo.clipped = VK_TRUE;
-	createInfo.oldSwapchain = VK_NULL_HANDLE;
+	createInfo.oldSwapchain = oldSwapchain;
 
 	//if the queue families for the graphics and presentation queues are different, then whe have to use a particular option
 	uint32_t queueFamilyIndices[] = { static_cast<uint32_t>(realGpu.getQueueFamiliesIndices()[QueueFamily::GRAPHICS]), static_cast<uint32_t>(realGpu.getQueueFamiliesIndices()[QueueFamily::PRESENTATION]) };

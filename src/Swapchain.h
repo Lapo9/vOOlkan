@@ -29,6 +29,8 @@ class Vulkan::Swapchain {
 		 */
 		Swapchain(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const WindowSurface& windowSurface, const Window& window);
 
+		Swapchain(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const WindowSurface& windowSurface, const Window& window, Swapchain& oldSwapchain);
+
 		~Swapchain();
 
 		Swapchain(const Swapchain&) = delete;
@@ -85,7 +87,7 @@ class Vulkan::Swapchain {
 
 
 		//Creates the swapchain (it is not directly in the ctor because it is reused by recreate(...) )
-		void create(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const WindowSurface& windowSurface, const Window& window);
+		void create(const PhysicalDevice& realGpu, const LogicalDevice& virtualGpu, const WindowSurface& windowSurface, const Window& window, VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE);
 
 
 		VkSwapchainKHR swapchain;

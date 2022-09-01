@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <iostream>
 #include <vector>
+#include <chrono>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -11,7 +12,7 @@
 
 
 template<typename Model>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set, const std::vector<Model*>& models);
+void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set, const std::vector<Model*>& models, std::chrono::nanoseconds elapsedNanoseconds);
 
 
 int main() {
@@ -146,9 +147,11 @@ int main() {
 		std::cout << "\n";
 
 		//draw cycle
+		auto lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(perObjectUniformBuffer, 0.1f, perObjectSet, std::vector{ &model1, &model2, &model3 });
+			debugAnimation(perObjectUniformBuffer, 0.1f, perObjectSet, std::vector{ &model1, &model2, &model3 }, std::chrono::high_resolution_clock::now() - lastFrameTime);
+			lastFrameTime = std::chrono::high_resolution_clock::now();
 			drawer.draw(vertexBuffer, indexBuffer);
 		}
 		vkDeviceWaitIdle(+virtualGpu);
@@ -163,7 +166,7 @@ int main() {
 
 
 template<typename Model>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set, const std::vector<Model*>& models){
+void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set, const std::vector<Model*>& models, std::chrono::nanoseconds elapsedNanoseconds){
 	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
@@ -178,12 +181,13 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const V
 		glm::rotate(glm::mat4(1.0f), -Angs.x, glm::vec3(0.0f, 1.0f, 0.0f)) *
 		glm::translate(glm::mat4(1.0f), -Pos);
 
+	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
 
 	Model& model1 = *models[0], &model2 = *models[1], &model3 = *models[2];
 
-	model1.rotate(0.02f, glm::vec3{ 1.0f, 0.0f, 0.0f }).translate(glm::vec3{ 0.0f, 0.0f, 0.01f });
-	model2.rotate(0.027f, glm::vec3{ 0.0f, 1.0f, 0.0f });
-	model3.rotate(0.012f, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	model1.rotate(0.8f * elapsedSeconds, glm::vec3{ 1.0f, 0.0f, 0.0f }).translate(glm::vec3{ 0.0f, 0.0f, 1.0f * elapsedSeconds });
+	model2.rotate(1.0f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	model3.rotate(0.5f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
 
 	set.fillBuffer(buffer, model1.getUniforms(view, perspective), model2.getUniforms(view, perspective), model3.getUniforms(view, perspective));
