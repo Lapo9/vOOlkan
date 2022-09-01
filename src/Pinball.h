@@ -1,6 +1,7 @@
 #ifndef PINBALL_PINBALL
 #define PINBALL_PINBALL
 
+#include "AnglesLiterals.h"
 #include "Attachment.h"
 #include "AttachmentColorBlendingMode.h"
 #include "CommandBuffer.h"

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AnglesLiterals.h" />
     <ClInclude Include="src\Attachment.h" />
     <ClInclude Include="src\AttachmentColorBlendingMode.h" />
     <ClInclude Include="src\Barriers.h" />
@@ -30,6 +31,7 @@
     <ClInclude Include="src\DescriptorSetPool.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\Model.h" />
+    <ClInclude Include="src\ModelLoader.h" />
     <ClInclude Include="src\Set.h" />
     <ClInclude Include="src\StagingBuffer.h" />
     <ClInclude Include="src\StaticSet.h" />
@@ -80,6 +82,7 @@
     <ClCompile Include="src\Instance.cpp" />
     <ClCompile Include="src\LogicalDevice.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\ModelLoader.cpp" />
     <ClCompile Include="src\PhysicalDevice.cpp" />
     <ClCompile Include="src\Queue.cpp" />
     <ClCompile Include="src\Shader.cpp" />

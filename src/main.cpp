@@ -18,7 +18,7 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const V
 int main() {
 	try {
 		//GPU setup
-		Vulkan::Window window{ 1000, 600, "Test app title" };
+		Vulkan::Window window{ 800, 800, "Test app title" };
 		Vulkan::Instance vulkanInstance{ "test app" };
 		Vulkan::WindowSurface windowSurface{ vulkanInstance, window };
 		Vulkan::PhysicalDevice realGpu{ vulkanInstance, windowSurface };
@@ -31,7 +31,7 @@ int main() {
 		Vulkan::CommandBufferPool commandBufferPool{ virtualGpu };
 
 		//texture image
-		Vulkan::TextureImage texture{ virtualGpu, realGpu, commandBufferPool, std::pair(512, 512), "textures/caTexture.jpg" };
+		Vulkan::TextureImage texture{ virtualGpu, realGpu, commandBufferPool, std::pair(1024, 1024), "textures/vikingTexture.png" };
 
 		//depth image view
 		Vulkan::DepthImage depthBuffer{ virtualGpu, realGpu, swapchain.getResolution() };
@@ -96,25 +96,14 @@ int main() {
 		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, swapchain, depthBuffer, commandBufferPool, renderPass, pipeline, globalSet, perObjectSet };
 
 		//create models
-		Vulkan::Model model1{ std::vector<MyVertex>{
-			{{-1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f}},
-			{{ 0.0f,  1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.5f, -0.1f}},
-			{{ 1.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-		},
-			std::vector<uint32_t>{0, 1, 2},
-				glm::vec3{0.0f},
-				glm::vec3{1.0f},
-				glm::vec3{0.0f, 0.0f, -9.0f},
-				glm::vec4{1.0f, 0.0f, 0.0f, 1.0f}
+		Vulkan::Model model1{ MyVertex{}, "models/vikingModel.obj",
+			glm::vec3{0.0_deg, -90.0_deg, -90.0_deg},
+			glm::vec3{1.0f},
+			glm::vec3{0.0f, -0.8f, -0.5f},
+			glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}
 		};
 
-		Vulkan::Model model2{ std::vector<MyVertex>{
-			{{-0.8f, -0.5f,  0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f}},
-			{{-0.8f,  0.5f,  0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-			{{0.8f,   0.5f,  0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
-			{{0.8f,  -0.5f,  0.0f}, {1.0f, 0.7f, 0.0f}, {1.0f, 1.0f}},
-		},
-			std::vector<uint32_t>{0, 1, 2, 0, 2, 3},
+		/*Vulkan::Model model2{std::vector<MyVertex>{ MyVertex{}, "models/testModel.obj",
 				glm::vec3{0.0f},
 				glm::vec3{1.0f},
 				glm::vec3{0.5f, 0.0f, -1.0f},
@@ -132,17 +121,17 @@ int main() {
 				glm::vec3{1.0f},
 				glm::vec3{-0.5f, 0.0f, -1.2f},
 				glm::vec4{0.0f, 0.0f, 1.0f, 1.0f}
-		};
+		};*/
 
 
 
 		//create vertex buffer for models
-		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size() + model2.getVertices().size() + model3.getVertices().size()) * sizeof(model1.getVertices()[0])};
-		vertexBuffer.fillBuffer(model1 , model2, model3);
+		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, model1.getVertices().size() * sizeof(MyVertex) };
+		vertexBuffer.fillBuffer(model1);
 
 		//create index buffer for model
-		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size() + model2.getIndexes().size() + model3.getIndexes().size()) * sizeof(model1.getIndexes()[0]) };
-		indexBuffer.fillBuffer(model1 , model2, model3);
+		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, model1.getIndexes().size() * sizeof(uint32_t) };
+		indexBuffer.fillBuffer(model1);
 
 		std::cout << "\n";
 
@@ -150,7 +139,7 @@ int main() {
 		auto lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(perObjectUniformBuffer, 0.1f, perObjectSet, std::vector{ &model1, &model2, &model3 }, std::chrono::high_resolution_clock::now() - lastFrameTime);
+			debugAnimation(perObjectUniformBuffer, 0.1f, perObjectSet, std::vector{ &model1 }, std::chrono::high_resolution_clock::now() - lastFrameTime);
 			lastFrameTime = std::chrono::high_resolution_clock::now();
 			drawer.draw(vertexBuffer, indexBuffer);
 		}
@@ -183,13 +172,13 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const V
 
 	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
 
-	Model& model1 = *models[0], &model2 = *models[1], &model3 = *models[2];
+	Model& model1 = *models[0];//, &model2 = *models[1], &model3 = *models[2];
 
-	model1.rotate(0.8f * elapsedSeconds, glm::vec3{ 1.0f, 0.0f, 0.0f }).translate(glm::vec3{ 0.0f, 0.0f, 1.0f * elapsedSeconds });
-	model2.rotate(1.0f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
-	model3.rotate(0.5f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 0.0f, 1.0f });// .translate(glm::vec3{ 0.0f, 0.0f, 0.7f * elapsedSeconds });
+	//model2.rotate(1.1f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	//model3.rotate(0.49f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
 
-	set.fillBuffer(buffer, model1.getUniforms(view, perspective), model2.getUniforms(view, perspective), model3.getUniforms(view, perspective));
+	set.fillBuffer(buffer, model1.getUniforms(view, perspective));
 
 }

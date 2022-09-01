@@ -8,6 +8,7 @@
 #include <tuple>
 
 #include "VertexInput.h"
+#include "ModelLoader.h"
 
 
 namespace Vulkan {
@@ -22,16 +23,13 @@ namespace Vulkan {
 	class Model {
 	public:
 
-		Model(std::vector<Vertex> vertices, std::vector<uint32_t> indexes, Structs... uniforms) : vertices{ vertices }, indexes{ indexes }, uniforms{ glm::mat4{1.0f}, uniforms... } {
-			
+		Model(Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ glm::mat4{1.0f}, uniforms... } {
+			ModelLoader<Vertex>::loadModel(pathToModel, vertices, indexes);
 		}
 
 
-		Model(std::vector<Vertex> vertices, std::vector<uint32_t> indexes, glm::vec3 rotation, glm::vec3 scale, glm::vec3 position, Structs... uniforms) : Model{ vertices, indexes, uniforms... } {
-			this->rotation = glm::quat(glm::vec3{ 0, rotation.y, 0 }) *
-				glm::quat(glm::vec3{ rotation.x, 0, 0 }) *
-				glm::quat(glm::vec3{ 0, 0, rotation.z });
-
+		Model(Vertex v, std::string pathToModel, glm::vec3 rotation, glm::vec3 scale, glm::vec3 position, Structs... uniforms) : Model{ v, pathToModel, uniforms... } {
+			this->rotation = glm::quat(rotation);
 			this->scaleFactor = scale;
 			this->position = position;
 		}
