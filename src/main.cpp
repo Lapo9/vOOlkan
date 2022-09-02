@@ -103,7 +103,7 @@ int main() {
 		auto light1 = glm::vec3{ 0.0f, 0.0f, 10.0f };
 		auto light2 = glm::vec3{ 0.0f, 0.0f, 10.0f };
 
-		//fill global set
+		//fill global set 
 		Lights lights{
 			//point
 			glm::vec3{0.0f, 0.0f, 0.0f},
