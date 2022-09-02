@@ -20,11 +20,11 @@ Vulkan::TextureImage::TextureImage(const LogicalDevice& virtualGpu, const Physic
     //load image in CPU memory
     int width, height, channels;
     stbi_uc* pixels = stbi_load(pathToTexture.c_str(), &width, &height, &channels, STBI_rgb_alpha);
-    if (resolution != std::pair<unsigned int, unsigned int>{width, height}) {
-        throw VulkanException{ "Width or height of the texture doesn't match width and height of the TextureImage object" };
-    }
     if (!pixels) {
         throw VulkanException{ "Failed to load texture image!" };
+    }
+    if (resolution != std::pair<unsigned int, unsigned int>{width, height}) {
+        throw VulkanException{ "Width or height of the texture doesn't match width and height of the TextureImage object" };
     }
     VkDeviceSize imageSize = width * height * 4;
 

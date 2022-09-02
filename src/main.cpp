@@ -12,13 +12,13 @@
 
 
 template<typename Model>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set, const std::vector<Model*>& models, std::chrono::nanoseconds elapsedNanoseconds);
+void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, const Vulkan::DynamicSet& set, const std::vector<Model*>& models, std::chrono::nanoseconds elapsedNanoseconds);
 
 
 int main() {
 	try {
 		//GPU setup
-		Vulkan::Window window{ 800, 800, "Test app title" };
+		Vulkan::Window window{ 1000, 1000, "Test app title" };
 		Vulkan::Instance vulkanInstance{ "test app" };
 		Vulkan::WindowSurface windowSurface{ vulkanInstance, window };
 		Vulkan::PhysicalDevice realGpu{ vulkanInstance, windowSurface };
@@ -31,7 +31,7 @@ int main() {
 		Vulkan::CommandBufferPool commandBufferPool{ virtualGpu };
 
 		//texture image
-		Vulkan::TextureImage texture{ virtualGpu, realGpu, commandBufferPool, std::pair(1024, 1024), "textures/vikingTexture.png" };
+		Vulkan::TextureImage texture{ virtualGpu, realGpu, commandBufferPool, std::pair(1024, 1024), "textures/white.jpg" };
 
 		//depth image view
 		Vulkan::DepthImage depthBuffer{ virtualGpu, realGpu, swapchain.getResolution() };
@@ -99,31 +99,38 @@ int main() {
 		Vulkan::StaticSet globalSet{ virtualGpu, std::tuple{ VK_SHADER_STAGE_ALL, &texture}, std::tuple{ VK_SHADER_STAGE_ALL, Lights{}, &globalUniformBuffer, 0 } };
 		Vulkan::DynamicSet perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, Matrices{}}};
 		
+		//debug (al momento fuori visuale e le luci sono tutte spente tranne quella direzionale)
+		auto light1 = glm::vec3{ 0.0f, 0.0f, 10.0f };
+		auto light2 = glm::vec3{ 0.0f, 0.0f, 10.0f };
+
 		//fill global set
 		Lights lights{
-			glm::vec3{0.5f, 0.5f, 0.5f},
+			//point
 			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
+			light1,
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			light2,
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec2{10.0f, 1.0f},
 
+			//dir
 			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{0.0f, 0.0f, -1.0f},
 
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
 
-			glm::vec3{0.0f, 0.0f, 0.9f}
+			//eye
+			glm::vec3{0.0f, 0.0f, 0.0f}
 		};
 		globalUniformBuffer.fillBuffer(lights);
 
@@ -151,41 +158,33 @@ int main() {
 		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, swapchain, depthBuffer, commandBufferPool, renderPass, pipeline, globalSet, perObjectSet };
 
 		//create models
-		Vulkan::Model model1{ MyVertex{}, "models/vikingModel.obj",
-			glm::vec3{0.0_deg, -90.0_deg, -90.0_deg},
-			glm::vec3{1.0f},
-			glm::vec3{0.0f, -0.8f, -0.5f}
+		Vulkan::Model model1{ MyVertex{}, "models/cube.obj",
+			glm::vec3{0.0_deg, 45.0_deg, 0.0_deg},
+			glm::vec3{0.6f},
+			glm::vec3{0.0f, 0.0f, -3.0f}
 		};
-
-		/*Vulkan::Model model2{std::vector<MyVertex>{ MyVertex{}, "models/testModel.obj",
-				glm::vec3{0.0f},
-				glm::vec3{1.0f},
-				glm::vec3{0.5f, 0.0f, -1.0f},
-				glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}
+		
+		Vulkan::Model model2{ MyVertex{}, "models/cube.obj",
+			glm::vec3{0.0f},
+			glm::vec3{0.1f},
+			light1
 		};
-
-		Vulkan::Model model3{ std::vector<MyVertex>{
-			{{-1.0f, -0.3f,  0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.5f}},
-			{{-1.0f,  0.3f,  0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-			{{ 1.0f,  0.3f,  0.0f}, {0.5f, 0.0f, 1.0f}, {0.5f, 0.0f}},
-			{{ 1.0f, -0.3f,  0.0f}, {1.0f, 0.0f, 0.5f}, {0.5f, 0.5f}},
-		},
-			std::vector<uint32_t>{0, 1, 2, 0, 2, 3},
-				glm::vec3{0.0f},
-				glm::vec3{1.0f},
-				glm::vec3{-0.5f, 0.0f, -1.2f},
-				glm::vec4{0.0f, 0.0f, 1.0f, 1.0f}
-		};*/
+		
+		Vulkan::Model model3{ MyVertex{}, "models/cube.obj",
+			glm::vec3{0.0f},
+			glm::vec3{0.01f},
+			light2
+		};
 
 
 
 		//create vertex buffer for models
-		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, model1.getVertices().size() * sizeof(MyVertex) };
-		vertexBuffer.fillBuffer(model1);
+		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size() + model2.getVertices().size() + model3.getVertices().size()) * sizeof(MyVertex) };
+		vertexBuffer.fillBuffer(model1, model2, model3);
 
 		//create index buffer for model
-		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, model1.getIndexes().size() * sizeof(uint32_t) };
-		indexBuffer.fillBuffer(model1);
+		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size() + model2.getIndexes().size() + model3.getIndexes().size()) * sizeof(uint32_t) };
+		indexBuffer.fillBuffer(model1, model2, model3);
 
 		std::cout << "\n";
 
@@ -193,7 +192,7 @@ int main() {
 		auto lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(perObjectUniformBuffer, 0.1f, perObjectSet, std::vector{ &model1 }, std::chrono::high_resolution_clock::now() - lastFrameTime);
+			debugAnimation(perObjectUniformBuffer, perObjectSet, std::vector{ &model1, &model2, &model3 }, std::chrono::high_resolution_clock::now() - lastFrameTime);
 			lastFrameTime = std::chrono::high_resolution_clock::now();
 			drawer.draw(vertexBuffer, indexBuffer);
 		}
@@ -209,7 +208,7 @@ int main() {
 
 
 template<typename Model>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const Vulkan::DynamicSet& set, const std::vector<Model*>& models, std::chrono::nanoseconds elapsedNanoseconds){
+void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, const Vulkan::DynamicSet& set, const std::vector<Model*>& models, std::chrono::nanoseconds elapsedNanoseconds){
 	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
@@ -218,7 +217,7 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const V
 			0, 0, (n * f) / (n - f), 0
 	};
 
-	static glm::vec3 Angs{ 0.0f, 0.0f, 0.0f }, Pos{ 0.0f, 0.0f, 0.9f };
+	static glm::vec3 Angs{ 0.0f, 0.0f, 0.0f }, Pos{ 0.0f, 0.0f, 0.0f };
 	static glm::mat4 view = glm::rotate(glm::mat4(1.0f), -Angs.z, glm::vec3(0.0f, 0.0f, 1.0f)) *
 		glm::rotate(glm::mat4(1.0f), -Angs.y, glm::vec3(1.0f, 0.0f, 0.0f)) *
 		glm::rotate(glm::mat4(1.0f), -Angs.x, glm::vec3(0.0f, 1.0f, 0.0f)) *
@@ -226,13 +225,13 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, float delta, const V
 
 	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
 
-	Model& model1 = *models[0];//, &model2 = *models[1], &model3 = *models[2];
+	Model& model1 = *models[0], &model2 = *models[1], &model3 = *models[2];
 
-	model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 0.0f, 1.0f });// .translate(glm::vec3{ 0.0f, 0.0f, 0.7f * elapsedSeconds });
+	//model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 0.0f, 1.0f });// .translate(glm::vec3{ 0.0f, 0.0f, 0.7f * elapsedSeconds });
 	//model2.rotate(1.1f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 	//model3.rotate(0.49f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
 
-	set.fillBuffer(buffer, model1.getUniforms(view, perspective));
+	set.fillBuffer(buffer, model1.getUniforms(view, perspective), model3.getUniforms(view, perspective), model2.getUniforms(view, perspective));
 
 }

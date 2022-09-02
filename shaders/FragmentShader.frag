@@ -297,6 +297,10 @@ void main() {
 
 	//outColor = vec4(diffuseBRDF + specularBRDF + ambientColor, 1.0); 
 
-	outColor = vec4(diffuseBRDF.x+0.0f, diffuseBRDF.y, diffuseBRDF.z, 1.0f);
+	outColor = vec4(diffuseBRDF, 1.0f);
+
+	//outColor = vec4(fragNormal, 1.0f);
+
+	//outColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
