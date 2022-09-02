@@ -208,5 +208,17 @@
     <None Include="shaders\TestVert.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="VertexShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="FragmentShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="BackgroundBoxShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="BackgroundBoxShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

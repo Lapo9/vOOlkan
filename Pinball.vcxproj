@@ -79,8 +79,12 @@
     <ClCompile Include="src\WindowSurface.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="BackgroundBoxShader.frag" />
+    <None Include="BackgroundBoxShader.vert" />
+    <None Include="FragmentShader.frag" />
     <None Include="shaders\TestFrag.frag" />
     <None Include="shaders\TestVert.vert" />
+    <None Include="VertexShader.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
