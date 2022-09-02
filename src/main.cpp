@@ -65,12 +65,67 @@ int main() {
 
 
 		//uniform sets layouts
-		using Lights = struct { glm::mat4 light1; };
+		using Lights = struct { 
+			alignas(16) glm::vec3 color0;
+			alignas(16) glm::vec3 position0;
+			alignas(16) glm::vec3 color1;
+			alignas(16) glm::vec3 position1;
+			alignas(16) glm::vec3 color2;
+			alignas(16) glm::vec3 position2;
+			alignas(16) glm::vec3 color3;
+			alignas(16) glm::vec3 position3;
+			alignas(16) glm::vec3 color4;
+			alignas(16) glm::vec3 position4;
+			alignas(16) glm::vec3 color5;
+			alignas(16) glm::vec3 position5;
+			alignas(8) glm::vec2 decayFactor;
+
+			alignas(16) glm::vec3 directionalLightColor;
+			alignas(16) glm::vec3 directionalLightDirection;
+
+			alignas(16) glm::vec3 basicAmbient;
+			alignas(16) glm::vec3 dxColor;
+			alignas(16) glm::vec3 dyColor;
+			alignas(16) glm::vec3 dzColor;
+
+			alignas(16) glm::vec3 eyePosition;
+		};
+		using Matrices = struct {
+			alignas(16) glm::mat4 mvp;
+			alignas(16) glm::mat4 model;
+			alignas(16) glm::mat4 normals;
+		};
 
 		Vulkan::StaticSet globalSet{ virtualGpu, std::tuple{ VK_SHADER_STAGE_ALL, &texture}, std::tuple{ VK_SHADER_STAGE_ALL, Lights{}, &globalUniformBuffer, 0 } };
-		Vulkan::DynamicSet perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, glm::mat4{}}, std::pair{VK_SHADER_STAGE_ALL, glm::vec4{}} };
+		Vulkan::DynamicSet perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, Matrices{}}};
 		
+		//fill global set
+		Lights lights{
+			glm::vec3{0.5f, 0.5f, 0.5f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec2{10.0f, 1.0f},
 
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+
+			glm::vec3{0.0f, 0.0f, 0.9f}
+		};
+		globalUniformBuffer.fillBuffer(lights);
 
 		//pipeline options
 		Vulkan::PipelineOptions::Multisampler multisampler{};
@@ -82,8 +137,8 @@ int main() {
 		Vulkan::PipelineOptions::Viewport viewport{};
 
 		//shaders
-		Vulkan::PipelineOptions::Shader vertexShader{ virtualGpu, "shaders/TestVert.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT };
-		Vulkan::PipelineOptions::Shader fragmentShader{ virtualGpu, "shaders/TestFrag.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT };
+		Vulkan::PipelineOptions::Shader vertexShader{ virtualGpu, "shaders/VertexShaderVert.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT };
+		Vulkan::PipelineOptions::Shader fragmentShader{ virtualGpu, "shaders/FragmentShaderFrag.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT };
 
 		//pipeline
 		Vulkan::Pipeline pipeline{ virtualGpu, renderPass, 0, std::vector{&vertexShader, &fragmentShader},vertexTypesDescriptor, pipelineLayout, rasterizer, inputAssembly, multisampler, depthStencil, dynamicState, viewport};
@@ -99,8 +154,7 @@ int main() {
 		Vulkan::Model model1{ MyVertex{}, "models/vikingModel.obj",
 			glm::vec3{0.0_deg, -90.0_deg, -90.0_deg},
 			glm::vec3{1.0f},
-			glm::vec3{0.0f, -0.8f, -0.5f},
-			glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}
+			glm::vec3{0.0f, -0.8f, -0.5f}
 		};
 
 		/*Vulkan::Model model2{std::vector<MyVertex>{ MyVertex{}, "models/testModel.obj",

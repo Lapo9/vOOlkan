@@ -1,4 +1,5 @@
-#version 450 
+#version 450
+#extension GL_KHR_vulkan_glsl : enable
 // #GL_ARB_separate_shader_onjects : enable
 
 /*
@@ -18,7 +19,7 @@ layout (location = 2) in vec2 fragUVText; // determines where to read the texel
 
 layout (location = 0) out vec4 outColor;  // vector containing the final color of the fragment
 
-layout (binding = 1) uniform sampler2D texSampler; // I assume this is used for attaching the texture to the image
+layout (set = 0, binding = 0) uniform sampler2D texSampler; // I assume this is used for attaching the texture to the image
 
 // TODO: fill this struct later on
 /*
@@ -26,7 +27,7 @@ layout (binding = 1) uniform sampler2D texSampler; // I assume this is used for 
 *	coming from the top of the room that iluminates the entire pinball and 6 point lights at the corners of the field that simulate some led  
 *	lights. Those 6 may be too much but it should be easier to eliminate some than to increase it.
 */
-layout (binding = 2) uniform GlobalUniformBufferObject {
+layout (set = 0, binding = 1) uniform GlobalUniformBufferObject {
 	//Point lights!
 	vec3 lightColor0;
 	vec3 lightPosition0;
@@ -272,7 +273,7 @@ void main() {
 	diffuseBRDF = create_Lambert_diffuse(normal, diffuseColor, lightDecay0to2, lightDecay3to5);
 
 	//  Toon diffuse (thr to define!)
-	diffuseBRDF = create_Toon_diffuse(normal, diffuseColor, 0.5f, lightDecay0to2, lightDecay3to5);
+	//diffuseBRDF = create_Toon_diffuse(normal, diffuseColor, 0.5f, lightDecay0to2, lightDecay3to5);
 
 	
 	//	SPECULAR FUNCTIONS. Note: for specular color I'm not sure about it but for now I'll go with white (the color I thought for the lights).
@@ -280,20 +281,22 @@ void main() {
 	
 	//	Blinn specular
 	float blinnExponent = 100.0f; // exponent to decide!
-	specularBRDF = create_Blinn_specular(viewDirection, normal, specularColor, blinnExponent);
+	//specularBRDF = create_Blinn_specular(viewDirection, normal, specularColor, blinnExponent);
 
 	//	Phong specular
 	float phongExponent = 100.0f;
 	specularBRDF = create_Phong_specular(normal, viewDirection, specularColor, phongExponent);
 
 	//	Toon specular (thr to define!)
-	specularBRDF = create_Toon_specular(normal, viewDirection, specularColor, 0.5f);
+	//specularBRDF = create_Toon_specular(normal, viewDirection, specularColor, 0.5f);
 
 
 	//	AMBIENT COLOR FUNCTION
 	//	For ambient lighting I think that spherical harmonics suits best our project but I still have to figure out how to get the proper colors!
 	ambientColor = gubo.basicAmbient * (gubo.basicAmbient + normal.x * gubo.dxColor + normal.y * gubo.dyColor + normal.z * gubo.dzColor);
 
-	outColor = vec4(diffuseBRDF + specularBRDF + ambientColor, 1.0); 
+	//outColor = vec4(diffuseBRDF + specularBRDF + ambientColor, 1.0); 
+
+	outColor = vec4(diffuseBRDF.x+0.0f, diffuseBRDF.y, diffuseBRDF.z, 1.0f);
 }
 
