@@ -95,8 +95,12 @@
     <ClCompile Include="src\WindowSurface.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\BackgroundBoxShader.frag" />
+    <None Include="shaders\BackgroundBoxShader.vert" />
+    <None Include="shaders\FragmentShader.frag" />
     <None Include="shaders\TestFrag.frag" />
     <None Include="shaders\TestVert.vert" />
+    <None Include="shaders\VertexShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\testTexture.jpg" />

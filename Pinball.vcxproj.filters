@@ -274,6 +274,18 @@
     <None Include="shaders\TestFrag.frag">
       <Filter>Resource Files\shaders</Filter>
     </None>
+    <None Include="shaders\BackgroundBoxShader.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\FragmentShader.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\BackgroundBoxShader.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\VertexShader.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\testTexture.jpg">
