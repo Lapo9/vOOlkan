@@ -28,9 +28,9 @@ void Vulkan::ModelLoader<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, g
             }; 
             
             glm::vec3 normals{
-                attrib.vertices[3 * index.normal_index + 0],
-                attrib.vertices[3 * index.normal_index + 1],
-                attrib.vertices[3 * index.normal_index + 2]
+                attrib.normals[3 * index.normal_index + 0],
+                attrib.normals[3 * index.normal_index + 1],
+                attrib.normals[3 * index.normal_index + 2]
             }; 
             
             glm::vec2 texture{

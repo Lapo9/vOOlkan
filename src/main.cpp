@@ -100,17 +100,17 @@ int main() {
 		Vulkan::DynamicSet perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, Matrices{}}};
 		
 		//debug (al momento fuori visuale e le luci sono tutte spente tranne quella direzionale)
-		auto light1 = glm::vec3{ 0.0f, 0.0f, 10.0f };
-		auto light2 = glm::vec3{ 0.0f, 0.0f, 10.0f };
+		auto light1 = glm::vec3{ 1.0f, 0.0f, -1.0f };
+		auto light2 = glm::vec3{ 1.0f, 0.0f, -3.1f };
 
 		//fill global set 
 		Lights lights{
 			//point
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{1.0f, 0.0f, 0.0f},
 			light1,
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 1.0f, 0.0f},
 			light2,
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.1f, 0.1f, 0.1f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
@@ -121,8 +121,8 @@ int main() {
 			glm::vec2{10.0f, 1.0f},
 
 			//dir
-			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{0.0f, 0.0f, -1.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 1.0f},
 
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
@@ -164,15 +164,15 @@ int main() {
 			glm::vec3{0.0f, 0.0f, -3.0f}
 		};
 		
-		Vulkan::Model model2{ MyVertex{}, "models/cube.obj",
-			glm::vec3{0.0f},
+		Vulkan::Model model2{ MyVertex{}, "models/square.obj",
+			glm::vec3{90.0_deg, 0.0_deg, 0.0_deg},
 			glm::vec3{0.1f},
 			light1
 		};
 		
-		Vulkan::Model model3{ MyVertex{}, "models/cube.obj",
-			glm::vec3{0.0f},
-			glm::vec3{0.01f},
+		Vulkan::Model model3{ MyVertex{}, "models/square.obj",
+			glm::vec3{90.0_deg, 0.0_deg, 0.0_deg},
+			glm::vec3{0.1f},
 			light2
 		};
 

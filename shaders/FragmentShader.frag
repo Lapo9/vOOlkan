@@ -299,7 +299,7 @@ void main() {
 
 	outColor = vec4(diffuseBRDF, 1.0f);
 
-	//outColor = vec4(fragNormal, 1.0f);
+	//outColor = vec4(normal*0.5f+0.5f, 1.0f);
 
 	//outColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
