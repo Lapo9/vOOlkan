@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\AnglesLiterals.h" />
     <ClInclude Include="src\Attachment.h" />
     <ClInclude Include="src\AttachmentColorBlendingMode.h" />
     <ClInclude Include="src\Barriers.h" />
@@ -31,7 +30,6 @@
     <ClInclude Include="src\DescriptorSetPool.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\Model.h" />
-    <ClInclude Include="src\ModelLoader.h" />
     <ClInclude Include="src\Set.h" />
     <ClInclude Include="src\StagingBuffer.h" />
     <ClInclude Include="src\StaticSet.h" />

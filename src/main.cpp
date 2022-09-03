@@ -100,8 +100,8 @@ int main() {
 		Vulkan::DynamicSet perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, Matrices{}}};
 		
 		//debug (al momento fuori visuale e le luci sono tutte spente tranne quella direzionale)
-		auto light1 = glm::vec3{ 1.0f, 0.0f, -1.0f };
-		auto light2 = glm::vec3{ 1.0f, 0.0f, -3.1f };
+		auto light1 = glm::vec3{ -1.0f, 0.0f, -1.0f };
+		auto light2 = glm::vec3{ 1.0f, 0.0f, -2.5f };
 
 		//fill global set 
 		Lights lights{
@@ -118,7 +118,7 @@ int main() {
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec2{10.0f, 1.0f},
+			glm::vec2{3.0f, 2.0f},
 
 			//dir
 			glm::vec3{0.0f, 0.0f, 0.0f},
@@ -227,7 +227,7 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, const Vulkan::Dynami
 
 	Model& model1 = *models[0], &model2 = *models[1], &model3 = *models[2];
 
-	//model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 0.0f, 1.0f });// .translate(glm::vec3{ 0.0f, 0.0f, 0.7f * elapsedSeconds });
+	model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });// .translate(glm::vec3{ 0.0f, 0.0f, 0.7f * elapsedSeconds });
 	//model2.rotate(1.1f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 	//model3.rotate(0.49f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 

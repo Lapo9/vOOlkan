@@ -40,12 +40,6 @@
     <Filter Include="Source Files\DescriptorSetOptions">
       <UniqueIdentifier>{bb391eb2-8085-49a9-8a74-81c642ace6df}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\ModelLoaders">
-      <UniqueIdentifier>{49e97a19-36e9-41c7-b10d-3a0b19432e5d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resource Files\models">
-      <UniqueIdentifier>{bff82740-0c88-4559-8692-065f04e3ed3d}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Instance.h">
@@ -204,12 +198,6 @@
     <ClInclude Include="src\StaticSet.h">
       <Filter>Source Files\DescriptorSetOptions</Filter>
     </ClInclude>
-    <ClInclude Include="src\ModelLoader.h">
-      <Filter>Source Files\ModelLoaders</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AnglesLiterals.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -264,7 +252,7 @@
       <Filter>Source Files\Images</Filter>
     </ClCompile>
     <ClCompile Include="src\ModelLoader.cpp">
-      <Filter>Source Files\ModelLoaders</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -295,9 +295,9 @@ void main() {
 	//	For ambient lighting I think that spherical harmonics suits best our project but I still have to figure out how to get the proper colors!
 	ambientColor = gubo.basicAmbient * (gubo.basicAmbient + normal.x * gubo.dxColor + normal.y * gubo.dyColor + normal.z * gubo.dzColor);
 
-	//outColor = vec4(diffuseBRDF + specularBRDF + ambientColor, 1.0); 
+	outColor = vec4(diffuseBRDF + specularBRDF + ambientColor, 1.0); 
 
-	outColor = vec4(diffuseBRDF, 1.0f);
+	//outColor = vec4(diffuseBRDF, 1.0f);
 
 	//outColor = vec4(normal*0.5f+0.5f, 1.0f);
 
