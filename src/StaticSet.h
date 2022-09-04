@@ -67,6 +67,39 @@ namespace Vulkan {
 
 
 
+		/**
+		 * @brief Fills the buffer by placing the passed data into the corresponding position in the buffer.
+		 * @details The buffer must be one of the buffers present in this set, this means that at least one of the binding must use this buffer. If this pre-condition is not met, the function will throw.
+		 *			The n-th element will be inserted in the buffer at the offset specified by the n-th binding in the specified buffer contained in this set.
+		 *			e.g. If the set contains these bindings: {buffer, offset} -> {A, 0}, {B, 0}, {A, 4}
+		 *			Then fillBuffer(A, xxx, yyyy) will fill the buffer like this: xxx-yyyy
+		 *			Basically the n-th binding will be inserted in position: offset[n]
+		 *			No checks on the types of the elements are performed (for now), so it is responsibility of the user to pass the right data to the function.
+		 * 
+		 * @param buffer Where to store the data.
+		 * @param ...bindings Bindings to store.
+		 */
+		template<typename... Bindings>
+		void fillBuffer(Buffers::UniformBuffer& buffer, const Bindings&... bindings) const {
+			std::vector<StaticBufferBindingInfo*> bindingsInfo;
+			try {
+				bindingsInfo = bindingsPerBuffer.at(&buffer); //get the info of the bindings of the buffer
+			}
+			catch (const std::out_of_range&) {
+				throw VulkanException{ "Failed to fill the uniform buffer", "The buffer to be filled isn't used in this set" };
+			}
+
+			//fill the buffer by placing the n-th binding at the position pointed by the n-th bindingInfo (for the buffer) offset
+			int counter = 0;
+			([&bindingsInfo, &counter, &buffer](Bindings binding) {
+				buffer.fillBuffer(binding, bindingsInfo[counter]->offset);
+				counter++;
+				}(bindings), ...);
+
+		}
+
+
+
 	private:
 
 		template<typename Struct>

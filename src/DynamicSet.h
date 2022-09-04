@@ -151,7 +151,7 @@ namespace Vulkan {
 
 
 		/**
-		 * @brief Fills the buffer with the data in the tuples.
+		 * @brief Fills the buffer with the data in the tuples. The data in the tuples corresponds to the data to be inserted in each binding.
 		 * @details The buffer must be one of the buffers present in this set, this means that at least one of the binding must use this buffer. If this pre-condition is not met, the function will throw.
 		 *			The n-th element of the tuple will be inserted in the buffer at the offset specified by the n-th binding in the specified buffer contained in this set.
 		 *			The m-th tuple will consider for each binding the dynamic distance * m.
@@ -163,9 +163,9 @@ namespace Vulkan {
 		 * @param buffer Where to store the data.
 		 * @param ...tuplesOfData Data to store.
 		 */
-		template<typename... E, template<typename...>class... T> requires (std::same_as<std::tuple<E...>, T<E...>> && ...)
-		void fillBuffer(Buffers::UniformBuffer& buffer, const T<E...>&... tuplesOfData) const {
-			fillBufferHelper(buffer, std::make_integer_sequence<int, sizeof...(E)>{}, tuplesOfData...);
+		template<typename... Bindings, template<typename...>class... T> requires (std::same_as<std::tuple<Bindings...>, T<Bindings...>> && ...)
+		void fillBuffer(Buffers::UniformBuffer& buffer, const T<Bindings...>&... tuplesOfData) const {
+			fillBufferHelper(buffer, std::make_integer_sequence<int, sizeof...(Bindings)>{}, tuplesOfData...);
 		}
 
 

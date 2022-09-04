@@ -36,9 +36,6 @@ public:
 		vkUnmapMemory(+virtualGpu, bufferMemory);
 	}
 
-	//TODO overload fillBuffer with a function that takes in models and copies all of their uniform data into the buffer following a policy (such as AAAABB AAAABB or AAAA AAAA BB BB) which must be the same as the one choosen in the descriptor set
-
-
 };
 
 #endif

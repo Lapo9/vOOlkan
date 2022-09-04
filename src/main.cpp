@@ -132,7 +132,7 @@ int main() {
 			//eye
 			glm::vec3{0.0f, 0.0f, 0.0f}
 		};
-		globalUniformBuffer.fillBuffer(lights);
+		globalSet.fillBuffer(globalUniformBuffer, lights);
 
 		//pipeline options
 		Vulkan::PipelineOptions::Multisampler multisampler{};
