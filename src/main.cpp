@@ -108,7 +108,7 @@ int main() {
 			glm::vec2{3.0f, 2.0f},
 
 			//dir
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.2f, 0.2f, 0.2f},
 			glm::vec3{0.0f, 0.0f, 1.0f},
 
 			glm::vec3{0.0f, 0.0f, 0.0f},
@@ -121,10 +121,17 @@ int main() {
 		};
 
 		//create models
-		Vulkan::Model model1{ MyVertex{}, "models/cube.obj",
-			glm::vec3{0.0_deg, 45.0_deg, 0.0_deg},
-			glm::vec3{0.6f},
-			glm::vec3{0.0f, 0.0f, -3.0f}
+		Vulkan::Model model1{ MyVertex{}, "models/pinball.obj",
+			glm::vec3{0.0_deg, 180.0_deg, 0.0_deg},
+			glm::vec3{0.1f},
+			glm::vec3{0.0f, -1.3f, -0.7f}
+		};
+
+
+		Vulkan::Model floor{ MyVertex{}, "models/square.obj",
+			glm::vec3{0.0_deg, 0.0_deg, 0.0_deg},
+			glm::vec3{2.0f},
+			glm::vec3{0.0f, -2.0f, -200.0f}
 		};
 
 		Vulkan::Model redLight{ MyVertex{}, "models/square.obj",
@@ -156,15 +163,15 @@ int main() {
 		// ================ VERTEX/INDEX BUFFERS SETUP ================
 
 		//vertex buffers
-		Vulkan::Buffers::VertexBuffer mainVertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size()) * sizeof(MyVertex) };
+		Vulkan::Buffers::VertexBuffer mainVertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size() + floor.getVertices().size()) * sizeof(MyVertex) };
 		Vulkan::Buffers::VertexBuffer backgroundVertexBuffer{ virtualGpu, realGpu, (redLight.getVertices().size() + greenLight.getVertices().size() + blueLight.getVertices().size()) * sizeof(MyVertex) };
-		mainVertexBuffer.fillBuffer(model1);
+		mainVertexBuffer.fillBuffer(model1, floor);
 		backgroundVertexBuffer.fillBuffer(redLight, greenLight, blueLight);
 
 		//index buffers
-		Vulkan::Buffers::IndexBuffer mainIndexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size()) * sizeof(uint32_t) };
+		Vulkan::Buffers::IndexBuffer mainIndexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size() + floor.getIndexes().size()) * sizeof(uint32_t) };
 		Vulkan::Buffers::IndexBuffer backgroundIndexBuffer{ virtualGpu, realGpu, (redLight.getIndexes().size() + greenLight.getIndexes().size() + blueLight.getIndexes().size()) * sizeof(uint32_t) };
-		mainIndexBuffer.fillBuffer(model1);
+		mainIndexBuffer.fillBuffer(model1, floor);
 		backgroundIndexBuffer.fillBuffer(redLight, greenLight, blueLight);
 
 
@@ -244,7 +251,7 @@ int main() {
 		auto lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(mainPerObjectUniformBuffer, backgroundPerObjectUniformBuffer, mainPerObjectSet, backgroundPerObjectSet, std::tuple{ &model1, &redLight, &greenLight, &blueLight }, std::chrono::high_resolution_clock::now() - lastFrameTime);
+			debugAnimation(mainPerObjectUniformBuffer, backgroundPerObjectUniformBuffer, mainPerObjectSet, backgroundPerObjectSet, std::tuple{ &model1, &floor, &redLight, &greenLight, &blueLight }, std::chrono::high_resolution_clock::now() - lastFrameTime);
 			lastFrameTime = std::chrono::high_resolution_clock::now();
 			drawer.draw(
 				std::pair< std::reference_wrapper<Vulkan::Buffers::VertexBuffer>, std::reference_wrapper<Vulkan::Buffers::IndexBuffer>>{ mainVertexBuffer, mainIndexBuffer },
@@ -269,7 +276,7 @@ int main() {
 
 template<typename... Models>
 void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, std::chrono::nanoseconds elapsedNanoseconds){
-	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f;
+	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f, w = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
 			0, -1 / glm::tan(glm::radians(fovY / 2)), 0, 0,
@@ -277,7 +284,14 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 			0, 0, (n * f) / (n - f), 0
 	};
 
-	static glm::vec3 Angs{ 0.0f, 0.0f, 0.0f }, Pos{ 0.0f, 0.0f, 0.0f };
+	static glm::mat4 parallel{
+		1 / w, 0, 0, 0,
+		0, -a / w, 0, 0,
+		0, 0, 1 / (n - f), 0,
+		0, 0, n / (n - f), 1
+	};
+
+	static glm::vec3 Angs{ 0.0_deg, -45.0_deg, 0.0_deg }, Pos{ 0.0f, 0.0f, 0.0f };
 	static glm::mat4 view = glm::rotate(glm::mat4(1.0f), -Angs.z, glm::vec3(0.0f, 0.0f, 1.0f)) *
 		glm::rotate(glm::mat4(1.0f), -Angs.y, glm::vec3(1.0f, 0.0f, 0.0f)) *
 		glm::rotate(glm::mat4(1.0f), -Angs.x, glm::vec3(0.0f, 1.0f, 0.0f)) *
@@ -285,16 +299,19 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 
 	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
 
-	auto& model1 = *std::get<0>(models); auto& redLight = *std::get<1>(models); auto& greenLight = *std::get<2>(models); auto& blueLight = *std::get<3>(models);
+	auto& model1 = *std::get<0>(models); auto& floor = *std::get<1>(models);
+	auto& redLight = *std::get<2>(models); auto& greenLight = *std::get<3>(models); auto& blueLight = *std::get<4>(models);
 
-
-
-	model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f }).rotate(0.37f * elapsedSeconds, glm::vec3{ 1.0f, 0.0f, 0.0f });
+	static float rot = 0.0f;
+	rot += 0.3f * elapsedSeconds;
+	//view = glm::rotate(glm::mat4{ 1.0f }, rot, glm::vec3{ 1.0f, 0.0f, 0.0f });
+	//model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f }).rotate(0.37f * elapsedSeconds, glm::vec3{ 1.0f, 0.0f, 0.0f });
 	//model2.rotate(1.1f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 	//model3.rotate(0.49f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
+	glm::mat4 projection = perspective;
 
-	mainSet.fillBuffer(mainBuffer, model1.getUniforms(view, perspective));
-	backgroundSet.fillBuffer(backgroundBuffer, redLight.getUniforms(view, perspective), greenLight.getUniforms(view, perspective), blueLight.getUniforms(view, perspective));
+	mainSet.fillBuffer(mainBuffer, model1.getUniforms(view, projection), floor.getUniforms(view, projection));
+	backgroundSet.fillBuffer(backgroundBuffer, redLight.getUniforms(view, projection), greenLight.getUniforms(view, projection), blueLight.getUniforms(view, projection));
 
 }
