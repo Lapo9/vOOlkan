@@ -94,7 +94,7 @@ const std::map<std::string, Vulkan::ImageView>& Vulkan::Image::getImageViews() c
 
 
 
-void Vulkan::swap(Vulkan::Image& lhs, Vulkan::Image& rhs) {
+void Vulkan::swap(Image& lhs, Image& rhs) {
 	using std::swap;
 	swap(lhs.image, rhs.image);
 	swap(lhs.format, rhs.format);

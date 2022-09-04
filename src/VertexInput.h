@@ -7,6 +7,7 @@
 #include <tuple>
 #include <map>
 #include <array>
+#include <functional>
 
 #include "VulkanException.h"
 
@@ -276,6 +277,11 @@ namespace Vulkan::PipelineOptions {
 			Vertex() : vertexComponents{} {}
 
 
+			friend bool operator==(const Vertex& v1, const Vertex& v2) {
+				return v1.vertexComponents == v2.vertexComponents;
+			}
+
+
 			/**
 			 * @brief Returns the descriptors for this type of vertex, namely VkVertexInputBindingDescription and VkVertexInputAttributeDescription.
 			 *
@@ -362,6 +368,5 @@ namespace Vulkan::PipelineOptions {
 	};
 
 }
-
 
 #endif

@@ -1,5 +1,5 @@
 #define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
+#include <tiny_obj_loader.h>ù
 
 #include "ModelLoader.h"
 #include "VertexInput.h"
@@ -25,20 +25,20 @@ void Vulkan::ModelLoader<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, g
                 attrib.vertices[3 * index.vertex_index + 0],
                 attrib.vertices[3 * index.vertex_index + 1],
                 attrib.vertices[3 * index.vertex_index + 2]
-            }; 
-            
-            glm::vec3 normals{
+            };
+
+            glm::vec3 normal{
                 attrib.normals[3 * index.normal_index + 0],
                 attrib.normals[3 * index.normal_index + 1],
                 attrib.normals[3 * index.normal_index + 2]
-            }; 
-            
+            };
+
             glm::vec2 texture{
                 attrib.texcoords[2 * index.texcoord_index + 0],
                 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
             };
 
-            vertices.emplace_back(position, normals, texture);
+            vertices.emplace_back(position, normal, texture);
             indexes.push_back(indexes.size());
         }
     }
