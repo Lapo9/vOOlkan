@@ -11,12 +11,14 @@
 #include "Pinball.h"
 
 
-template<typename Model>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, const Vulkan::DynamicSet& set, const std::vector<Model*>& models, std::chrono::nanoseconds elapsedNanoseconds);
+template<typename... Models>
+void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, std::chrono::nanoseconds elapsedNanoseconds);
 
 
 int main() {
 	try {
+
+		// ================ GPU AND SWAPCHAIN SETUP ================
 		//GPU setup
 		Vulkan::Window window{ 1000, 1000, "Test app title" };
 		Vulkan::Instance vulkanInstance{ "test app" };
@@ -30,12 +32,8 @@ int main() {
 		//command buffer pool
 		Vulkan::CommandBufferPool commandBufferPool{ virtualGpu };
 
-		//texture image
-		Vulkan::TextureImage texture{ virtualGpu, realGpu, commandBufferPool, std::pair(1024, 1024), "textures/white.jpg" };
-
 		//depth image view
 		Vulkan::DepthImage depthBuffer{ virtualGpu, realGpu, swapchain.getResolution() };
-
 
 		//attachments for the render pass of the pipeline
 		Vulkan::PipelineOptions::RenderPassOptions::AttachmentDescription colorAttachment{};
@@ -52,20 +50,16 @@ int main() {
 
 
 
-		//how a vertex is made up
+
+
+
+		// ================ MODELS SETUP ================
+
+		//how a vertex is made
 		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>;
 
-		//vertices types descriptor
-		Vulkan::PipelineOptions::PipelineVertexArrays vertexTypesDescriptor{ MyVertex{} };
-
-
-		//uniform buffers
-		Vulkan::Buffers::UniformBuffer globalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
-		Vulkan::Buffers::UniformBuffer perObjectUniformBuffer{ virtualGpu, realGpu, 1024 * sizeof(float) };
-
-
 		//uniform sets layouts
-		using Lights = struct { 
+		using Lights = struct {
 			alignas(16) glm::vec3 color0;
 			alignas(16) glm::vec3 position0;
 			alignas(16) glm::vec3 color1;
@@ -96,22 +90,15 @@ int main() {
 			alignas(16) glm::mat4 normals;
 		};
 
-		Vulkan::StaticSet globalSet{ virtualGpu, std::tuple{ VK_SHADER_STAGE_ALL, &texture}, std::tuple{ VK_SHADER_STAGE_ALL, Lights{}, &globalUniformBuffer, 0 } };
-		Vulkan::DynamicSet perObjectSet{ realGpu, virtualGpu, perObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, Matrices{}}};
-		
-		//debug (al momento fuori visuale e le luci sono tutte spente tranne quella direzionale)
-		auto light1 = glm::vec3{ -1.0f, 0.0f, -1.0f };
-		auto light2 = glm::vec3{ 1.0f, 0.0f, -2.5f };
-
 		//fill global set 
 		Lights lights{
 			//point
 			glm::vec3{1.0f, 0.0f, 0.0f},
-			light1,
+			glm::vec3{1.0f, -0.3f, -1.0f},
 			glm::vec3{0.0f, 1.0f, 0.0f},
-			light2,
-			glm::vec3{0.1f, 0.1f, 0.1f},
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{-1.0f, -0.3f, -2.0f},
+			glm::vec3{0.0f, 0.0f, 1.0f},
+			glm::vec3{0.0f, 1.0f, -3.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
@@ -132,30 +119,6 @@ int main() {
 			//eye
 			glm::vec3{0.0f, 0.0f, 0.0f}
 		};
-		globalSet.fillBuffer(globalUniformBuffer, lights);
-
-		//pipeline options
-		Vulkan::PipelineOptions::Multisampler multisampler{};
-		Vulkan::PipelineOptions::DepthStencil depthStencil{};
-		Vulkan::PipelineOptions::DynamicState dynamicState{};
-		Vulkan::PipelineOptions::InputAssembly inputAssembly{};
-		Vulkan::PipelineOptions::PipelineLayout pipelineLayout{ virtualGpu, globalSet, perObjectSet };
-		Vulkan::PipelineOptions::Rasterizer rasterizer{ false };
-		Vulkan::PipelineOptions::Viewport viewport{};
-
-		//shaders
-		Vulkan::PipelineOptions::Shader vertexShader{ virtualGpu, "shaders/VertexShaderVert.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT };
-		Vulkan::PipelineOptions::Shader fragmentShader{ virtualGpu, "shaders/FragmentShaderFrag.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT };
-
-		//pipeline
-		Vulkan::Pipeline pipeline{ virtualGpu, renderPass, 0, std::vector{&vertexShader, &fragmentShader},vertexTypesDescriptor, pipelineLayout, rasterizer, inputAssembly, multisampler, depthStencil, dynamicState, viewport};
-		
-
-
-
-	
-		//create drawer
-		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, swapchain, depthBuffer, commandBufferPool, renderPass, pipeline, globalSet, perObjectSet };
 
 		//create models
 		Vulkan::Model model1{ MyVertex{}, "models/cube.obj",
@@ -163,28 +126,117 @@ int main() {
 			glm::vec3{0.6f},
 			glm::vec3{0.0f, 0.0f, -3.0f}
 		};
-		
-		Vulkan::Model model2{ MyVertex{}, "models/square.obj",
+
+		Vulkan::Model redLight{ MyVertex{}, "models/square.obj",
 			glm::vec3{90.0_deg, 0.0_deg, 0.0_deg},
 			glm::vec3{0.1f},
-			light1
+			lights.position0,
+			lights.color0
+			
 		};
-		
-		Vulkan::Model model3{ MyVertex{}, "models/square.obj",
+
+		Vulkan::Model greenLight{ MyVertex{}, "models/square.obj",
 			glm::vec3{90.0_deg, 0.0_deg, 0.0_deg},
 			glm::vec3{0.1f},
-			light2
+			lights.position1,
+			lights.color1
+		};
+				
+		Vulkan::Model blueLight{ MyVertex{}, "models/square.obj",
+			glm::vec3{90.0_deg, 0.0_deg, 0.0_deg},
+			glm::vec3{0.1f},
+			lights.position2,
+			lights.color2
 		};
 
 
 
-		//create vertex buffer for models
-		Vulkan::Buffers::VertexBuffer vertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size() + model2.getVertices().size() + model3.getVertices().size()) * sizeof(MyVertex) };
-		vertexBuffer.fillBuffer(model1, model2, model3);
 
-		//create index buffer for model
-		Vulkan::Buffers::IndexBuffer indexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size() + model2.getIndexes().size() + model3.getIndexes().size()) * sizeof(uint32_t) };
-		indexBuffer.fillBuffer(model1, model2, model3);
+
+		// ================ VERTEX/INDEX BUFFERS SETUP ================
+
+		//vertex buffers
+		Vulkan::Buffers::VertexBuffer mainVertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size()) * sizeof(MyVertex) };
+		Vulkan::Buffers::VertexBuffer backgroundVertexBuffer{ virtualGpu, realGpu, (redLight.getVertices().size() + greenLight.getVertices().size() + blueLight.getVertices().size()) * sizeof(MyVertex) };
+		mainVertexBuffer.fillBuffer(model1);
+		backgroundVertexBuffer.fillBuffer(redLight, greenLight, blueLight);
+
+		//index buffers
+		Vulkan::Buffers::IndexBuffer mainIndexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size()) * sizeof(uint32_t) };
+		Vulkan::Buffers::IndexBuffer backgroundIndexBuffer{ virtualGpu, realGpu, (redLight.getIndexes().size() + greenLight.getIndexes().size() + blueLight.getIndexes().size()) * sizeof(uint32_t) };
+		mainIndexBuffer.fillBuffer(model1);
+		backgroundIndexBuffer.fillBuffer(redLight, greenLight, blueLight);
+
+
+
+
+
+
+		// ================ UNIFORMS/TEXTURES SETUP ================
+
+		//texture image
+		Vulkan::TextureImage mainTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(1024, 1024), "textures/white.jpg" };
+		Vulkan::TextureImage backgroundTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(512, 512), "textures/light.png" };
+
+		//uniform buffers
+		Vulkan::Buffers::UniformBuffer mainGlobalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
+		Vulkan::Buffers::UniformBuffer mainPerObjectUniformBuffer{ virtualGpu, realGpu, 1024 * sizeof(float) };
+		Vulkan::Buffers::UniformBuffer backgroundGlobalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
+		Vulkan::Buffers::UniformBuffer backgroundPerObjectUniformBuffer{ virtualGpu, realGpu, 1024 * sizeof(float) };
+
+		//descriptor sets
+		Vulkan::StaticSet mainGlobalSet{ virtualGpu, std::tuple{ VK_SHADER_STAGE_ALL, &mainTexture}, std::tuple{ VK_SHADER_STAGE_ALL, Lights{}, &mainGlobalUniformBuffer, 0 } };
+		Vulkan::DynamicSet mainPerObjectSet{ realGpu, virtualGpu, mainPerObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, Matrices{}} };
+		Vulkan::StaticSet backgroundGlobalSet{ virtualGpu, std::tuple{VK_SHADER_STAGE_ALL, &backgroundTexture} };
+		Vulkan::DynamicSet backgroundPerObjectSet{ realGpu, virtualGpu, backgroundPerObjectUniformBuffer, std::pair{VK_SHADER_STAGE_ALL, Matrices{}}, std::pair{VK_SHADER_STAGE_ALL, glm::vec3{}} };
+
+
+
+
+
+
+		// ================ PIPELINE SETUP ================
+
+		//common pipeline options
+		Vulkan::PipelineOptions::PipelineVertexArrays vertexTypesDescriptor{ MyVertex{} }; //type of the vertices
+		Vulkan::PipelineOptions::Multisampler multisampler{};
+		Vulkan::PipelineOptions::DepthStencil depthStencil{};
+		Vulkan::PipelineOptions::DynamicState dynamicState{};
+		Vulkan::PipelineOptions::InputAssembly inputAssembly{};
+		Vulkan::PipelineOptions::Rasterizer rasterizer{ false };
+		Vulkan::PipelineOptions::Viewport viewport{};
+
+		//main pipeline
+		Vulkan::PipelineOptions::PipelineLayout mainPipelineLayout{ virtualGpu, mainGlobalSet, mainPerObjectSet };
+		Vulkan::PipelineOptions::Shader mainVertexShader{ virtualGpu, "shaders/VertexShaderVert.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT };
+		Vulkan::PipelineOptions::Shader mainFragmentShader{ virtualGpu, "shaders/FragmentShaderFrag.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT };
+
+		Vulkan::Pipeline mainPipeline{ virtualGpu, renderPass, 0, std::vector{&mainVertexShader, &mainFragmentShader},vertexTypesDescriptor, mainPipelineLayout, rasterizer, inputAssembly, multisampler, depthStencil, dynamicState, viewport };
+
+		//background pipeline
+		Vulkan::PipelineOptions::PipelineLayout backgroundPipelineLayout{ virtualGpu, backgroundGlobalSet, backgroundPerObjectSet };
+		Vulkan::PipelineOptions::Shader backgroundVertexShader{ virtualGpu, "shaders/TestVert.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT };
+		Vulkan::PipelineOptions::Shader backgroundFragmentShader{ virtualGpu, "shaders/TestFrag.spv", VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT };
+
+		Vulkan::Pipeline backgroundPipeline{ virtualGpu, renderPass, 0, std::vector{&backgroundVertexShader, &backgroundFragmentShader},vertexTypesDescriptor, backgroundPipelineLayout, rasterizer, inputAssembly, multisampler, depthStencil, dynamicState, viewport };
+
+
+
+		
+
+
+		mainGlobalSet.fillBuffer(mainGlobalUniformBuffer, lights);
+
+
+
+	
+		//create drawer
+		Vulkan::Drawer drawer{ virtualGpu, realGpu, window, windowSurface, swapchain, depthBuffer, commandBufferPool, renderPass, 
+			{&mainPipeline, &backgroundPipeline},
+			{mainGlobalSet, backgroundGlobalSet},
+			{mainPerObjectSet, backgroundPerObjectSet} };
+
+
 
 		std::cout << "\n";
 
@@ -192,9 +244,12 @@ int main() {
 		auto lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(perObjectUniformBuffer, perObjectSet, std::vector{ &model1, &model2, &model3 }, std::chrono::high_resolution_clock::now() - lastFrameTime);
+			debugAnimation(mainPerObjectUniformBuffer, backgroundPerObjectUniformBuffer, mainPerObjectSet, backgroundPerObjectSet, std::tuple{ &model1, &redLight, &greenLight, &blueLight }, std::chrono::high_resolution_clock::now() - lastFrameTime);
 			lastFrameTime = std::chrono::high_resolution_clock::now();
-			drawer.draw(vertexBuffer, indexBuffer);
+			drawer.draw(
+				std::pair< std::reference_wrapper<Vulkan::Buffers::VertexBuffer>, std::reference_wrapper<Vulkan::Buffers::IndexBuffer>>{ mainVertexBuffer, mainIndexBuffer },
+				std::pair< std::reference_wrapper<Vulkan::Buffers::VertexBuffer>, std::reference_wrapper<Vulkan::Buffers::IndexBuffer>>{ backgroundVertexBuffer, backgroundIndexBuffer }
+			);
 		}
 		vkDeviceWaitIdle(+virtualGpu);
 
@@ -207,8 +262,13 @@ int main() {
 }
 
 
-template<typename Model>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, const Vulkan::DynamicSet& set, const std::vector<Model*>& models, std::chrono::nanoseconds elapsedNanoseconds){
+
+
+
+
+
+template<typename... Models>
+void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, std::chrono::nanoseconds elapsedNanoseconds){
 	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
@@ -225,13 +285,16 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& buffer, const Vulkan::Dynami
 
 	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
 
-	Model& model1 = *models[0], &model2 = *models[1], &model3 = *models[2];
+	auto& model1 = *std::get<0>(models); auto& redLight = *std::get<1>(models); auto& greenLight = *std::get<2>(models); auto& blueLight = *std::get<3>(models);
 
-	model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });// .translate(glm::vec3{ 0.0f, 0.0f, 0.7f * elapsedSeconds });
+
+
+	model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f }).rotate(0.37f * elapsedSeconds, glm::vec3{ 1.0f, 0.0f, 0.0f });
 	//model2.rotate(1.1f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 	//model3.rotate(0.49f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
 
-	set.fillBuffer(buffer, model1.getUniforms(view, perspective), model3.getUniforms(view, perspective), model2.getUniforms(view, perspective));
+	mainSet.fillBuffer(mainBuffer, model1.getUniforms(view, perspective));
+	backgroundSet.fillBuffer(backgroundBuffer, redLight.getUniforms(view, perspective), greenLight.getUniforms(view, perspective), blueLight.getUniforms(view, perspective));
 
 }

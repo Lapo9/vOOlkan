@@ -87,7 +87,7 @@ public:
 	 * @param framebuffer Where the GPU will write.
 	 * @param pipeline What pipeline to use.
 	 */
-	CommandBuffer& reset(const PipelineOptions::RenderPass& renderPass, const Framebuffer& framebuffer, const Pipeline& pipeline) {
+	CommandBuffer& reset(const PipelineOptions::RenderPass& renderPass, const Framebuffer& framebuffer) {
 		//reset command buffer
 		vkResetCommandBuffer(commandBuffer, 0);
 		
@@ -111,9 +111,6 @@ public:
 		renderPassInfo.clearValueCount = renderPass.getAttachmentCount();
 		renderPassInfo.pClearValues = clearvalues;
 		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-		//set pipeline
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, +pipeline);
 
 		//set viewport
 		VkViewport viewport{};
