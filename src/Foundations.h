@@ -12,6 +12,23 @@ class Vulkan::Physics::Position {
 public:
 	Position(glm::vec3 position) : position{ position } {}
 
+	Position() : Position{ glm::vec3{0.0f, 0.0f, 0.0f} } {}
+
+	Position(float x, float y, float z) : Position{ glm::vec3{x, y, z} } {}
+
+
+	float x() const {
+		return position.x;
+	}
+
+	float y() const {
+		return position.y;
+	}
+
+	float z() const {
+		return position.z;
+	}
+
 
 	operator glm::vec3() const {
 		return this->position;
@@ -34,6 +51,28 @@ class Vulkan::Physics::DeltaSpace {
 public:
 	DeltaSpace(glm::vec3 deltaSpace) : deltaSpace{ deltaSpace } {}
 
+	DeltaSpace() : DeltaSpace{ glm::vec3{0.0f, 0.0f, 0.0f} } {}
+
+	DeltaSpace(float x, float y, float z) : DeltaSpace{ glm::vec3{x, y, z} } {}
+
+
+	float x() const const {
+		return deltaSpace.x;
+	}
+
+	float y() const  const {
+		return deltaSpace.y;
+	}
+
+	float z() const const {
+		return deltaSpace.z;
+	}
+
+
+	operator glm::vec3() const {
+		return this->deltaSpace;
+	}
+
 
 	friend DeltaSpace operator+(DeltaSpace d1, DeltaSpace d2);
 	friend DeltaSpace& operator+=(DeltaSpace& d1, DeltaSpace d2);
@@ -52,6 +91,28 @@ class Vulkan::Physics::Speed {
 public:
 	Speed(glm::vec3 speed) : speed{ speed } {}
 
+	Speed() : speed{ glm::vec3{0.0f, 0.0f, 0.0f} } {}
+
+	Speed(float x, float y, float z) : Speed{ glm::vec3{x, y, z} } {}
+
+
+	float x() const {
+		return speed.x;
+	}
+
+	float y() const {
+		return speed.y;
+	}
+
+	float z() const {
+		return speed.z;
+	}
+
+
+	operator glm::vec3() const {
+		return this->speed;
+	}
+
 
 	friend Speed operator+(Speed s1, Speed s2);
 	friend Speed& operator+=(Speed& s1, Speed s2);
@@ -68,6 +129,28 @@ private:
 class Vulkan::Physics::Acceleration {
 public:
 	Acceleration(glm::vec3 acceleration) : acceleration{ acceleration } {}
+
+	Acceleration() : acceleration{ glm::vec3{0.0f, 0.0f, 0.0f} } {}
+
+	Acceleration(float x, float y, float z) : Acceleration{ glm::vec3{x, y, z} } {}
+
+
+	float x() const {
+		return acceleration.x;
+	}
+
+	float y() const {
+		return acceleration.y;
+	}
+
+	float z() const {
+		return acceleration.z;
+	}
+
+
+	operator glm::vec3() const {
+		return this->acceleration;
+	}
 
 
 	friend Acceleration operator+(Acceleration s1, Acceleration s2);
@@ -86,12 +169,34 @@ class Vulkan::Physics::Force {
 public:
 	Force(glm::vec3 force) : force{ force } {}
 
+	Force() : force{ glm::vec3{0.0f, 0.0f, 0.0f} } {}
+
+	Force(float x, float y, float z) : Force{ glm::vec3{x, y, z} } {}
+
+
+	float x() const {
+		return force.x;
+	}
+
+	float y() const {
+		return force.y;
+	}
+
+	float z() const {
+		return force.z;
+	}
+
+
+	operator glm::vec3() const {
+		return this->force;
+	}
+
 
 	friend Force operator+(Force s1, Force s2);
 	friend Force& operator+=(Force& s1, Force s2);
 	friend Force operator-(Force s1, Force s2);
 	friend Force& operator-=(Force& s1, Force s2);
-	friend Acceleration operator*(Force force, float mass);
+	friend Acceleration operator/(Force force, float mass);
 
 private:
 	glm::vec3 force;
@@ -221,7 +326,7 @@ namespace Vulkan::Physics {
 	}
 
 
-	Acceleration operator*(Force force, float time) {
+	Acceleration operator/(Force force, float time) {
 		return Acceleration{ force.force * time };
 	}
 

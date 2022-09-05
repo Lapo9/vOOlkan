@@ -9,7 +9,7 @@
 
 #include "VertexInput.h"
 #include "ModelLoader.h"
-#include "Moveable.h"
+#include "Cinematicable.h"
 #include "Foundations.h"
 
 
@@ -22,7 +22,7 @@ namespace Vulkan::Objects {
 
 
 	template<IsVertex Vertex, typename... Structs>
-	class Model : public Physics::Moveable {
+	class Model : public Physics::Cinematicable {
 
 		using Matrices = struct {
 			alignas(16) glm::mat4 mvp;
@@ -32,7 +32,7 @@ namespace Vulkan::Objects {
 
 	public:
 
-		Model(Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... }, position{ {0.0f, 0.0f, 0.0f} } {
+		Model(Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... } {
 			ModelLoader<Vertex>::loadModel(pathToModel, vertices, indexes);
 		}
 
@@ -133,6 +133,31 @@ namespace Vulkan::Objects {
 		}
 
 
+		void setMass(float mass) override {
+			this->mass = mass;
+		}
+
+		float getMass() override {
+			return mass;
+		}
+
+		void setSpeed(Physics::Speed speed) override {
+			this->speed = speed;
+		}
+
+		const Physics::Speed& getSpeed() override {
+			return speed;
+		}
+
+		void setAcceleration(Physics::Acceleration acceleration) override {
+			this->acceleration = acceleration;
+		}
+
+		const Physics::Acceleration& getAcceleration() override {
+			return acceleration;
+		}
+
+
 	private:
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indexes;
@@ -141,6 +166,10 @@ namespace Vulkan::Objects {
 		Physics::Position position;
 		glm::quat rotation;
 		glm::vec3 scaleFactor;
+
+		float mass = 1;
+		Physics::Speed speed;
+		Physics::Acceleration acceleration;
 	};
 }
 

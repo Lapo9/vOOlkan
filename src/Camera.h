@@ -14,7 +14,7 @@ namespace Vulkan::Objects {
 	class Camera : public Physics::Moveable {
 	public:
 
-		Camera(glm::vec3 position, glm::vec3 rotationEuler) : position{ position }, rotation{} {
+		Camera(glm::vec3 position, glm::vec3 rotationEuler) {
 			setRotation(rotationEuler);
 		}
 

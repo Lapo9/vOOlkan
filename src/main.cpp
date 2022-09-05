@@ -294,14 +294,16 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
 
 	static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, -45.0_deg, 0.0_deg} };
-	camera.rotate(0.3f * elapsedSeconds, { 1.0f, 0.0f, 0.0f });
+	camera.rotate(0.0f * elapsedSeconds, { 1.0f, 0.0f, 0.0f });
 
-	auto& model1 = *std::get<0>(models); auto& floor = *std::get<1>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& model1 = *std::get<0>(models); auto& floor = *std::get<1>(models);
 	auto& redLight = *std::get<2>(models); auto& greenLight = *std::get<3>(models); auto& blueLight = *std::get<4>(models);
 
 	//model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f }).rotate(0.37f * elapsedSeconds, glm::vec3{ 1.0f, 0.0f, 0.0f });
 	//model2.rotate(1.1f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 	//model3.rotate(0.49f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
+
+	model1.move(elapsedSeconds, {0.0f, 0.0f, model1.getPosition().z() < -3.0f ? 1.0f : -1.0f});
 
 	glm::mat4 projection = perspective;
 
