@@ -4,6 +4,7 @@
 #include "AnglesLiterals.h"
 #include "Attachment.h"
 #include "AttachmentColorBlendingMode.h"
+#include "Camera.h"
 #include "CommandBuffer.h"
 #include "CommandBufferPool.h"
 #include "DepthImage.h"

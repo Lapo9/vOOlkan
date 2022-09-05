@@ -9,9 +9,10 @@
 
 #include "VertexInput.h"
 #include "ModelLoader.h"
+#include "Moveable.h"
 
 
-namespace Vulkan {
+namespace Vulkan::Objects {
 
 	template<typename V>
 	concept IsVertex = requires(V v) {
@@ -20,7 +21,7 @@ namespace Vulkan {
 
 
 	template<IsVertex Vertex, typename... Structs>
-	class Model {
+	class Model : public Physics::Moveable {
 
 		using Matrices = struct {
 			alignas(16) glm::mat4 mvp;
@@ -36,9 +37,9 @@ namespace Vulkan {
 
 
 		Model(Vertex v, std::string pathToModel, glm::vec3 rotation, glm::vec3 scale, glm::vec3 position, Structs... uniforms) : Model{ v, pathToModel, uniforms... } {
-			this->rotation = glm::quat(rotation);
+			setRotation(rotation);
 			this->scaleFactor = scale;
-			this->position = position;
+			setPosition(position);
 		}
 
 
@@ -52,14 +53,8 @@ namespace Vulkan {
 		}
 
 
-		Model& rotate(float angle, glm::vec3 axis) {
+		Model& rotate(float angle, glm::vec3 axis) override {
 			rotation = glm::rotate(rotation, angle, axis);
-			return *this;
-		}
-
-
-		Model& translate(glm::vec3 deltaSpace) {
-			position += deltaSpace;
 			return *this;
 		}
 
@@ -114,8 +109,12 @@ namespace Vulkan {
 		}
 
 
-		glm::vec3& getPosition() {
+		const glm::vec3& getPosition() const override {
 			return position;
+		}
+
+		void setPosition(glm::vec3 position) override {
+			this->position = position;
 		}
 
 
@@ -124,9 +123,14 @@ namespace Vulkan {
 		}
 
 
-		glm::quat& getRotation() {
+		const glm::quat& getRotation() const override {
 			return rotation;
 		}
+
+		void setRotation(glm::quat rotation) override {
+			this->rotation = rotation;
+		}
+
 
 	private:
 		std::vector<Vertex> vertices;

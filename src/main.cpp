@@ -121,20 +121,20 @@ int main() {
 		};
 
 		//create models
-		Vulkan::Model model1{ MyVertex{}, "models/pinball.obj",
+		Vulkan::Objects::Model model1{ MyVertex{}, "models/pinball.obj",
 			glm::vec3{0.0_deg, 180.0_deg, 0.0_deg},
 			glm::vec3{0.1f},
 			glm::vec3{0.0f, -1.3f, -0.7f}
 		};
 
 
-		Vulkan::Model floor{ MyVertex{}, "models/square.obj",
+		Vulkan::Objects::Model floor{ MyVertex{}, "models/square.obj",
 			glm::vec3{0.0_deg, 0.0_deg, 0.0_deg},
 			glm::vec3{2.0f},
 			glm::vec3{0.0f, -2.0f, -200.0f}
 		};
 
-		Vulkan::Model redLight{ MyVertex{}, "models/square.obj",
+		Vulkan::Objects::Model redLight{ MyVertex{}, "models/square.obj",
 			glm::vec3{90.0_deg, 0.0_deg, 0.0_deg},
 			glm::vec3{0.1f},
 			lights.position0,
@@ -142,14 +142,14 @@ int main() {
 			
 		};
 
-		Vulkan::Model greenLight{ MyVertex{}, "models/square.obj",
+		Vulkan::Objects::Model greenLight{ MyVertex{}, "models/square.obj",
 			glm::vec3{90.0_deg, 0.0_deg, 0.0_deg},
 			glm::vec3{0.1f},
 			lights.position1,
 			lights.color1
 		};
 				
-		Vulkan::Model blueLight{ MyVertex{}, "models/square.obj",
+		Vulkan::Objects::Model blueLight{ MyVertex{}, "models/square.obj",
 			glm::vec3{90.0_deg, 0.0_deg, 0.0_deg},
 			glm::vec3{0.1f},
 			lights.position2,
@@ -291,27 +291,21 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 		0, 0, n / (n - f), 1
 	};
 
-	static glm::vec3 Angs{ 0.0_deg, -45.0_deg, 0.0_deg }, Pos{ 0.0f, 0.0f, 0.0f };
-	static glm::mat4 view = glm::rotate(glm::mat4(1.0f), -Angs.z, glm::vec3(0.0f, 0.0f, 1.0f)) *
-		glm::rotate(glm::mat4(1.0f), -Angs.y, glm::vec3(1.0f, 0.0f, 0.0f)) *
-		glm::rotate(glm::mat4(1.0f), -Angs.x, glm::vec3(0.0f, 1.0f, 0.0f)) *
-		glm::translate(glm::mat4(1.0f), -Pos);
-
 	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
+
+	static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, -45.0_deg, 0.0_deg} };
+	camera.rotate(0.3f * elapsedSeconds, { 1.0f, 0.0f, 0.0f });
 
 	auto& model1 = *std::get<0>(models); auto& floor = *std::get<1>(models);
 	auto& redLight = *std::get<2>(models); auto& greenLight = *std::get<3>(models); auto& blueLight = *std::get<4>(models);
 
-	static float rot = 0.0f;
-	rot += 0.3f * elapsedSeconds;
-	//view = glm::rotate(glm::mat4{ 1.0f }, rot, glm::vec3{ 1.0f, 0.0f, 0.0f });
 	//model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f }).rotate(0.37f * elapsedSeconds, glm::vec3{ 1.0f, 0.0f, 0.0f });
 	//model2.rotate(1.1f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 	//model3.rotate(0.49f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
 	glm::mat4 projection = perspective;
 
-	mainSet.fillBuffer(mainBuffer, model1.getUniforms(view, projection), floor.getUniforms(view, projection));
-	backgroundSet.fillBuffer(backgroundBuffer, redLight.getUniforms(view, projection), greenLight.getUniforms(view, projection), blueLight.getUniforms(view, projection));
+	mainSet.fillBuffer(mainBuffer, model1.getUniforms(camera.getViewMatrix(), projection), floor.getUniforms(camera.getViewMatrix(), projection));
+	backgroundSet.fillBuffer(backgroundBuffer, redLight.getUniforms(camera.getViewMatrix(), projection), greenLight.getUniforms(camera.getViewMatrix(), projection), blueLight.getUniforms(camera.getViewMatrix(), projection));
 
 }

@@ -20,7 +20,7 @@ public:
     }
 
 
-    template<typename... C, template<typename...> class... M> requires (std::same_as<M<C...>, Model<C...>> && ...)
+    template<typename... C, template<typename...> class... M> requires (std::same_as<M<C...>, Objects::Model<C...>> && ...)
         void fillBuffer(const M<C...>&... models) {
         std::vector<uint32_t> data{};
         
