@@ -137,7 +137,7 @@ namespace Vulkan::Objects {
 			this->mass = mass;
 		}
 
-		float getMass() override {
+		float getMass() const override {
 			return mass;
 		}
 
@@ -145,7 +145,7 @@ namespace Vulkan::Objects {
 			this->speed = speed;
 		}
 
-		const Physics::Speed& getSpeed() override {
+		const Physics::Speed& getSpeed() const override {
 			return speed;
 		}
 
@@ -153,7 +153,7 @@ namespace Vulkan::Objects {
 			this->acceleration = acceleration;
 		}
 
-		const Physics::Acceleration& getAcceleration() override {
+		const Physics::Acceleration& getAcceleration() const override {
 			return acceleration;
 		}
 

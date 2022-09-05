@@ -271,7 +271,9 @@ int main() {
 
 
 
-
+Vulkan::Physics::Force foo(Vulkan::Physics::Position fieldPos, Vulkan::Physics::Position objPos) {
+	return Vulkan::Physics::Force{ glm::vec3(fieldPos - objPos) * 1.0f };
+}
 
 
 template<typename... Models>
@@ -303,7 +305,12 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 	//model2.rotate(1.1f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 	//model3.rotate(0.49f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
-	model1.move(elapsedSeconds, {0.0f, 0.0f, model1.getPosition().z() < -3.0f ? 1.0f : -1.0f});
+	//model1.move(elapsedSeconds, {0.0f, 0.0f, model1.getPosition().z() < -3.0f ? 1.0f : -1.0f});
+
+	static Vulkan::Physics::Field field{ {0.0f, 0.0f, -3.0f}, foo };
+	field.getCinematicable().move(elapsedSeconds, { 0.1f, 0.0f, 0.0f });
+
+	model1.move(elapsedSeconds, field.calculateAppliedForce(model1.getPosition()));
 
 	glm::mat4 projection = perspective;
 

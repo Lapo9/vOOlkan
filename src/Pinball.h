@@ -15,6 +15,8 @@
 #include "DynamicSet.h"
 #include "DynamicState.h"
 #include "Fence.h"
+#include "Field.h"
+#include "Foundations.h"
 #include "Framebuffer.h"
 #include "Image.h"
 #include "ImageView.h"

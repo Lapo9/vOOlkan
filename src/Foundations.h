@@ -3,6 +3,7 @@
 
 
 #include <glm/glm.hpp>
+#include <functional>
 
 
 namespace Vulkan::Physics { class Position; class DeltaSpace; class Speed; class Acceleration; class Force; }

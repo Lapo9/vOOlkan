@@ -30,6 +30,7 @@
     <ClInclude Include="src\Buffer.h" />
     <ClInclude Include="src\DepthImage.h" />
     <ClInclude Include="src\DescriptorSetPool.h" />
+    <ClInclude Include="src\Field.h" />
     <ClInclude Include="src\Foundations.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\Model.h" />
@@ -80,6 +81,7 @@
   <ItemGroup>
     <ClCompile Include="src\CommandBufferPool.cpp" />
     <ClCompile Include="src\DescriptorSetBindingCreationInfo.cpp" />
+    <ClCompile Include="src\Foundations.cpp" />
     <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\ImageView.cpp" />
     <ClCompile Include="src\Instance.cpp" />
