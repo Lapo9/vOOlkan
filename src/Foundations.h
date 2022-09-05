@@ -12,10 +12,16 @@ class Vulkan::Physics::Position {
 public:
 	Position(glm::vec3 position) : position{ position } {}
 
+
+	operator glm::vec3() const {
+		return this->position;
+	}
+
 		
 	friend DeltaSpace operator-(Position p1, Position p2);
 	friend Position operator+(Position origin, DeltaSpace spaceCovered);
 	friend Position& operator+=(Position& origin, DeltaSpace spaceCovered);
+	friend Position operator-(Position p);
 
 private:
 	glm::vec3 position;
@@ -109,6 +115,11 @@ namespace Vulkan::Physics {
 	Position& operator+=(Position& origin, DeltaSpace spaceCovered) {
 		origin.position += spaceCovered.deltaSpace;
 		return origin;
+	}
+
+
+	Position operator-(Position p) {
+		return Position{ -p.position };
 	}
 
 

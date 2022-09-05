@@ -5,6 +5,8 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "Moveable.h"
+#include "Foundations.h"
+
 
 namespace Vulkan::Objects {
 
@@ -12,17 +14,16 @@ namespace Vulkan::Objects {
 	class Camera : public Physics::Moveable {
 	public:
 
-		Camera(glm::vec3 position, glm::vec3 rotationEuler) : position{}, rotation{} {
+		Camera(glm::vec3 position, glm::vec3 rotationEuler) : position{ position }, rotation{} {
 			setRotation(rotationEuler);
-			setPosition(position);
 		}
 
 
-		const glm::vec3& getPosition() const override {
+		const Physics::Position& getPosition() const override {
 			return position;
 		}
 
-		void setPosition(glm::vec3 position) override {
+		void setPosition(Physics::Position position) override {
 			this->position = position;
 		}
 
@@ -39,12 +40,12 @@ namespace Vulkan::Objects {
 			return glm::rotate(glm::mat4(1.0f), -rotation.z, glm::vec3(0.0f, 0.0f, 1.0f)) *
 				glm::rotate(glm::mat4(1.0f), -rotation.y, glm::vec3(1.0f, 0.0f, 0.0f)) *
 				glm::rotate(glm::mat4(1.0f), -rotation.x, glm::vec3(0.0f, 1.0f, 0.0f)) *
-				glm::translate(glm::mat4(1.0f), -position);
+				glm::translate(glm::mat4(1.0f), glm::vec3(-position));
 		}
 
 
 	private:
-		glm::vec3 position;
+		Physics::Position position;
 		glm::quat rotation;
 
 	};

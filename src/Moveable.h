@@ -4,18 +4,20 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#include "Foundations.h"
+
 
 namespace Vulkan::Physics {
 
 	class Moveable {
 	public:
-		virtual Moveable& translate(glm::vec3 delta) {
+		virtual Moveable& translate(DeltaSpace delta) {
 			setPosition(getPosition() + delta);
 			return *this;
 		};
 
-		virtual const glm::vec3& getPosition() const = 0;
-		virtual void setPosition(glm::vec3 position) = 0;
+		virtual const Position& getPosition() const = 0;
+		virtual void setPosition(Position position) = 0;
 
 		virtual Moveable& rotate(float angle, glm::vec3 axis) {
 			setRotation(glm::rotate(getRotation(), angle, axis));

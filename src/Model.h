@@ -10,6 +10,7 @@
 #include "VertexInput.h"
 #include "ModelLoader.h"
 #include "Moveable.h"
+#include "Foundations.h"
 
 
 namespace Vulkan::Objects {
@@ -31,7 +32,7 @@ namespace Vulkan::Objects {
 
 	public:
 
-		Model(Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... } {
+		Model(Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... }, position{ {0.0f, 0.0f, 0.0f} } {
 			ModelLoader<Vertex>::loadModel(pathToModel, vertices, indexes);
 		}
 
@@ -72,7 +73,7 @@ namespace Vulkan::Objects {
 
 
 		const glm::mat4& calculateModelMatrix() const {
-			return glm::translate(glm::mat4{ 1.0f }, position) *
+			return glm::translate(glm::mat4{ 1.0f }, glm::vec3(position)) *
 				glm::scale(glm::mat4{ 1.0f }, scaleFactor) *
 				glm::mat4{ rotation };
 		}
@@ -109,11 +110,11 @@ namespace Vulkan::Objects {
 		}
 
 
-		const glm::vec3& getPosition() const override {
+		const Physics::Position& getPosition() const override {
 			return position;
 		}
 
-		void setPosition(glm::vec3 position) override {
+		void setPosition(Physics::Position position) override {
 			this->position = position;
 		}
 
@@ -137,7 +138,7 @@ namespace Vulkan::Objects {
 		std::vector<uint32_t> indexes;
 		std::tuple<Matrices, Structs...> uniforms;
 
-		glm::vec3 position;
+		Physics::Position position;
 		glm::quat rotation;
 		glm::vec3 scaleFactor;
 	};
