@@ -222,6 +222,12 @@
     <ClInclude Include="src\Field.h">
       <Filter>Source Files\Physics</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hitbox.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Universe.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

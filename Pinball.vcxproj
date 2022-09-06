@@ -32,6 +32,7 @@
     <ClInclude Include="src\DescriptorSetPool.h" />
     <ClInclude Include="src\Field.h" />
     <ClInclude Include="src\Foundations.h" />
+    <ClInclude Include="src\Hitbox.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\ModelLoader.h" />
@@ -42,6 +43,7 @@
     <ClInclude Include="src\TextureImage.h" />
     <ClInclude Include="src\TextureSampler.h" />
     <ClInclude Include="src\UniformBuffer.h" />
+    <ClInclude Include="src\Universe.h" />
     <ClInclude Include="src\VertexBuffer.h" />
     <ClInclude Include="src\CommandBuffer.h" />
     <ClInclude Include="src\CommandBufferPool.h" />

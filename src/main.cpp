@@ -121,38 +121,28 @@ int main() {
 		};
 
 		//create models
-		Vulkan::Objects::Model model1{ MyVertex{}, "models/pinball.obj",
-			glm::vec3{0.0_deg, 180.0_deg, 0.0_deg},
-			glm::vec3{0.1f},
-			glm::vec3{0.0f, -1.3f, -0.7f}
+		Vulkan::Objects::Model model1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, glm::vec3{0.0f, -2.0f, -1.5f}, 0.1f),
+			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/pinball.obj" 
 		};
 
 
-		Vulkan::Objects::Model floor{ MyVertex{}, "models/square.obj",
-			glm::vec3{0.0_deg, 0.0_deg, 0.0_deg},
-			glm::vec3{2.0f},
-			glm::vec3{0.0f, -2.0f, -200.0f}
+		Vulkan::Objects::Model floor{ std::make_unique<Vulkan::Physics::CircleHitbox>(2.0f, glm::vec3{0.0f, -2.0f, -200.0f}),
+			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/square.obj" 
 		};
 
-		Vulkan::Objects::Model redLight{ MyVertex{}, "models/square.obj",
-			glm::vec3{90.0_deg, 0.0_deg, 0.0_deg},
-			glm::vec3{0.1f},
-			lights.position0,
-			lights.color0
-			
+
+		Vulkan::Objects::Model redLight{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, lights.position0, 0.1f),
+			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/square.obj",
+			lights.color0 
 		};
 
-		Vulkan::Objects::Model greenLight{ MyVertex{}, "models/square.obj",
-			glm::vec3{90.0_deg, 0.0_deg, 0.0_deg},
-			glm::vec3{0.1f},
-			lights.position1,
+		Vulkan::Objects::Model greenLight{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, lights.position1, 0.1f),
+			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/square.obj",
 			lights.color1
 		};
-				
-		Vulkan::Objects::Model blueLight{ MyVertex{}, "models/square.obj",
-			glm::vec3{90.0_deg, 0.0_deg, 0.0_deg},
-			glm::vec3{0.1f},
-			lights.position2,
+
+		Vulkan::Objects::Model blueLight{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, lights.position2, 0.1f),
+			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/square.obj",
 			lights.color2
 		};
 
@@ -307,10 +297,7 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 
 	//model1.move(elapsedSeconds, {0.0f, 0.0f, model1.getPosition().z() < -3.0f ? 1.0f : -1.0f});
 
-	static Vulkan::Physics::Field field{ {0.0f, 0.0f, -3.0f}, foo };
-	field.getCinematicable().move(elapsedSeconds, { 0.1f, 0.0f, 0.0f });
-
-	model1.move(elapsedSeconds, field.calculateAppliedForce(model1.getPosition()));
+	//(+model1)->move(elapsedSeconds);
 
 	glm::mat4 projection = perspective;
 

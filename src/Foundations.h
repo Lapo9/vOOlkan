@@ -57,15 +57,15 @@ public:
 	DeltaSpace(float x, float y, float z) : DeltaSpace{ glm::vec3{x, y, z} } {}
 
 
-	float x() const const {
+	float x() const {
 		return deltaSpace.x;
 	}
 
-	float y() const  const {
+	float y() const {
 		return deltaSpace.y;
 	}
 
-	float z() const const {
+	float z() const {
 		return deltaSpace.z;
 	}
 

@@ -11,6 +11,7 @@
 #include "ModelLoader.h"
 #include "Cinematicable.h"
 #include "Foundations.h"
+#include "Hitbox.h"
 
 
 namespace Vulkan::Objects {
@@ -22,7 +23,7 @@ namespace Vulkan::Objects {
 
 
 	template<IsVertex Vertex, typename... Structs>
-	class Model : public Physics::Cinematicable {
+	class Model {
 
 		using Matrices = struct {
 			alignas(16) glm::mat4 mvp;
@@ -32,15 +33,9 @@ namespace Vulkan::Objects {
 
 	public:
 
-		Model(Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... } {
+		Model(std::unique_ptr<Vulkan::Physics::Hitbox> hitbox, glm::vec3 rotationEuler, Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... }, hitbox{ std::move(hitbox) } {
 			ModelLoader<Vertex>::loadModel(pathToModel, vertices, indexes);
-		}
-
-
-		Model(Vertex v, std::string pathToModel, glm::vec3 rotation, glm::vec3 scale, glm::vec3 position, Structs... uniforms) : Model{ v, pathToModel, uniforms... } {
-			setRotation(rotation);
-			this->scaleFactor = scale;
-			setPosition(position);
+			rotation = glm::quat(rotationEuler);
 		}
 
 
@@ -54,27 +49,15 @@ namespace Vulkan::Objects {
 		}
 
 
-		Model& rotate(float angle, glm::vec3 axis) override {
+		Model& rotateModel(float angle, glm::vec3 axis) {
 			rotation = glm::rotate(rotation, angle, axis);
 			return *this;
 		}
 
 
-		Model& scale(glm::vec3 deltaFactors) {
-			scale += deltaFactors;
-			return *this;
-		}
-
-
-		Model& scale(float deltaFactor) {
-			scale += glm::vec3{ deltaFactor, deltaFactor, deltaFactor };
-			return *this;
-		}
-
-
 		const glm::mat4& calculateModelMatrix() const {
-			return glm::translate(glm::mat4{ 1.0f }, glm::vec3(position)) *
-				glm::scale(glm::mat4{ 1.0f }, scaleFactor) *
+			return glm::translate(glm::mat4{ 1.0f }, glm::vec3(hitbox->getPosition())) *
+				glm::scale(glm::mat4{ 1.0f }, glm::vec3{ hitbox->getScaleFactor() }) *
 				glm::mat4{ rotation };
 		}
 
@@ -108,68 +91,21 @@ namespace Vulkan::Objects {
 			std::get<0>(uniforms) = calculateMvpMatrix(viewMatrix, projectionMatrix);
 			return std::get<0>(uniforms);
 		}
+		
 
-
-		const Physics::Position& getPosition() const override {
-			return position;
+		std::unique_ptr<Vulkan::Physics::Hitbox>& operator+() {
+			return hitbox;
 		}
-
-		void setPosition(Physics::Position position) override {
-			this->position = position;
-		}
-
-
-		glm::vec3& getScaleFactor() {
-			return scaleFactor;
-		}
-
-
-		const glm::quat& getRotation() const override {
-			return rotation;
-		}
-
-		void setRotation(glm::quat rotation) override {
-			this->rotation = rotation;
-		}
-
-
-		void setMass(float mass) override {
-			this->mass = mass;
-		}
-
-		float getMass() const override {
-			return mass;
-		}
-
-		void setSpeed(Physics::Speed speed) override {
-			this->speed = speed;
-		}
-
-		const Physics::Speed& getSpeed() const override {
-			return speed;
-		}
-
-		void setAcceleration(Physics::Acceleration acceleration) override {
-			this->acceleration = acceleration;
-		}
-
-		const Physics::Acceleration& getAcceleration() const override {
-			return acceleration;
-		}
-
+		
 
 	private:
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indexes;
 		std::tuple<Matrices, Structs...> uniforms;
 
-		Physics::Position position;
-		glm::quat rotation;
-		glm::vec3 scaleFactor;
+		glm::quat rotation; //in this simplified version of the physics (2D) a model can have a different rotation than the one of its hitbox
 
-		float mass = 1;
-		Physics::Speed speed;
-		Physics::Acceleration acceleration;
+		std::unique_ptr<Vulkan::Physics::Hitbox> hitbox;
 	};
 }
 
