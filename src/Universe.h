@@ -2,8 +2,8 @@
 #define VULKAN_UNIVERSE
 
 #include <vector>
+#include <variant>
 
-#include "Hitbox.h"
 
 
 namespace Vulkan::Physics {
@@ -46,7 +46,11 @@ namespace Vulkan::Physics {
 
 		//FROMHERE
 		void collisionDetection() {
-			
+			for (int i = 0; i < bodies.size(); ++i) {
+				for (int j = i + 1; j < bodies.size(); ++j) {
+					
+				}
+			}
 		}
 
 
@@ -55,6 +59,16 @@ namespace Vulkan::Physics {
 				body->move(elapsedSeconds);
 			}
 		}
+
+
+
+
+		static void collisionDetection(CircleHitbox& c1, CircleHitbox& c2) {
+			if (c1.getPosition() - c1.getPosition() <= c1.getRadius() + c2.getRadius()) {
+
+			}
+		}
+
 
 
 

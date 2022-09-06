@@ -81,6 +81,7 @@ public:
 	friend DeltaSpace& operator-=(DeltaSpace& d1, DeltaSpace d2);
 	friend Position operator+(Position origin, DeltaSpace spaceCovered);
 	friend Position& operator+=(Position& origin, DeltaSpace spaceCovered);
+	friend auto operator<=>(const DeltaSpace& d1, float d2);
 
 private:
 	glm::vec3 deltaSpace;
@@ -249,6 +250,20 @@ namespace Vulkan::Physics {
 		d1.deltaSpace -= d2.deltaSpace;
 		return d1;
 	}
+
+
+	auto operator<=>(const DeltaSpace& d1, float d2) {
+		if (glm::length(d1.deltaSpace) < d2) {
+			return -1;
+		}
+		else if (glm::length(d1.deltaSpace) > d2) {
+			return 1;
+		}
+		else {
+			return 0;
+		}
+	}
+
 
 
 	Speed operator+(Speed s1, Speed s2) {
