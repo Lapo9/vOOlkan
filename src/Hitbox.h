@@ -2,6 +2,8 @@
 #define VULKAN_HITBOX
 
 #include "Cinematicable.h"
+#include "Segment.h"
+
 
 namespace Vulkan::Physics::FieldFunctions {
 	Force emptyField(const Position&, const Cinematicable&);
@@ -25,7 +27,7 @@ namespace Vulkan::Physics {
 	protected:
 		float scaleFactor;
 
-		Hitbox(Position position, float scaleFactor, float mass, Speed initialSpeed, Acceleration initialAcceleration, Force internalForce, Field emittedField) :
+		Hitbox(Position position = {0.0f, 0.0f, 0.0f}, float scaleFactor = 1.0f, float mass = 1.0f, Speed initialSpeed = {0.0f, 0.0f, 0.0f}, Acceleration initialAcceleration = {0.0f, 0.0f, 0.0f}, Force internalForce = {0.0f, 0.0f, 0.0f}, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
 			Cinematicable{ position, { 0.0f, 0.0f, 0.0f }, mass, initialSpeed, initialAcceleration, internalForce, emittedField }, scaleFactor{ scaleFactor }
 		{}
 	};
@@ -98,6 +100,31 @@ namespace Vulkan::Physics {
 
 	};
 
+
+
+
+	class FrameHitbox : public Hitbox {
+	public:
+
+		template<std::same_as<Position>... P> requires (sizeof...(P) >= 2)
+			FrameHitbox(Position position, P... frameVertices) : Hitbox{ position } {
+			(vertices.push_back(frameVertices), ...);
+		}
+
+
+		const Segment& operator[](int i) const {
+			return Segment{ vertices[i] + (position - Position{}), vertices[i + 1] + (position - Position{}) }; //returns the i-th segment in the "real" reference system
+		}
+
+
+		int getNumberOfSegments() const {
+			return vertices.size();
+		}
+
+
+	private:
+		std::vector<Position> vertices; //these vertices are considered in a reference system with origin in the center of this hitbox
+	};
 
 }
 

@@ -38,6 +38,7 @@
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\ModelLoader.h" />
     <ClInclude Include="src\Moveable.h" />
+    <ClInclude Include="src\Segment.h" />
     <ClInclude Include="src\Set.h" />
     <ClInclude Include="src\StagingBuffer.h" />
     <ClInclude Include="src\StaticSet.h" />

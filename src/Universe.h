@@ -99,6 +99,15 @@ namespace Vulkan::Physics {
 		}
 
 
+		static void collisionDetection(FrameHitbox& s, CircleHitbox& c, Time elapsedSeconds) {
+			for (int i = 0; i < s.getNumberOfSegments(); ++i) {
+				if (s[i].distance(c.getPosition()) <= c.getRadius()) {
+					//FROMHERE handle collision
+				}
+			}
+		}
+
+
 
 
 		std::vector<Hitbox*> bodies;

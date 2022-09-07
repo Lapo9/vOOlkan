@@ -231,6 +231,9 @@
     <ClInclude Include="src\FieldFunctions.h">
       <Filter>Source Files\Physics</Filter>
     </ClInclude>
+    <ClInclude Include="src\Segment.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
