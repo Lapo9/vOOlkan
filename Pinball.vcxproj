@@ -31,6 +31,7 @@
     <ClInclude Include="src\DepthImage.h" />
     <ClInclude Include="src\DescriptorSetPool.h" />
     <ClInclude Include="src\Field.h" />
+    <ClInclude Include="src\FieldFunctions.h" />
     <ClInclude Include="src\Foundations.h" />
     <ClInclude Include="src\Hitbox.h" />
     <ClInclude Include="src\IndexBuffer.h" />

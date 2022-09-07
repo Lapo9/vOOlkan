@@ -36,11 +36,6 @@ namespace Vulkan::Physics {
 		std::function<Force(const Position&, const Cinematicable&)> calculateForce;
 	};
 
-
-	Force emptyField(const Position&, const Cinematicable&) {
-		return Force{ 0.0f, 0.0f, 0.0f };
-	}
-
 }
 
 #endif

@@ -6,20 +6,25 @@
 #include "Field.h"
 
 
+namespace Vulkan::Physics::FieldFunctions {
+	Force emptyField(const Position&, const Cinematicable&);
+}
+
+
 namespace Vulkan::Physics {
 
 	class Cinematicable : public Moveable {
 	public:
 
-		Cinematicable(Position position = { 0.0f, 0.0f, 0.0f }, glm::vec3 rotationEuler = { 0.0f, 0.0f, 0.0f }, float mass = 1, Speed initialSpeed = { 0.0f, 0.0f, 0.0f }, Acceleration initialAcceleration = { 0.0f, 0.0f, 0.0f }, Force internalForce = { 0.0f, 0.0f, 0.0f }, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, emptyField }) :
+		Cinematicable(Position position = { 0.0f, 0.0f, 0.0f }, glm::vec3 rotationEuler = { 0.0f, 0.0f, 0.0f }, Mass mass = 1.0f, Speed initialSpeed = { 0.0f, 0.0f, 0.0f }, Acceleration initialAcceleration = { 0.0f, 0.0f, 0.0f }, Force internalForce = { 0.0f, 0.0f, 0.0f }, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
 			Moveable{ position, rotationEuler }, mass{ mass }, speed{ initialSpeed }, acceleration{ initialAcceleration }, internalForce{ internalForce }, emittedField{ emittedField } {}
 
 
-		virtual void setMass(float mass) {
+		virtual void setMass(Mass mass) {
 			this->mass = mass;
 		}
 
-		virtual float getMass() const {
+		virtual Mass getMass() const {
 			return mass;
 		}
 
@@ -68,7 +73,7 @@ namespace Vulkan::Physics {
 		}
 
 
-		virtual void move(float elapsedTime) {
+		virtual void move(Time elapsedTime) {
 			setAcceleration((impulsiveForce + internalForce) / getMass());
 			impulsiveForce = { 0.0f, 0.0f, 0.0f }; //reset impulsive forces
 			setSpeed(getSpeed() + getAcceleration() * elapsedTime);
@@ -76,7 +81,7 @@ namespace Vulkan::Physics {
 		}
 
 	protected:
-		float mass;
+		Mass mass;
 		Speed speed;
 		Acceleration acceleration;
 		Force internalForce;

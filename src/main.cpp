@@ -12,7 +12,7 @@
 
 
 template<typename... Models>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, std::chrono::nanoseconds elapsedNanoseconds);
+void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Vulkan::Physics::Universe& universe, std::chrono::nanoseconds elapsedNanoseconds);
 
 
 int main() {
@@ -121,30 +121,42 @@ int main() {
 		};
 
 		//create models
-		Vulkan::Objects::Model model1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, glm::vec3{0.0f, -2.0f, -1.5f}, 0.1f),
-			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/pinball.obj" 
+		Vulkan::Objects::Model ball1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, glm::vec3{1.0f, 0.15f, -2.0f}, 0.5f, 0.5f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
+			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj" 
 		};
 
 
-		Vulkan::Objects::Model floor{ std::make_unique<Vulkan::Physics::CircleHitbox>(2.0f, glm::vec3{0.0f, -2.0f, -200.0f}),
-			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/square.obj" 
+		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, glm::vec3{-0.2f, 0.0f, -2.0f}),
+			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj" 
 		};
 
 
-		Vulkan::Objects::Model redLight{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, lights.position0, 0.1f),
+		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, glm::vec3{-1.0f, -1.0f, -2.0f}),
+			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
+		};
+
+
+		Vulkan::Objects::Model redLight{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, lights.position0, 0.01f),
 			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/square.obj",
 			lights.color0 
 		};
 
-		Vulkan::Objects::Model greenLight{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, lights.position1, 0.1f),
+		Vulkan::Objects::Model greenLight{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, lights.position1, 0.01f),
 			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/square.obj",
 			lights.color1
 		};
 
-		Vulkan::Objects::Model blueLight{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, lights.position2, 0.1f),
+		Vulkan::Objects::Model blueLight{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, lights.position2, 0.01f),
 			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/square.obj",
 			lights.color2
 		};
+
+
+		Vulkan::Physics::Field centralFieldTest{ Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::centralField<1> };
+
+		
+		//add models to universe
+		Vulkan::Physics::Universe physicsUniverse{ std::vector<Vulkan::Physics::Field*>{&centralFieldTest}, +ball1, +ball2, +ball3 };
 
 
 
@@ -153,15 +165,15 @@ int main() {
 		// ================ VERTEX/INDEX BUFFERS SETUP ================
 
 		//vertex buffers
-		Vulkan::Buffers::VertexBuffer mainVertexBuffer{ virtualGpu, realGpu, (model1.getVertices().size() + floor.getVertices().size()) * sizeof(MyVertex) };
+		Vulkan::Buffers::VertexBuffer mainVertexBuffer{ virtualGpu, realGpu, (ball1.getVertices().size() + ball2.getVertices().size() + ball3.getVertices().size()) * sizeof(MyVertex) };
 		Vulkan::Buffers::VertexBuffer backgroundVertexBuffer{ virtualGpu, realGpu, (redLight.getVertices().size() + greenLight.getVertices().size() + blueLight.getVertices().size()) * sizeof(MyVertex) };
-		mainVertexBuffer.fillBuffer(model1, floor);
+		mainVertexBuffer.fillBuffer(ball1, ball2, ball3);
 		backgroundVertexBuffer.fillBuffer(redLight, greenLight, blueLight);
 
 		//index buffers
-		Vulkan::Buffers::IndexBuffer mainIndexBuffer{ virtualGpu, realGpu, (model1.getIndexes().size() + floor.getIndexes().size()) * sizeof(uint32_t) };
+		Vulkan::Buffers::IndexBuffer mainIndexBuffer{ virtualGpu, realGpu, (ball1.getIndexes().size() + ball2.getIndexes().size() + ball3.getVertices().size()) * sizeof(uint32_t) };
 		Vulkan::Buffers::IndexBuffer backgroundIndexBuffer{ virtualGpu, realGpu, (redLight.getIndexes().size() + greenLight.getIndexes().size() + blueLight.getIndexes().size()) * sizeof(uint32_t) };
-		mainIndexBuffer.fillBuffer(model1, floor);
+		mainIndexBuffer.fillBuffer(ball1, ball2, ball3);
 		backgroundIndexBuffer.fillBuffer(redLight, greenLight, blueLight);
 
 
@@ -241,7 +253,7 @@ int main() {
 		auto lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(mainPerObjectUniformBuffer, backgroundPerObjectUniformBuffer, mainPerObjectSet, backgroundPerObjectSet, std::tuple{ &model1, &floor, &redLight, &greenLight, &blueLight }, std::chrono::high_resolution_clock::now() - lastFrameTime);
+			debugAnimation(mainPerObjectUniformBuffer, backgroundPerObjectUniformBuffer, mainPerObjectSet, backgroundPerObjectSet, std::tuple{ &ball1, &ball2, &ball3, &redLight, &greenLight, &blueLight }, physicsUniverse, std::chrono::high_resolution_clock::now() - lastFrameTime);
 			lastFrameTime = std::chrono::high_resolution_clock::now();
 			drawer.draw(
 				std::pair< std::reference_wrapper<Vulkan::Buffers::VertexBuffer>, std::reference_wrapper<Vulkan::Buffers::IndexBuffer>>{ mainVertexBuffer, mainIndexBuffer },
@@ -262,12 +274,12 @@ int main() {
 
 
 Vulkan::Physics::Force foo(Vulkan::Physics::Position fieldPos, Vulkan::Physics::Position objPos) {
-	return Vulkan::Physics::Force{ glm::vec3(fieldPos - objPos) * 1.0f };
+	return Vulkan::Physics::Force{ (fieldPos - objPos) * 1.0f };
 }
 
 
 template<typename... Models>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, std::chrono::nanoseconds elapsedNanoseconds){
+void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Vulkan::Physics::Universe& universe, std::chrono::nanoseconds elapsedNanoseconds){
 	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f, w = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
@@ -285,11 +297,11 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 
 	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
 
-	static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, -45.0_deg, 0.0_deg} };
-	camera.rotate(0.0f * elapsedSeconds, { 1.0f, 0.0f, 0.0f });
+	static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, -.0_deg, 0.0_deg} };
+	camera.rotate(0.0f * elapsedSeconds, { 0.0f, 0.0f, 1.0f });
 
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& model1 = *std::get<0>(models); auto& floor = *std::get<1>(models);
-	auto& redLight = *std::get<2>(models); auto& greenLight = *std::get<3>(models); auto& blueLight = *std::get<4>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball1 = *std::get<0>(models); auto& ball2 = *std::get<1>(models); auto& ball3 = *std::get<2>(models);
+	auto& redLight = *std::get<3>(models); auto& greenLight = *std::get<4>(models); auto& blueLight = *std::get<5>(models);
 
 	//model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f }).rotate(0.37f * elapsedSeconds, glm::vec3{ 1.0f, 0.0f, 0.0f });
 	//model2.rotate(1.1f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
@@ -299,9 +311,12 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 
 	//(+model1)->move(elapsedSeconds);
 
+
+	universe.calculate(elapsedSeconds);
+
 	glm::mat4 projection = perspective;
 
-	mainSet.fillBuffer(mainBuffer, model1.getUniforms(camera.getViewMatrix(), projection), floor.getUniforms(camera.getViewMatrix(), projection));
+	mainSet.fillBuffer(mainBuffer, ball1.getUniforms(camera.getViewMatrix(), projection), ball2.getUniforms(camera.getViewMatrix(), projection), ball3.getUniforms(camera.getViewMatrix(), projection));
 	backgroundSet.fillBuffer(backgroundBuffer, redLight.getUniforms(camera.getViewMatrix(), projection), greenLight.getUniforms(camera.getViewMatrix(), projection), blueLight.getUniforms(camera.getViewMatrix(), projection));
 
 }

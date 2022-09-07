@@ -3,6 +3,9 @@
 
 #include "Cinematicable.h"
 
+namespace Vulkan::Physics::FieldFunctions {
+	Force emptyField(const Position&, const Cinematicable&);
+}
 
 namespace Vulkan::Physics {
 
@@ -30,7 +33,7 @@ namespace Vulkan::Physics {
 	class CircleHitbox : public Hitbox {
 	public:
 
-		CircleHitbox(float radius, Position position = { 0.0f, 0.0f, 0.0f }, float scaleFactor = 1.0f, float mass = 1.0f, Speed initialSpeed = { 0.0f, 0.0f, 0.0f }, Acceleration initialAcceleration = { 0.0f, 0.0f, 0.0f }, Force internalForce = { 0.0f, 0.0f, 0.0f }, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, emptyField }) :
+		CircleHitbox(float radius, Position position = { 0.0f, 0.0f, 0.0f }, float scaleFactor = 1.0f, float mass = 1.0f, Speed initialSpeed = { 0.0f, 0.0f, 0.0f }, Acceleration initialAcceleration = { 0.0f, 0.0f, 0.0f }, Force internalForce = { 0.0f, 0.0f, 0.0f }, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
 			Hitbox{ position, scaleFactor, mass, initialSpeed, initialAcceleration, internalForce, emittedField }
 		{
 			setRadius(radius);
@@ -61,7 +64,7 @@ namespace Vulkan::Physics {
 	class SquareHitbox : public Hitbox {
 	public:
 
-		SquareHitbox(float width, float height, Position position = { 0.0f, 0.0f, 0.0f }, float scaleFactor = 1.0f, float mass = 1.0f, Speed initialSpeed = { 0.0f, 0.0f, 0.0f }, Acceleration initialAcceleration = { 0.0f, 0.0f, 0.0f }, Force internalForce = { 0.0f, 0.0f, 0.0f }, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, emptyField }) :
+		SquareHitbox(float width, float height, Position position = { 0.0f, 0.0f, 0.0f }, float scaleFactor = 1.0f, float mass = 1.0f, Speed initialSpeed = { 0.0f, 0.0f, 0.0f }, Acceleration initialAcceleration = { 0.0f, 0.0f, 0.0f }, Force internalForce = { 0.0f, 0.0f, 0.0f }, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
 			Hitbox{ position, scaleFactor, mass, initialSpeed, initialAcceleration, internalForce, emittedField }
 		{
 			setWidthHeight(width, height);

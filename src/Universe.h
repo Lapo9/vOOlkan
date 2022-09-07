@@ -4,6 +4,7 @@
 #include <vector>
 #include <variant>
 
+#include "Hitbox.h"
 
 
 namespace Vulkan::Physics {
@@ -24,7 +25,7 @@ namespace Vulkan::Physics {
 			calculateForces();
 
 			// 2. collisions (detection and response)
-			collisionDetection();
+			collisionDetection(elapsedSeconds);
 
 			// 3. call move on each body
 			applyForces(elapsedSeconds);
@@ -45,16 +46,18 @@ namespace Vulkan::Physics {
 
 
 		//FROMHERE
-		void collisionDetection() {
+		void collisionDetection(Time elapsedSeconds) {
 			for (int i = 0; i < bodies.size(); ++i) {
 				for (int j = i + 1; j < bodies.size(); ++j) {
-					
+					CircleHitbox& c1 = dynamic_cast<CircleHitbox&>(*bodies[i]);
+					CircleHitbox& c2 = dynamic_cast<CircleHitbox&>(*bodies[j]);
+					collisionDetection(c1, c2, elapsedSeconds);
 				}
 			}
 		}
 
 
-		void applyForces(float elapsedSeconds) {
+		void applyForces(Time elapsedSeconds) {
 			for (auto body : bodies) {
 				body->move(elapsedSeconds);
 			}
@@ -63,9 +66,19 @@ namespace Vulkan::Physics {
 
 
 
-		static void collisionDetection(CircleHitbox& c1, CircleHitbox& c2) {
-			if (c1.getPosition() - c1.getPosition() <= c1.getRadius() + c2.getRadius()) {
+		static void collisionDetection(CircleHitbox& c1, CircleHitbox& c2, Time elapsedSeconds) {
+			auto distance = c1.getPosition() - c2.getPosition();
+			if ( distance <= c1.getRadius() + c2.getRadius()) {
+				//get speeds and masses (to simplify the writing of the equation
+				auto s1 = c1.getSpeed(); auto s2 = c2.getSpeed();
+				auto m1 = c1.getMass(); auto m2 = c2.getMass();
+				float e = 1.0f; //we simulate an elastic collision for now. This can vary based on materials.
+				auto n = glm::normalize(glm::vec3(c1.getPosition() - c2.getPosition())); //versor pointing the direction between the 2 centers
+				
+				auto impulse = float((s2 - s1) * n * (-e - 1) * ((m1 * m2) / (m1 + m2)));
 
+				c1.addExternalForce(-(impulse * n) / elapsedSeconds);
+				c2.addExternalForce((impulse * n) / elapsedSeconds);
 			}
 		}
 

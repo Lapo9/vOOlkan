@@ -93,8 +93,8 @@ namespace Vulkan::Objects {
 		}
 		
 
-		std::unique_ptr<Vulkan::Physics::Hitbox>& operator+() {
-			return hitbox;
+		Vulkan::Physics::Hitbox& operator+() {
+			return *hitbox;
 		}
 		
 

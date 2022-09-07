@@ -16,6 +16,7 @@
 #include "DynamicState.h"
 #include "Fence.h"
 #include "Field.h"
+#include "FieldFunctions.h"
 #include "Foundations.h"
 #include "Framebuffer.h"
 #include "Hitbox.h"
