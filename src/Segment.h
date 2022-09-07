@@ -38,6 +38,14 @@ namespace Vulkan::Physics {
 			return glm::length(glm::vec3(direction));
 		}
 
+		//TODO not efficient
+		Vectorial normal(Position p) const {
+			auto distFromOrigin = p - origin; //distance of p from the origin of the segment
+			auto projectionFromOrigin = distFromOrigin * direction;
+			auto closestPoint = origin + glm::normalize(glm::vec3(direction)) * projectionFromOrigin; //calculate the closest point of the segment (or its prolongment) to the point
+			return closestPoint - p; //the normal pointing to the segment
+		}
+
 		const Position& getOrigin() const {
 			return origin;
 		}

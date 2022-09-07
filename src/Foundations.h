@@ -17,15 +17,15 @@ public:
 
 
 
-	float& x() {
+	float x() const{
 		return vector.x;
 	}
 
-	float& y() {
+	float y() const {
 		return vector.y;
 	}
 
-	float& z() {
+	float z() const {
 		return vector.z;
 	}
 
