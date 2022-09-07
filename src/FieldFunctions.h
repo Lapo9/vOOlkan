@@ -17,6 +17,13 @@ namespace Vulkan::Physics::FieldFunctions {
 		auto dir = glm::normalize(glm::vec3(fieldCenter - body.getPosition()));
 		return dir * intensity;
 	}
+
+
+	template<float mu>
+	Force friction(const Position& fieldCenter, const Cinematicable& body) {
+		auto dir = glm::vec3(-body.getSpeed());
+		return dir * mu;
+	}
 }
 
 #endif

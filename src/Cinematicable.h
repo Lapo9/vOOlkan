@@ -12,7 +12,12 @@ namespace Vulkan::Physics::FieldFunctions {
 
 
 namespace Vulkan::Physics {
-
+	
+	/**
+	 * @brief A Cinematicable object is a Movable object which obeys to physics laws.
+	 * @details A Cinematicable object is determined by its position and rotation (since it is a Movable object) and its speed, acceleration.
+	 *			A Cinematicable object can also emit a force Field, and can have an internal force (an engine like force).
+	 */
 	class Cinematicable : public Moveable {
 	public:
 
@@ -68,16 +73,23 @@ namespace Vulkan::Physics {
 		};
 
 
+		/**
+		 * @brief Sums to the already present external forces the argument.
+		 * @details External forces are deleted once the move method is called, so they are basically impulse-like forces which act on the object in between 2 frames.
+		 */
 		virtual void addExternalForce(Force externalForce) {
 			impulsiveForce += externalForce;
 		}
 
 
+		/**
+		 * @brief Computes the new position of the object based on its current speed and the forces which are acting on the object.
+		 */
 		virtual void move(Time elapsedTime) {
-			setAcceleration((impulsiveForce + internalForce) / getMass());
+			setAcceleration((impulsiveForce + internalForce) / getMass()); // F = m*a (Newton III)
 			impulsiveForce = { 0.0f, 0.0f, 0.0f }; //reset impulsive forces
-			setSpeed(getSpeed() + getAcceleration() * elapsedTime);
-			setPosition(getPosition() + getSpeed() * elapsedTime);
+			setSpeed(getSpeed() + getAcceleration() * elapsedTime); // ds = a/t --> s' = s + a/t
+			translate(getSpeed() * elapsedTime); // dp = s/t --> p' = p + v/t
 		}
 
 	protected:
@@ -85,7 +97,7 @@ namespace Vulkan::Physics {
 		Speed speed;
 		Acceleration acceleration;
 		Force internalForce;
-		Force impulsiveForce; //externalForces which act on the body now. This is reset when move is called
+		Force impulsiveForce; //externalForces which act on the body now. This is reset when move is called.
 		Field emittedField;
 
 	};

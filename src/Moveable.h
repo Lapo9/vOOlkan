@@ -9,6 +9,9 @@
 
 namespace Vulkan::Physics {
 
+	/**
+	 * @brief A Movable object is an object which can be moved and rotated.
+	 */
 	class Moveable {
 	public:
 		Moveable(Position position = { 0.0f, 0.0f, 0.0f }, glm::vec3 rotationEuler = { 0.0f, 0.0f, 0.0f }) : position{ position } {

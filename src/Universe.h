@@ -10,9 +10,19 @@
 namespace Vulkan::Physics {
 
 
+	/**
+	 * @brief A Universe is a container of Hitbox(es) and Field(s).
+	 * @details The objects inside a universe can interact between them, by following basic dynamics laws.
+	 */
 	class Universe {
 	public:
 
+		/**
+		 * @brief Builds an isolated Universe.
+		 * 
+		 * @param fields Vector containing all of the fields acting in this universe.
+		 * @param ...hitboxes Objects which can interact among them and with the fields in the universe.
+		 */
 		template<typename... Hitboxes> requires (std::derived_from<Hitboxes, Hitbox> && ...)
 			Universe(std::vector<Field*> fields, Hitboxes&... hitboxes) : fields{ fields } {
 			(bodies.push_back(&hitboxes), ...);
@@ -20,9 +30,14 @@ namespace Vulkan::Physics {
 
 
 
+		/**
+		 * @brief Calculates the new position of all the objects in the universe, their interaction with the other objects and the fields.
+		 * 
+		 * @param elapsedSeconds Seconds elapsed from last calculation. 2 sequences of calls to calculate with the same elapsedSeconds is deterministic, but 2 sequences with different elapsedSeconds is not.
+		 */
 		void calculate(float elapsedSeconds) {
 			// 1. calculate forces for each object (i.e. fields)
-			calculateForces();
+			calculateFieldForces();
 
 			// 2. collisions (detection and response)
 			collisionDetection(elapsedSeconds);
@@ -33,10 +48,10 @@ namespace Vulkan::Physics {
 
 
 
-
 	private:
 
-		void calculateForces() {
+		//Calculates the forces applied by the fields on the objects.
+		void calculateFieldForces() {
 			for (auto body : bodies) {
 				for (auto field : fields) {
 					body->addExternalForce(field->calculateAppliedForce(*body));
@@ -45,7 +60,7 @@ namespace Vulkan::Physics {
 		}
 
 
-		//FROMHERE
+		//Detects if there is any collision between 2 objects and in case resolves such collision.
 		void collisionDetection(Time elapsedSeconds) {
 			for (int i = 0; i < bodies.size(); ++i) {
 				for (int j = i + 1; j < bodies.size(); ++j) {
@@ -57,6 +72,7 @@ namespace Vulkan::Physics {
 		}
 
 
+		//Applies all of the forces calculated till now.
 		void applyForces(Time elapsedSeconds) {
 			for (auto body : bodies) {
 				body->move(elapsedSeconds);
@@ -65,7 +81,7 @@ namespace Vulkan::Physics {
 
 
 
-
+		//Collider between 2 circles
 		static void collisionDetection(CircleHitbox& c1, CircleHitbox& c2, Time elapsedSeconds) {
 			auto distance = c1.getPosition() - c2.getPosition();
 			if ( distance <= c1.getRadius() + c2.getRadius()) {

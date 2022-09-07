@@ -9,6 +9,9 @@ namespace Vulkan::Physics::FieldFunctions {
 
 namespace Vulkan::Physics {
 
+	/**
+	 * @brief A Hitbox is a Cinematicable object which can directly interact with other objects upon collision.
+	 */
 	class Hitbox : public Cinematicable {
 	public:
 		virtual float getScaleFactor() const {
@@ -29,7 +32,9 @@ namespace Vulkan::Physics {
 
 
 
-
+	/**
+	 * @brief A CircleHitbox is the Hitbox for circular-like objects. It is idendified by its center and radius.
+	 */
 	class CircleHitbox : public Hitbox {
 	public:
 
@@ -60,7 +65,9 @@ namespace Vulkan::Physics {
 
 
 
-
+	/**
+	 * @brief A SquareHitbox is the Hitbox for rectangular-shaped objects. It is identified by its center, width and lenght.
+	 */
 	class SquareHitbox : public Hitbox {
 	public:
 
