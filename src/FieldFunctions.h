@@ -27,6 +27,18 @@ namespace Vulkan::Physics::FieldFunctions {
 		auto dir = glm::vec3(-body.getSpeed());
 		return dir * mu;
 	}
+
+
+	template<float g>
+	Force gravity(const Position& fieldCenter, const Cinematicable& body) {
+		return glm::vec3{0.0f, -1.0f, 0.0f} *g;
+	}
+
+
+	template<float intensity, glm::vec3 direction>
+	Force wind(const Position& fieldCenter, const Cinematicable& body) {
+		return direction * intensity;
+	}
 }
 
 #endif

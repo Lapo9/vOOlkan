@@ -58,7 +58,7 @@ namespace Vulkan::Objects {
 		const glm::mat4& calculateModelMatrix() const {
 			return glm::translate(glm::mat4{ 1.0f }, glm::vec3(hitbox->getPosition())) *
 				glm::scale(glm::mat4{ 1.0f }, glm::vec3{ hitbox->getScaleFactor() }) *
-				glm::mat4{ rotation };
+				glm::mat4{ hitbox->getRotation() * rotation};
 		}
 
 

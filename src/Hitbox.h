@@ -77,7 +77,9 @@ namespace Vulkan::Physics {
 
 
 		const Segment& operator[](int i) const {
-			return Segment{ vertices[i] + (position - Position{}), vertices[i + 1] + (position - Position{}) }; //returns the i-th segment in the "real" reference system
+			auto v1 = rotation * glm::vec3(vertices[i]);
+			auto v2 = rotation * glm::vec3(vertices[i + 1]);
+			return Segment{ v1 + (position - Position{}), v2 + (position - Position{}) }; //returns the i-th segment in the "real" reference system
 		}
 
 

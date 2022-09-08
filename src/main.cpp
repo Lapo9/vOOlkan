@@ -96,7 +96,7 @@ int main() {
 			glm::vec3{1.0f, 0.0f, 0.0f},
 			glm::vec3{1.0f, -0.3f, -1.0f},
 			glm::vec3{0.0f, 1.0f, 0.0f},
-			glm::vec3{-1.0f, -0.3f, -1.0f},
+			glm::vec3{11.0f, -0.8f, -1.0f},
 			glm::vec3{0.0f, 0.0f, 1.0f},
 			glm::vec3{0.0f, 1.0f, -1.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
@@ -121,17 +121,26 @@ int main() {
 		};
 
 		//create models
-		Vulkan::Objects::Model ball1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, Vulkan::Physics::Position{-1.0f, 0.0f, -2.0f}, 0.5f, 1.0f, Vulkan::Physics::Speed{1.0f, 0.7f, 0.0f}),
+		Vulkan::Objects::Model ball1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, Vulkan::Physics::Position{-0.15f, 0.8f, -2.0f}, 0.5f, 1.0f, Vulkan::Physics::Speed{0.0f, -0.5f, 0.0f}),
 			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj" 
 		};
 
 
-		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, Vulkan::Physics::Position{0.2f, 0.0f, -2.0f}),
-			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj" 
+		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.0f, -2.0f, -2.0f}, 0.48f, Vulkan::Physics::Position{0.0f, 0.0f, 0.0f}, Vulkan::Physics::Position{-0.5f, 0.0f, 0.0f}),
+			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/leftFlipper.obj" 
 		};
+		(+ball2).setAngularSpeed(-15.35f);
 
 
-		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, 2.31f, Vulkan::Physics::Position{-2.25f, -2.25f, 0.0f}, Vulkan::Physics::Position{-2.25f, 2.25f, 0.0f}, Vulkan::Physics::Position{2.25f, 2.25f, 0.0f}, Vulkan::Physics::Position{2.25f, -2.25f, 0.0f}, Vulkan::Physics::Position{-2.25f, -2.25f, 0.0f}),
+		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, 2.31f, 
+			Vulkan::Physics::Position{-0.25f, -3.5f, 0.0f}, 
+			Vulkan::Physics::Position{-0.5f, -1.8f, 0.0f}, 
+			Vulkan::Physics::Position{-2.25f, -1.25f, 0.0f}, 
+			Vulkan::Physics::Position{-2.25f, 2.25f, 0.0f}, 
+			Vulkan::Physics::Position{2.25f, 2.25f, 0.0f}, 
+			Vulkan::Physics::Position{2.25f, -1.25f, 0.0f}, 
+			Vulkan::Physics::Position{0.5f, -1.8f, 0.0f}, 
+			Vulkan::Physics::Position{0.25f, -3.5f, 0.0f}),
 			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/square.obj"
 		};
 
@@ -152,12 +161,12 @@ int main() {
 		};
 
 
-		Vulkan::Physics::Field centralFieldTest{ Vulkan::Physics::Position{1.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::centralField<1> };
-		Vulkan::Physics::Field friction{ Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::friction<0.0> };
+		Vulkan::Physics::Field gravity{ Vulkan::Physics::Position{1.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::gravity<7.3> };
+		Vulkan::Physics::Field friction{ Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::friction<0.8> };
 
 		
 		//add models to universe
-		Vulkan::Physics::Universe physicsUniverse{ std::vector<Vulkan::Physics::Field*>{&centralFieldTest, &friction}, +ball1, +ball2, +ball3 };
+		Vulkan::Physics::Universe physicsUniverse{ std::vector<Vulkan::Physics::Field*>{&gravity, &friction}, +ball1, +ball2, +ball3 };
 
 
 
@@ -301,7 +310,9 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 	static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, -.0_deg, 0.0_deg} };
 	camera.rotate(0.0f * elapsedSeconds, { 0.0f, 0.0f, 1.0f });
 
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball1 = *std::get<0>(models); auto& ball2 = *std::get<1>(models); auto& ball3 = *std::get<2>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball1 = *std::get<0>(models); 
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball2 = *std::get<1>(models); 
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball3 = *std::get<2>(models);
 	auto& redLight = *std::get<3>(models); auto& greenLight = *std::get<4>(models); auto& blueLight = *std::get<5>(models);
 
 	//model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f }).rotate(0.37f * elapsedSeconds, glm::vec3{ 1.0f, 0.0f, 0.0f });
@@ -311,7 +322,6 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 	//model1.move(elapsedSeconds, {0.0f, 0.0f, model1.getPosition().z() < -3.0f ? 1.0f : -1.0f});
 
 	//(+model1)->move(elapsedSeconds);
-
 
 	universe.calculate(elapsedSeconds);
 

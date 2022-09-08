@@ -73,6 +73,16 @@ namespace Vulkan::Physics {
 		};
 
 
+		virtual float getAngularSpeed() const {
+			return angularSpeed;
+		}
+
+
+		virtual void setAngularSpeed(float angularSpeed) {
+			this->angularSpeed = angularSpeed;
+		}
+
+
 		/**
 		 * @brief Sums to the already present external forces the argument.
 		 * @details External forces are deleted once the move method is called, so they are basically impulse-like forces which act on the object in between 2 frames.
@@ -95,6 +105,7 @@ namespace Vulkan::Physics {
 			impulsiveForce = { 0.0f, 0.0f, 0.0f }; //reset impulsive forces
 			setSpeed(speed + acceleration * elapsedTime); // ds = a/t --> s' = s + a/t
 			translate(speed * elapsedTime); // dp = s/t --> p' = p + v/t
+			rotate(angularSpeed * float(elapsedTime), glm::vec3(0.0f, 0.0f, 1.0f)); //only xy plane for now, and only arbitrary velocity (no angular acceleration based on momentum)
 		}
 
 	protected:
@@ -104,7 +115,7 @@ namespace Vulkan::Physics {
 		Force internalForce;
 		Force impulsiveForce; //externalForces which act on the body now. This is reset when move is called.
 		Field emittedField;
-
+		float angularSpeed; //only xy plane considered
 	};
 
 }
