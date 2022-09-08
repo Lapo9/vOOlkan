@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <variant>
+#include <typeinfo>
 
 #include "Hitbox.h"
 
@@ -64,10 +65,28 @@ namespace Vulkan::Physics {
 		void collisionDetection(Time elapsedSeconds) {
 			for (int i = 0; i < bodies.size(); ++i) {
 				for (int j = i + 1; j < bodies.size(); ++j) {
-					//FROMHERE how to call the right function (since multiple dynamic dispatchin is not a C++ feature)?
-					CircleHitbox& c1 = dynamic_cast<CircleHitbox&>(*bodies[i]);
-					CircleHitbox& c2 = dynamic_cast<CircleHitbox&>(*bodies[j]);
-					collisionDetection(c1, c2, elapsedSeconds);
+					//if only C++ had multiple dynamic dispatch we wouldn't have to do this shit. Visitor is even worse.
+
+					//circle - circle collision
+					if (typeid(*bodies[i]) == typeid(CircleHitbox) && typeid(*bodies[j]) == typeid(CircleHitbox)) {
+						CircleHitbox& c1 = static_cast<CircleHitbox&>(*bodies[i]);
+						CircleHitbox& c2 = static_cast<CircleHitbox&>(*bodies[j]);
+						collisionDetection(c2, c1, elapsedSeconds);
+					}
+
+					//frame - circle collision
+					else if (typeid(*bodies[i]) == typeid(FrameHitbox) && typeid(*bodies[j]) == typeid(CircleHitbox)) {
+						FrameHitbox& f1 = static_cast<FrameHitbox&>(*bodies[i]);
+						CircleHitbox& c2 = static_cast<CircleHitbox&>(*bodies[j]);
+						collisionDetection(f1, c2, elapsedSeconds);
+					}	
+
+					//circle - frame collision
+					else if (typeid(*bodies[i]) == typeid(CircleHitbox) && typeid(*bodies[j]) == typeid(FrameHitbox)) {
+						CircleHitbox& c1 = static_cast<CircleHitbox&>(*bodies[i]);
+						FrameHitbox& f2 = static_cast<FrameHitbox&>(*bodies[j]);
+						collisionDetection(f2, c1, elapsedSeconds);
+					}
 				}
 			}
 		}
@@ -102,17 +121,18 @@ namespace Vulkan::Physics {
 
 		static void collisionDetection(FrameHitbox& f, CircleHitbox& c, Time elapsedSeconds) {
 			for (int i = 0; i < f.getNumberOfSegments(); ++i) {
-				if (f[i].distance(c.getPosition()) <= c.getRadius()) {
+				auto segment = f[i];
+				if (segment.distance(c.getPosition()) <= c.getRadius()) {
 					//get speeds and masses (to simplify the writing of the equation
 					auto s1 = c.getSpeed(); auto s2 = f.getSpeed();
 					auto m1 = c.getMass(); auto m2 = f.getMass();
 					float e = 1.0f; //we simulate an elastic collision for now. This can vary based on materials.
-					auto n = f[i].normal(c.getPosition()); //normal to the segment, pointing to the segment
+					auto n = segment.normal(c.getPosition()); //normal to the segment, pointing to the segment
 
 					auto impulse = float((s2 - s1) * n * (-e - 1) * ((m1 * m2) / (m1 + m2)));
 
-					f.addExternalForce(-(impulse * glm::vec3(n)) / elapsedSeconds);
-					c.addExternalForce((impulse * glm::vec3(n)) / elapsedSeconds);
+					f.addExternalForce((impulse * glm::vec3(n)) / elapsedSeconds);
+					c.addExternalForce(-(impulse * glm::vec3(n)) / elapsedSeconds);
 				}
 			}
 		}

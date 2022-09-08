@@ -75,6 +75,12 @@ public:
 	}
 
 
+	template<std::derived_from<Vectorial> V>
+	friend V operator/(V v, float x) {
+		return V{ v.vector / x };
+	}
+
+
 	friend float operator*(Vectorial v1, Vectorial v2) {
 		return glm::dot(v1.vector, v2.vector);
 	}
@@ -208,6 +214,10 @@ public:
 
 	Position operator-() const {
 		return Position{ -position };
+	}
+
+	friend auto operator==(const Position& p1, const Position& p2) {
+		return p1.position == p2.position;
 	}
 
 private:

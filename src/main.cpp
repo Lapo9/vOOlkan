@@ -96,9 +96,9 @@ int main() {
 			glm::vec3{1.0f, 0.0f, 0.0f},
 			glm::vec3{1.0f, -0.3f, -1.0f},
 			glm::vec3{0.0f, 1.0f, 0.0f},
-			glm::vec3{-1.0f, -0.3f, -2.0f},
+			glm::vec3{-1.0f, -0.3f, -1.0f},
 			glm::vec3{0.0f, 0.0f, 1.0f},
-			glm::vec3{0.0f, 1.0f, -3.0f},
+			glm::vec3{0.0f, 1.0f, -1.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
@@ -121,18 +121,18 @@ int main() {
 		};
 
 		//create models
-		Vulkan::Objects::Model ball1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, glm::vec3{-1.0f, 0.15f, -2.0f}, 0.5f, 0.5f, Vulkan::Physics::Speed{2.0f, 0.0f, 0.0f}),
+		Vulkan::Objects::Model ball1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, Vulkan::Physics::Position{-1.0f, 0.0f, -2.0f}, 0.5f, 1.0f, Vulkan::Physics::Speed{1.0f, 0.7f, 0.0f}),
 			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj" 
 		};
 
 
-		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, glm::vec3{-0.2f, 1.0f, -2.0f}),
+		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, Vulkan::Physics::Position{0.2f, 0.0f, -2.0f}),
 			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj" 
 		};
 
 
-		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, glm::vec3{-1.0f, -1.0f, -2.0f}),
-			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
+		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, 2.31f, Vulkan::Physics::Position{-2.25f, -2.25f, 0.0f}, Vulkan::Physics::Position{-2.25f, 2.25f, 0.0f}, Vulkan::Physics::Position{2.25f, 2.25f, 0.0f}, Vulkan::Physics::Position{2.25f, -2.25f, 0.0f}, Vulkan::Physics::Position{-2.25f, -2.25f, 0.0f}),
+			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/square.obj"
 		};
 
 
@@ -152,8 +152,8 @@ int main() {
 		};
 
 
-		Vulkan::Physics::Field centralFieldTest{ Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::centralField<1> };
-		Vulkan::Physics::Field friction{ Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::friction<0.5> };
+		Vulkan::Physics::Field centralFieldTest{ Vulkan::Physics::Position{1.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::centralField<1> };
+		Vulkan::Physics::Field friction{ Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::friction<0.0> };
 
 		
 		//add models to universe

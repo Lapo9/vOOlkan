@@ -13,17 +13,15 @@ namespace Vulkan::Physics {
 
 		float distance(Position p) const {
 			auto distFromOrigin = p - origin; //distance of p from the origin of the segment
-			auto distFromEnd = p - (origin + direction); //distance of p from the end of the segment
 
-			auto projectionFromOrigin = distFromOrigin * direction;
-			auto projectionFromEnd = distFromEnd * direction;
+			auto projectionFromOrigin = (distFromOrigin * direction) / length();
 
 			//if the projection of the segment o-p is greater than the lenght of the segment, it means that the point is "outside" the segment, on the ending side, so the closest point of the segment to our point p is the end
 			if (distFromOrigin > length()) {
 				return glm::length(glm::vec3(p - (origin + direction)));
 			}
-			//if the projection of the segment e-p is greater than the lenght of the segment, it means that the point is "outside" the segment, on the starting side, so the closest point of the segment to our point p is the origin
-			else if (distFromEnd > length()) {
+			//if the projection of the segment o-p is smaller than 0, it means that the point is "outside" the segment, on the starting side, so the closest point of the segment to our point p is the origin
+			else if (distFromOrigin < 0.0f) {
 				return glm::length(glm::vec3(p - origin));
 			}
 			//else the closest point is one of the points internal to the segment
@@ -41,9 +39,9 @@ namespace Vulkan::Physics {
 		//TODO not efficient
 		Vectorial normal(Position p) const {
 			auto distFromOrigin = p - origin; //distance of p from the origin of the segment
-			auto projectionFromOrigin = distFromOrigin * direction;
+			auto projectionFromOrigin = (distFromOrigin * direction) / length();
 			auto closestPoint = origin + glm::normalize(glm::vec3(direction)) * projectionFromOrigin; //calculate the closest point of the segment (or its prolongment) to the point
-			return closestPoint - p; //the normal pointing to the segment
+			return glm::normalize(glm::vec3(closestPoint - p)); //the normal pointing to the segment
 		}
 
 		const Position& getOrigin() const {

@@ -86,10 +86,15 @@ namespace Vulkan::Physics {
 		 * @brief Computes the new position of the object based on its current speed and the forces which are acting on the object.
 		 */
 		virtual void move(Time elapsedTime) {
-			setAcceleration((impulsiveForce + internalForce) / getMass()); // F = m*a (Newton III)
+			if (float(mass) == std::numeric_limits<float>::max()) {
+				setAcceleration({ 0.0f, 0.0f, 0.0f });
+			}
+			else {
+				setAcceleration((impulsiveForce + internalForce) / mass); // F = m*a (Newton III)
+			}
 			impulsiveForce = { 0.0f, 0.0f, 0.0f }; //reset impulsive forces
-			setSpeed(getSpeed() + getAcceleration() * elapsedTime); // ds = a/t --> s' = s + a/t
-			translate(getSpeed() * elapsedTime); // dp = s/t --> p' = p + v/t
+			setSpeed(speed + acceleration * elapsedTime); // ds = a/t --> s' = s + a/t
+			translate(speed * elapsedTime); // dp = s/t --> p' = p + v/t
 		}
 
 	protected:

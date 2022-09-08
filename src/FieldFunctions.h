@@ -14,6 +14,9 @@ namespace Vulkan::Physics::FieldFunctions {
 
 	template<float intensity>
 	Force centralField(const Position& fieldCenter, const Cinematicable& body) {
+		if (fieldCenter == body.getPosition()) {
+			return {0.0f, 0.0f, 0.0f };
+		}
 		auto dir = glm::normalize(glm::vec3(fieldCenter - body.getPosition()));
 		return dir * intensity;
 	}

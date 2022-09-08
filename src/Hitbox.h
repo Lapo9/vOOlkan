@@ -67,47 +67,11 @@ namespace Vulkan::Physics {
 
 
 
-	/**
-	 * @brief A SquareHitbox is the Hitbox for rectangular-shaped objects. It is identified by its center, width and lenght.
-	 */
-	class SquareHitbox : public Hitbox {
-	public:
-
-		SquareHitbox(float width, float height, Position position = { 0.0f, 0.0f, 0.0f }, float scaleFactor = 1.0f, float mass = 1.0f, Speed initialSpeed = { 0.0f, 0.0f, 0.0f }, Acceleration initialAcceleration = { 0.0f, 0.0f, 0.0f }, Force internalForce = { 0.0f, 0.0f, 0.0f }, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
-			Hitbox{ position, scaleFactor, mass, initialSpeed, initialAcceleration, internalForce, emittedField }
-		{
-			setWidthHeight(width, height);
-		}
-
-
-		std::pair<float, float> getWidthHeight() const {
-			return { width * scaleFactor, height * scaleFactor };
-		}
-
-		void setWidthHeight(float width, float height) {
-			this->width = width * scaleFactor;
-			this->height = height * scaleFactor;
-		}
-
-		virtual void setScaleFactor(float scaleFactor) override {
-			this->scaleFactor = scaleFactor;
-			setWidthHeight( width, height );
-		}
-
-	private:
-		float width;
-		float height;
-
-	};
-
-
-
-
 	class FrameHitbox : public Hitbox {
 	public:
 
 		template<std::same_as<Position>... P> requires (sizeof...(P) >= 2)
-			FrameHitbox(Position position, P... frameVertices) : Hitbox{ position } {
+			FrameHitbox(Position position, float scaleFactor, P... frameVertices) : Hitbox{ position, scaleFactor, std::numeric_limits<float>::max()} {
 			(vertices.push_back(frameVertices), ...);
 		}
 
@@ -118,7 +82,7 @@ namespace Vulkan::Physics {
 
 
 		int getNumberOfSegments() const {
-			return vertices.size();
+			return vertices.size() - 1;
 		}
 
 
