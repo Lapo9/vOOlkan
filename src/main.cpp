@@ -138,7 +138,7 @@ int main() {
 		(+leftFlipper).rotate(180.0_deg, { 0.0f, 0.0f, 1.0f });
 		leftFlipper.setKeyPressResponse(Vulkan::Animations::leftPadUp<MyVertex>);
 
-		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, 0.11f, 
+		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, 0.31f, 
 			Vulkan::Physics::Position{-0.25f, -3.5f, 0.0f}, 
 			Vulkan::Physics::Position{-0.5f, -1.8f, 0.0f}, 
 			Vulkan::Physics::Position{-2.25f, -1.25f, 0.0f}, 
@@ -147,7 +147,7 @@ int main() {
 			Vulkan::Physics::Position{2.25f, -1.25f, 0.0f}, 
 			Vulkan::Physics::Position{0.5f, -1.8f, 0.0f}, 
 			Vulkan::Physics::Position{0.25f, -3.5f, 0.0f}),
-			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/square.obj"
+			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/body1.obj"
 		};
 
 
@@ -315,7 +315,7 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 
 	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
 
-	static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, -.0_deg, 0.0_deg} };
+	static auto camera = Vulkan::Objects::Camera{ {0.0f, -4.0f, 0.0f}, {0.0_deg, 60.0_deg, 0.0_deg} };
 	camera.rotate(0.0f * elapsedSeconds, { 0.0f, 0.0f, 1.0f });
 
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball1 = *std::get<0>(models); 
