@@ -122,7 +122,7 @@ int main() {
 		};
 
 		//create models
-		Vulkan::Objects::Model ball1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, Vulkan::Physics::Position{0.2f, 0.8f, -2.0f}, 0.5f, 1.0f, Vulkan::Physics::Speed{0.0f, -0.5f, 0.0f}),
+		Vulkan::Objects::Model ball1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, Vulkan::Physics::Position{-0.2f, 0.8f, -2.0f}, 0.5f, 1.0f, Vulkan::Physics::Speed{0.0f, -0.5f, 0.0f}),
 			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
@@ -138,7 +138,7 @@ int main() {
 		(+leftFlipper).rotate(180.0_deg, { 0.0f, 0.0f, 1.0f });
 		leftFlipper.setKeyPressResponse(Vulkan::Animations::leftPadUp<MyVertex>);
 
-		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, 2.31f, 
+		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, 0.11f, 
 			Vulkan::Physics::Position{-0.25f, -3.5f, 0.0f}, 
 			Vulkan::Physics::Position{-0.5f, -1.8f, 0.0f}, 
 			Vulkan::Physics::Position{-2.25f, -1.25f, 0.0f}, 
