@@ -35,6 +35,7 @@
     <ClInclude Include="src\Foundations.h" />
     <ClInclude Include="src\Hitbox.h" />
     <ClInclude Include="src\IndexBuffer.h" />
+    <ClInclude Include="src\KeyboardController.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\ModelLoader.h" />
     <ClInclude Include="src\Moveable.h" />

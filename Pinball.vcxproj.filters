@@ -46,6 +46,9 @@
     <Filter Include="Source Files\Physics">
       <UniqueIdentifier>{7b9e6ef0-cf2f-4417-a177-f2f2956c5989}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{351094bf-aeb9-4a20-a6f0-cd34a8a75b1e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Instance.h">
@@ -233,6 +236,9 @@
     </ClInclude>
     <ClInclude Include="src\Segment.h">
       <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\KeyboardController.h">
+      <Filter>Source Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,7 @@
 #include "Cinematicable.h"
 #include "Foundations.h"
 #include "Hitbox.h"
+#include "KeyboardController.h"
 
 
 namespace Vulkan::Objects {
@@ -23,7 +24,7 @@ namespace Vulkan::Objects {
 
 
 	template<IsVertex Vertex, typename... Structs>
-	class Model {
+	class Model : public Utilities::KeyboardListener {
 
 		using Matrices = struct {
 			alignas(16) glm::mat4 mvp;
@@ -33,7 +34,7 @@ namespace Vulkan::Objects {
 
 	public:
 
-		Model(std::unique_ptr<Vulkan::Physics::Hitbox> hitbox, glm::vec3 rotationEuler, Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... }, hitbox{ std::move(hitbox) } {
+		Model(std::unique_ptr<Vulkan::Physics::Hitbox> hitbox, std::function<void(int)> reactToKeyPress, glm::vec3 rotationEuler, Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... }, hitbox{ std::move(hitbox) }, reactToKeyPress{ reactToKeyPress } {
 			ModelLoader<Vertex>::loadModel(pathToModel, vertices, indexes);
 			rotation = glm::quat(rotationEuler);
 		}
@@ -98,6 +99,11 @@ namespace Vulkan::Objects {
 		}
 		
 
+		void notifyKeyPress(int keyPressed) override {
+			reactToKeyPress(keyPressed);
+		}
+
+
 	private:
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indexes;
@@ -106,6 +112,8 @@ namespace Vulkan::Objects {
 		glm::quat rotation; //in this simplified version of the physics (2D) a model can have a different rotation than the one of its hitbox
 
 		std::unique_ptr<Vulkan::Physics::Hitbox> hitbox;
+
+		std::function<void(int)> reactToKeyPress;
 	};
 }
 
