@@ -34,9 +34,14 @@ namespace Vulkan::Objects {
 
 	public:
 
-		Model(std::unique_ptr<Vulkan::Physics::Hitbox> hitbox, std::function<void(int)> reactToKeyPress, glm::vec3 rotationEuler, Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... }, hitbox{ std::move(hitbox) }, reactToKeyPress{ reactToKeyPress } {
+		Model(std::unique_ptr<Vulkan::Physics::Hitbox> hitbox, glm::vec3 rotationEuler, Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... }, hitbox{ std::move(hitbox) }, reactToKeyPress{ [](Model&, int) {} } {
 			ModelLoader<Vertex>::loadModel(pathToModel, vertices, indexes);
 			rotation = glm::quat(rotationEuler);
+		}
+
+
+		void setKeyPressResponse(std::function<void(Model&, int)> reactToKeyPress) {
+			this->reactToKeyPress = reactToKeyPress;
 		}
 
 
@@ -100,7 +105,7 @@ namespace Vulkan::Objects {
 		
 
 		void notifyKeyPress(int keyPressed) override {
-			reactToKeyPress(keyPressed);
+			reactToKeyPress(*this, keyPressed);
 		}
 
 
@@ -113,7 +118,7 @@ namespace Vulkan::Objects {
 
 		std::unique_ptr<Vulkan::Physics::Hitbox> hitbox;
 
-		std::function<void(int)> reactToKeyPress;
+		std::function<void(Model&, int)> reactToKeyPress;
 	};
 }
 

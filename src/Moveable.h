@@ -40,6 +40,16 @@ namespace Vulkan::Physics {
 			return rotation;
 		}
 
+		virtual const glm::vec3& getRotationEuler() const {
+			auto& q = rotation;
+
+			auto yaw = glm::atan(2 * (q[0] * q[1] + q[2] * q[3]), 1 - 2 * (q[1] * q[1] + q[2] * q[2]));
+			auto pitch = glm::asin(2 * (q[0] * q[2] - q[3] * q[1]));
+			auto roll = glm::atan(2 * (q[0] * q[3] + q[1] * q[2]), 1 - 2 * (q[2] * q[2] + q[3] * q[3]));
+		
+			return { yaw, pitch, roll };
+		}
+
 		virtual void setRotation(glm::quat rotation) {
 			this->rotation = rotation;
 		}

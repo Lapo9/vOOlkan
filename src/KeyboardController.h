@@ -19,7 +19,7 @@ namespace Vulkan::Utilities {
 	public:
 		template<std::derived_from<KeyboardListener>... Listeners>
 		KeyboardController(const Window& window, Listeners&... listeners) : window{ window } {
-			(this->listeners.push_back(listener), ...);
+			(this->listeners.push_back(&listeners), ...);
 		}
 
 
@@ -41,12 +41,12 @@ namespace Vulkan::Utilities {
 
 		void publishKeyPress(int keyPressed) {
 			for (auto& listener : listeners) {
-				listener.notifyKeyPress(keyPressed);
+				listener->notifyKeyPress(keyPressed);
 			}
 		}
 
 
-		std::vector<KeyboardListener> listeners;
+		std::vector<KeyboardListener*> listeners;
 		const Window& window;
 	};
 

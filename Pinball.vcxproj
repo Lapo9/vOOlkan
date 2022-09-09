@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Animations.h" />
     <ClInclude Include="src\Attachment.h" />
     <ClInclude Include="src\AttachmentColorBlendingMode.h" />
     <ClInclude Include="src\Barriers.h" />

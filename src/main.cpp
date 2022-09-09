@@ -9,10 +9,11 @@
 
 
 #include "Pinball.h"
+#include "Animations.h"
 
 
 template<typename... Models>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Vulkan::Physics::Universe& universe, std::chrono::nanoseconds elapsedNanoseconds);
+void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Vulkan::Physics::Universe& universe, Vulkan::Utilities::KeyboardController& keyboardController, std::chrono::nanoseconds elapsedNanoseconds);
 
 
 int main() {
@@ -121,16 +122,21 @@ int main() {
 		};
 
 		//create models
-		Vulkan::Objects::Model ball1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, Vulkan::Physics::Position{-0.15f, 0.8f, -2.0f}, 0.5f, 1.0f, Vulkan::Physics::Speed{0.0f, -0.5f, 0.0f}),
-			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj" 
+		Vulkan::Objects::Model ball1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.18f, Vulkan::Physics::Position{0.2f, 0.8f, -2.0f}, 0.5f, 1.0f, Vulkan::Physics::Speed{0.0f, -0.5f, 0.0f}),
+			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
 
-		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.0f, -2.0f, -2.0f}, 0.48f, Vulkan::Physics::Position{0.0f, 0.0f, 0.0f}, Vulkan::Physics::Position{-0.5f, 0.0f, 0.0f}),
-			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/leftFlipper.obj" 
+		Vulkan::Objects::Model rightFlipper{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.5f, -2.0f, -2.0f}, 0.48f, Vulkan::Physics::Position{0.0f, 0.05f, 0.0f}, Vulkan::Physics::Position{-0.5f, 0.05f, 0.0f}),
+			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/flipper.obj" 
 		};
-		(+ball2).setAngularSpeed(-15.35f);
+		rightFlipper.setKeyPressResponse(Vulkan::Animations::rightPadUp<MyVertex>);
 
+		Vulkan::Objects::Model leftFlipper{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{-0.5f, -2.0f, -2.0f}, 0.48f, Vulkan::Physics::Position{0.0f, -0.05f, 0.0f}, Vulkan::Physics::Position{-0.5f, -0.05f, 0.0f}),
+			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/flipper.obj"
+		};
+		(+leftFlipper).rotate(180.0_deg, { 0.0f, 0.0f, 1.0f });
+		leftFlipper.setKeyPressResponse(Vulkan::Animations::leftPadUp<MyVertex>);
 
 		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, 2.31f, 
 			Vulkan::Physics::Position{-0.25f, -3.5f, 0.0f}, 
@@ -166,8 +172,10 @@ int main() {
 
 		
 		//add models to universe
-		Vulkan::Physics::Universe physicsUniverse{ std::vector<Vulkan::Physics::Field*>{&gravity, &friction}, +ball1, +ball2, +ball3 };
+		Vulkan::Physics::Universe physicsUniverse{ std::vector<Vulkan::Physics::Field*>{&gravity, &friction}, +ball1, +rightFlipper, +leftFlipper, +ball3 };
 
+		//add keyboard press controller
+		Vulkan::Utilities::KeyboardController keyboardController{ window, rightFlipper, leftFlipper };
 
 
 
@@ -175,15 +183,15 @@ int main() {
 		// ================ VERTEX/INDEX BUFFERS SETUP ================
 
 		//vertex buffers
-		Vulkan::Buffers::VertexBuffer mainVertexBuffer{ virtualGpu, realGpu, (ball1.getVertices().size() + ball2.getVertices().size() + ball3.getVertices().size()) * sizeof(MyVertex) };
+		Vulkan::Buffers::VertexBuffer mainVertexBuffer{ virtualGpu, realGpu, (ball1.getVertices().size() + rightFlipper.getVertices().size() + leftFlipper.getVertices().size() + ball3.getVertices().size()) * sizeof(MyVertex)};
 		Vulkan::Buffers::VertexBuffer backgroundVertexBuffer{ virtualGpu, realGpu, (redLight.getVertices().size() + greenLight.getVertices().size() + blueLight.getVertices().size()) * sizeof(MyVertex) };
-		mainVertexBuffer.fillBuffer(ball1, ball2, ball3);
+		mainVertexBuffer.fillBuffer(ball1, rightFlipper, leftFlipper, ball3);
 		backgroundVertexBuffer.fillBuffer(redLight, greenLight, blueLight);
 
 		//index buffers
-		Vulkan::Buffers::IndexBuffer mainIndexBuffer{ virtualGpu, realGpu, (ball1.getIndexes().size() + ball2.getIndexes().size() + ball3.getVertices().size()) * sizeof(uint32_t) };
+		Vulkan::Buffers::IndexBuffer mainIndexBuffer{ virtualGpu, realGpu, (ball1.getIndexes().size() + rightFlipper.getIndexes().size() + leftFlipper.getIndexes().size() + ball3.getVertices().size()) * sizeof(uint32_t) };
 		Vulkan::Buffers::IndexBuffer backgroundIndexBuffer{ virtualGpu, realGpu, (redLight.getIndexes().size() + greenLight.getIndexes().size() + blueLight.getIndexes().size()) * sizeof(uint32_t) };
-		mainIndexBuffer.fillBuffer(ball1, ball2, ball3);
+		mainIndexBuffer.fillBuffer(ball1, rightFlipper, leftFlipper, ball3);
 		backgroundIndexBuffer.fillBuffer(redLight, greenLight, blueLight);
 
 
@@ -263,7 +271,7 @@ int main() {
 		auto lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(mainPerObjectUniformBuffer, backgroundPerObjectUniformBuffer, mainPerObjectSet, backgroundPerObjectSet, std::tuple{ &ball1, &ball2, &ball3, &redLight, &greenLight, &blueLight }, physicsUniverse, std::chrono::high_resolution_clock::now() - lastFrameTime);
+			debugAnimation(mainPerObjectUniformBuffer, backgroundPerObjectUniformBuffer, mainPerObjectSet, backgroundPerObjectSet, std::tuple{ &ball1, &rightFlipper, &leftFlipper, &ball3, &redLight, &greenLight, &blueLight }, physicsUniverse, keyboardController, std::chrono::high_resolution_clock::now() - lastFrameTime);
 			lastFrameTime = std::chrono::high_resolution_clock::now();
 			drawer.draw(
 				std::pair< std::reference_wrapper<Vulkan::Buffers::VertexBuffer>, std::reference_wrapper<Vulkan::Buffers::IndexBuffer>>{ mainVertexBuffer, mainIndexBuffer },
@@ -289,7 +297,7 @@ Vulkan::Physics::Force foo(Vulkan::Physics::Position fieldPos, Vulkan::Physics::
 
 
 template<typename... Models>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Vulkan::Physics::Universe& universe, std::chrono::nanoseconds elapsedNanoseconds){
+void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Vulkan::Physics::Universe& universe, Vulkan::Utilities::KeyboardController& keyboardController, std::chrono::nanoseconds elapsedNanoseconds){
 	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f, w = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
@@ -311,9 +319,10 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 	camera.rotate(0.0f * elapsedSeconds, { 0.0f, 0.0f, 1.0f });
 
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball1 = *std::get<0>(models); 
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball2 = *std::get<1>(models); 
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball3 = *std::get<2>(models);
-	auto& redLight = *std::get<3>(models); auto& greenLight = *std::get<4>(models); auto& blueLight = *std::get<5>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& rightFlipper = *std::get<1>(models); 
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& leftFlipper = *std::get<2>(models); 
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball3 = *std::get<3>(models);
+	auto& redLight = *std::get<4>(models); auto& greenLight = *std::get<5>(models); auto& blueLight = *std::get<6>(models);
 
 	//model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f }).rotate(0.37f * elapsedSeconds, glm::vec3{ 1.0f, 0.0f, 0.0f });
 	//model2.rotate(1.1f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
@@ -323,11 +332,28 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 
 	//(+model1)->move(elapsedSeconds);
 
+	(+rightFlipper).setAngularSpeed(0.0f);
+	if ((+rightFlipper).getRotationEuler()[0] < -FLIPPER_MIN_ANGLE) {
+		(+rightFlipper).setAngularSpeed(FLIPPER_ANGULAR_SPEED);
+	}
+	(+leftFlipper).setAngularSpeed(0.0f);
+	if ((+leftFlipper).getRotationEuler()[0] > 180.0_deg + FLIPPER_MIN_ANGLE || (+leftFlipper).getRotationEuler()[0] < 0.0_deg) {
+		(+leftFlipper).setAngularSpeed(-FLIPPER_ANGULAR_SPEED);
+	}
+	keyboardController.checkKeyPressed();
+
+	auto aaa = (+rightFlipper).getRotationEuler();
+
 	universe.calculate(elapsedSeconds);
 
 	glm::mat4 projection = perspective;
 
-	mainSet.fillBuffer(mainBuffer, ball1.getUniforms(camera.getViewMatrix(), projection), ball2.getUniforms(camera.getViewMatrix(), projection), ball3.getUniforms(camera.getViewMatrix(), projection));
+	mainSet.fillBuffer(mainBuffer, ball1.getUniforms(camera.getViewMatrix(), projection), rightFlipper.getUniforms(camera.getViewMatrix(), projection), leftFlipper.getUniforms(camera.getViewMatrix(), projection), ball3.getUniforms(camera.getViewMatrix(), projection));
 	backgroundSet.fillBuffer(backgroundBuffer, redLight.getUniforms(camera.getViewMatrix(), projection), greenLight.getUniforms(camera.getViewMatrix(), projection), blueLight.getUniforms(camera.getViewMatrix(), projection));
 
 }
+
+
+
+
+
