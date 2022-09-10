@@ -1,6 +1,8 @@
 #ifndef VULKAN_HITBOX
 #define VULKAN_HITBOX
 
+#include <numbers>
+
 #include "Cinematicable.h"
 #include "Segment.h"
 
@@ -48,7 +50,7 @@ namespace Vulkan::Physics {
 
 
 		float getRadius() const {
-			return radius * this->scaleFactor;
+			return radius;
 		}
 
 		void setRadius(float radius) {
@@ -70,8 +72,9 @@ namespace Vulkan::Physics {
 	class FrameHitbox : public Hitbox {
 	public:
 
+		//FIXTHIS std::numeric_limits<float>::max() / 10.0f this is an hack to deal with masses up to 10.0f
 		template<std::same_as<Position>... P> requires (sizeof...(P) >= 2)
-			FrameHitbox(Position position, float scaleFactor, P... frameVertices) : Hitbox{ position, scaleFactor, std::numeric_limits<float>::max()} {
+			FrameHitbox(Position position, float scaleFactor, P... frameVertices) : Hitbox{ position, scaleFactor, std::numeric_limits<float>::max() / 10.0f} {
 			(vertices.push_back(frameVertices), ...);
 		}
 

@@ -122,7 +122,6 @@ namespace Vulkan::Physics {
 		static void collisionDetection(FrameHitbox& f, CircleHitbox& c, Time elapsedSeconds) {
 			for (int i = 0; i < f.getNumberOfSegments(); ++i) {
 				auto segment = f[i];
-				bool a = segment.distance(c.getPosition()) <= c.getRadius();
 				if (segment.distance(c.getPosition()) <= c.getRadius()) {
 					//get speeds and masses (to simplify the writing of the equation
 					auto s1 = c.getSpeed(); auto s2 = f.getSpeed(); 
@@ -135,11 +134,13 @@ namespace Vulkan::Physics {
 					auto distanceFromCenterOfRotation = glm::length(glm::vec3((c.getPosition() + n * c.getRadius()) - f.getPosition())); //distance of the colliding point from the center of rotation
 
 					auto tangentialSpeed = Speed(-segment.normal() * (sr2 * distanceFromCenterOfRotation)) * 2; //"linear" speed of the point of the frame that touched the circle
-					auto impulse = float(((s2 + tangentialSpeed - s1) * n) * (-e - 1) * ((m1 * m2) / (m1 + m2)));
+					auto massCoefficient = (m1 * m2) / (m1 + m2);
+					auto impulse = float(((s2 + tangentialSpeed - s1) * n) * (-e - 1) * massCoefficient);
 
 					f.addExternalForce((impulse * glm::vec3(n)) / elapsedSeconds); //rotational speed of the frame is not affected (simplification that can create problems)
 					c.addExternalForce(-(impulse * glm::vec3(n)) / elapsedSeconds);
 					
+					return; //FIXTHIS collision at the same time are not easy to deal with
 				}
 			}
 		}
