@@ -237,7 +237,7 @@
     <ClInclude Include="src\Segment.h">
       <Filter>Source Files\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="src\KeyboardController.h">
+    <ClInclude Include="src\KeyboardListener.h">
       <Filter>Source Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="src\Animations.h">

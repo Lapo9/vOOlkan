@@ -115,11 +115,16 @@ namespace Vulkan::Physics {
 
 				c1.addExternalForce(-(impulse * n) / elapsedSeconds);
 				c2.addExternalForce((impulse * n) / elapsedSeconds);
+
+				c1.onCollision();
+				c2.onCollision();
 			}
 		}
 
 
 		static void collisionDetection(FrameHitbox& f, CircleHitbox& c, Time elapsedSeconds) {
+			bool haveCollided = false; //turns true when at least one segment collided with the circle
+			
 			for (int i = 0; i < f.getNumberOfSegments(); ++i) {
 				auto segment = f[i];
 				if (segment.distance(c.getPosition()) <= c.getRadius()) {
@@ -139,9 +144,14 @@ namespace Vulkan::Physics {
 
 					f.addExternalForce((impulse * glm::vec3(n)) / elapsedSeconds); //rotational speed of the frame is not affected (simplification that can create problems)
 					c.addExternalForce(-(impulse * glm::vec3(n)) / elapsedSeconds);
-					
-					return; //FIXTHIS collision at the same time are not easy to deal with
+
+					haveCollided = true;
 				}
+			}
+
+			if (haveCollided) {
+				f.onCollision();
+				c.onCollision();
 			}
 		}
 

@@ -12,7 +12,7 @@
 #include "Cinematicable.h"
 #include "Foundations.h"
 #include "Hitbox.h"
-#include "KeyboardController.h"
+#include "KeyboardListener.h"
 
 
 namespace Vulkan::Objects {
@@ -24,7 +24,7 @@ namespace Vulkan::Objects {
 
 
 	template<IsVertex Vertex, typename... Structs>
-	class Model : public Utilities::KeyboardListener {
+	class Model : public Utilities::KeyboardObserver {
 
 		using Matrices = struct {
 			alignas(16) glm::mat4 mvp;
@@ -104,7 +104,7 @@ namespace Vulkan::Objects {
 		}
 		
 
-		void notifyKeyPress(int keyPressed) override {
+		void onKeyPress(int keyPressed) override {
 			reactToKeyPress(*this, keyPressed);
 		}
 

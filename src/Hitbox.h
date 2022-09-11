@@ -1,7 +1,7 @@
 #ifndef VULKAN_HITBOX
 #define VULKAN_HITBOX
 
-#include <numbers>
+#include <functional>
 
 #include "Cinematicable.h"
 #include "Segment.h"
@@ -26,11 +26,20 @@ namespace Vulkan::Physics {
 			this->scaleFactor = scaleFactor;
 		}
 
+		virtual void onCollision() {
+			onCollisionAction();
+		}
+
+		virtual void setCollisionAction(const std::function<void()>& action) {
+			onCollisionAction = action;
+		}
+
 	protected:
 		float scaleFactor;
+		std::function<void()> onCollisionAction;
 
 		Hitbox(Position position = {0.0f, 0.0f, 0.0f}, float scaleFactor = 1.0f, float mass = 1.0f, Speed initialSpeed = {0.0f, 0.0f, 0.0f}, Acceleration initialAcceleration = {0.0f, 0.0f, 0.0f}, Force internalForce = {0.0f, 0.0f, 0.0f}, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
-			Cinematicable{ position, { 0.0f, 0.0f, 0.0f }, mass, initialSpeed, initialAcceleration, internalForce, emittedField }, scaleFactor{ scaleFactor }
+			Cinematicable{ position, { 0.0f, 0.0f, 0.0f }, mass, initialSpeed, initialAcceleration, internalForce, emittedField }, scaleFactor{ scaleFactor }, onCollisionAction{ []() {} }
 		{}
 	};
 
@@ -42,7 +51,7 @@ namespace Vulkan::Physics {
 	class CircleHitbox : public Hitbox {
 	public:
 
-		CircleHitbox(float radius, Position position = { 0.0f, 0.0f, 0.0f }, float scaleFactor = 1.0f, float mass = 1.0f, Speed initialSpeed = { 0.0f, 0.0f, 0.0f }, Acceleration initialAcceleration = { 0.0f, 0.0f, 0.0f }, Force internalForce = { 0.0f, 0.0f, 0.0f }, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
+		CircleHitbox(float radius, Position position = { 0.0f, 0.0f, 0.0f }, float scaleFactor = 1.0f, float mass = std::numeric_limits<float>::max()/10.0f, Speed initialSpeed = {0.0f, 0.0f, 0.0f}, Acceleration initialAcceleration = {0.0f, 0.0f, 0.0f}, Force internalForce = {0.0f, 0.0f, 0.0f}, Field emittedField = Field{{0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField}) :
 			Hitbox{ position, scaleFactor, mass, initialSpeed, initialAcceleration, internalForce, emittedField }
 		{
 			setRadius(radius);

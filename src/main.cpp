@@ -13,7 +13,7 @@
 
 
 template<typename... Models>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Vulkan::Physics::Universe& universe, Vulkan::Utilities::KeyboardController& keyboardController, std::chrono::nanoseconds elapsedNanoseconds);
+void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Vulkan::Physics::Universe& universe, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds);
 
 
 int main() {
@@ -95,18 +95,18 @@ int main() {
 		Lights lights{
 			//point
 			glm::vec3{1.0f, 0.0f, 0.0f},
-			glm::vec3{1.0f, -0.3f, 1.0f},
+			glm::vec3{0.118f, 5.440f, 0.2f},
 			glm::vec3{0.0f, 1.0f, 0.0f},
-			glm::vec3{11.0f, -0.8f, 1.0f},
+			glm::vec3{-2.280f, -2.000f, 0.2f},
 			glm::vec3{0.0f, 0.0f, 1.0f},
-			glm::vec3{0.0f, 1.0f, 1.0f},
+			glm::vec3{1.600f, -2.000f, 0.2f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec2{3.0f, 2.0f},
+			glm::vec2{0.1f, 1.0f},
 
 			//dir
 			glm::vec3{0.2f, 0.2f, 0.2f},
@@ -126,17 +126,25 @@ int main() {
 			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
-		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, Vulkan::Physics::Position{0.0f, -4.0f, 0.0f}, 0.01f, std::numeric_limits<float>::max(), Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
+		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, Vulkan::Physics::Position{100.0f, 0.0f, 0.0f}, 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
 			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
+		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, Vulkan::Physics::Position{90.0f, 0.0f, 0.0f}, 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
+			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
+		};
 
-		Vulkan::Objects::Model rightFlipper{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{1.35f, -4.7f, 0.0f}, 0.9f, Vulkan::Physics::Position{0.5f, 0.15f, 0.0f}, Vulkan::Physics::Position{-0.8f, 0.05f, 0.0f}, Vulkan::Physics::Position{-0.6f, -0.3f, 0.0f}),
+		Vulkan::Objects::Model bumper1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.376f, Vulkan::Physics::Position{0.0f, 2.0f, 0.0f}, 0.8f),
+			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/bumper.obj"
+		};
+
+
+		Vulkan::Objects::Model rightFlipper{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{1.35f, -4.7f, 0.0f}, 0.9f, Vulkan::Physics::Position{0.5f, 0.15f, 0.0f}, Vulkan::Physics::Position{-0.8f, 0.05f, 0.0f}),
 			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/flipper.obj" 
 		};
 		rightFlipper.setKeyPressResponse(Vulkan::Animations::rightPadUp<MyVertex>);
 
-		Vulkan::Objects::Model leftFlipper{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{-0.8f, -4.7f, 0.0f}, 0.9f, Vulkan::Physics::Position{0.5f, -0.15f, 0.0f}, Vulkan::Physics::Position{-0.8f, -0.05f, 0.0f}, Vulkan::Physics::Position{-0.6f, 0.3f, 0.0f}),
+		Vulkan::Objects::Model leftFlipper{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{-0.8f, -4.7f, 0.0f}, 0.9f, Vulkan::Physics::Position{0.5f, -0.15f, 0.0f}, Vulkan::Physics::Position{-0.8f, -0.05f, 0.0f}),
 			{ 90.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/flipper.obj"
 		};
 		(+leftFlipper).rotate(180.0_deg, { 0.0f, 0.0f, 1.0f });
@@ -179,26 +187,28 @@ int main() {
 
 		
 		//add models to universe
-		Vulkan::Physics::Universe physicsUniverse{ std::vector<Vulkan::Physics::Field*>{&gravity, &friction}, +ball1, /*+ball2,*/ +rightFlipper, +leftFlipper, +body};
+		Vulkan::Physics::Universe physicsUniverse{ std::vector<Vulkan::Physics::Field*>{&gravity, &friction}, +ball1, +ball2, +ball3, +bumper1, +rightFlipper, +leftFlipper, +body};
 
 		//add keyboard press controller
-		Vulkan::Utilities::KeyboardController keyboardController{ window, rightFlipper, leftFlipper };
+		Vulkan::Utilities::KeyboardListener keyboardController{ window, rightFlipper, leftFlipper };
 
+		//collision actions
+		(+ball1).setCollisionAction([&ball2]() {(+ball2).setPosition({ 2.0f, 0.0f, 0.0f }); });
 
 
 
 		// ================ VERTEX/INDEX BUFFERS SETUP ================
 
 		//vertex buffers
-		Vulkan::Buffers::VertexBuffer mainVertexBuffer{ virtualGpu, realGpu, (ball1.getVertices().size() + ball2.getVertices().size() + rightFlipper.getVertices().size() + leftFlipper.getVertices().size() + body.getVertices().size()) * sizeof(MyVertex)};
+		Vulkan::Buffers::VertexBuffer mainVertexBuffer{ virtualGpu, realGpu, (ball1.getVertices().size() + ball2.getVertices().size() + ball3.getVertices().size() + bumper1.getVertices().size() + rightFlipper.getVertices().size() + leftFlipper.getVertices().size() + body.getVertices().size()) * sizeof(MyVertex)};
 		Vulkan::Buffers::VertexBuffer backgroundVertexBuffer{ virtualGpu, realGpu, (redLight.getVertices().size() + greenLight.getVertices().size() + blueLight.getVertices().size()) * sizeof(MyVertex) };
-		mainVertexBuffer.fillBuffer(ball1, ball2, rightFlipper, leftFlipper, body);
+		mainVertexBuffer.fillBuffer(ball1, ball2, ball3, bumper1, rightFlipper, leftFlipper, body);
 		backgroundVertexBuffer.fillBuffer(redLight, greenLight, blueLight);
 
 		//index buffers
-		Vulkan::Buffers::IndexBuffer mainIndexBuffer{ virtualGpu, realGpu, (ball1.getIndexes().size() + ball2.getIndexes().size() + rightFlipper.getIndexes().size() + leftFlipper.getIndexes().size() + body.getVertices().size()) * sizeof(uint32_t)};
+		Vulkan::Buffers::IndexBuffer mainIndexBuffer{ virtualGpu, realGpu, (ball1.getIndexes().size() + ball2.getIndexes().size() + ball3.getIndexes().size() + bumper1.getIndexes().size() + rightFlipper.getIndexes().size() + leftFlipper.getIndexes().size() + body.getVertices().size()) * sizeof(uint32_t)};
 		Vulkan::Buffers::IndexBuffer backgroundIndexBuffer{ virtualGpu, realGpu, (redLight.getIndexes().size() + greenLight.getIndexes().size() + blueLight.getIndexes().size()) * sizeof(uint32_t) };
-		mainIndexBuffer.fillBuffer(ball1, ball2, rightFlipper, leftFlipper, body);
+		mainIndexBuffer.fillBuffer(ball1, ball2, ball3, bumper1, rightFlipper, leftFlipper, body);
 		backgroundIndexBuffer.fillBuffer(redLight, greenLight, blueLight);
 
 
@@ -278,7 +288,7 @@ int main() {
 		auto lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(mainPerObjectUniformBuffer, backgroundPerObjectUniformBuffer, mainPerObjectSet, backgroundPerObjectSet, std::tuple{ &ball1, &ball2, &rightFlipper, &leftFlipper, &body, &redLight, &greenLight, &blueLight }, physicsUniverse, keyboardController, std::chrono::high_resolution_clock::now() - lastFrameTime);
+			debugAnimation(mainPerObjectUniformBuffer, backgroundPerObjectUniformBuffer, mainPerObjectSet, backgroundPerObjectSet, std::tuple{ &ball1, &ball2, &ball3, &bumper1, &rightFlipper, &leftFlipper, &body, &redLight, &greenLight, &blueLight }, physicsUniverse, keyboardController, std::chrono::high_resolution_clock::now() - lastFrameTime);
 			lastFrameTime = std::chrono::high_resolution_clock::now();
 			drawer.draw(
 				std::pair< std::reference_wrapper<Vulkan::Buffers::VertexBuffer>, std::reference_wrapper<Vulkan::Buffers::IndexBuffer>>{ mainVertexBuffer, mainIndexBuffer },
@@ -304,7 +314,7 @@ Vulkan::Physics::Force foo(Vulkan::Physics::Position fieldPos, Vulkan::Physics::
 
 
 template<typename... Models>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Vulkan::Physics::Universe& universe, Vulkan::Utilities::KeyboardController& keyboardController, std::chrono::nanoseconds elapsedNanoseconds){
+void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Vulkan::Physics::Universe& universe, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds){
 	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f, w = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
@@ -322,15 +332,18 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 
 	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
 
+	//static auto camera = Vulkan::Objects::Camera{ {0.0f, -4.0f, 5.0f}, {0.0_deg, 60.0_deg, 0.0_deg} };
 	static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 5.0f}, {0.0_deg, 0.0_deg, 0.0_deg} };
 	camera.rotate(0.0f * elapsedSeconds, { 0.0f, 0.0f, 1.0f });
 
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball1 = *std::get<0>(models); 
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball2 = *std::get<1>(models); 
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& rightFlipper = *std::get<2>(models); 
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& leftFlipper = *std::get<3>(models); 
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& body = *std::get<4>(models);
-	auto& redLight = *std::get<5>(models); auto& greenLight = *std::get<6>(models); auto& blueLight = *std::get<7>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball3 = *std::get<2>(models); 
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& bumper1 = *std::get<3>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& rightFlipper = *std::get<4>(models); 
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& leftFlipper = *std::get<5>(models); 
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& body = *std::get<6>(models);
+	auto& redLight = *std::get<7>(models); auto& greenLight = *std::get<8>(models); auto& blueLight = *std::get<9>(models);
 
 	//model1.rotate(0.57f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f }).rotate(0.37f * elapsedSeconds, glm::vec3{ 1.0f, 0.0f, 0.0f });
 	//model2.rotate(1.1f * elapsedSeconds, glm::vec3{ 0.0f, 1.0f, 0.0f });
@@ -350,13 +363,19 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers:
 	}
 	keyboardController.checkKeyPressed();
 
-	auto aaa = (+rightFlipper).getRotationEuler();
-
 	universe.calculate(elapsedSeconds);
 
 	glm::mat4 projection = perspective;
 
-	mainSet.fillBuffer(mainBuffer, ball1.getUniforms(camera.getViewMatrix(), projection), ball2.getUniforms(camera.getViewMatrix(), projection), rightFlipper.getUniforms(camera.getViewMatrix(), projection), leftFlipper.getUniforms(camera.getViewMatrix(), projection), body.getUniforms(camera.getViewMatrix(), projection));
+	mainSet.fillBuffer(
+		mainBuffer, ball1.getUniforms(camera.getViewMatrix(), projection), 
+		ball2.getUniforms(camera.getViewMatrix(), projection), 
+		ball3.getUniforms(camera.getViewMatrix(), projection), 
+		bumper1.getUniforms(camera.getViewMatrix(), projection),
+		rightFlipper.getUniforms(camera.getViewMatrix(), projection), 
+		leftFlipper.getUniforms(camera.getViewMatrix(), projection), 
+		body.getUniforms(camera.getViewMatrix(), projection));
+
 	backgroundSet.fillBuffer(backgroundBuffer, redLight.getUniforms(camera.getViewMatrix(), projection), greenLight.getUniforms(camera.getViewMatrix(), projection), blueLight.getUniforms(camera.getViewMatrix(), projection));
 
 }
