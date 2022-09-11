@@ -15,6 +15,21 @@
 template<typename... Models>
 void debugAnimation(Vulkan::Buffers::UniformBuffer& mainBuffer, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& mainSet, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Vulkan::Physics::Universe& universe, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds);
 
+std::pair<std::vector<Vulkan::Physics::Hitbox*>, std::vector<Vulkan::Physics::Hitbox*>> getBallsStatus(std::vector<Vulkan::Physics::Hitbox*> balls) {
+	//count how many balls are in play
+	std::vector<Vulkan::Physics::Hitbox*> ballsInPlay{};
+	std::vector<Vulkan::Physics::Hitbox*> ballsResting{};
+	for (int i = 0; i < balls.size(); ++i) {
+		if (balls[i]->getPosition().x() != BALLS_RESTING_POSITIONS[i].x()) {
+			ballsInPlay.push_back(balls[i]);
+		}
+		else {
+			ballsResting.push_back(balls[i]);
+		}
+	}
+	return { ballsInPlay, ballsResting };
+}
+
 
 int main() {
 	try {
@@ -126,11 +141,11 @@ int main() {
 			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
-		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, Vulkan::Physics::Position{100.0f, 0.0f, 0.0f}, 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
+		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, BALLS_RESTING_POSITIONS[1], 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
 			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
-		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, Vulkan::Physics::Position{90.0f, 0.0f, 0.0f}, 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
+		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, BALLS_RESTING_POSITIONS[2], 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
 			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
@@ -193,7 +208,15 @@ int main() {
 		Vulkan::Utilities::KeyboardListener keyboardController{ window, rightFlipper, leftFlipper };
 
 		//collision actions
-		(+ball1).setCollisionAction([&ball2]() {(+ball2).setPosition({ 2.0f, 0.0f, 0.0f }); });
+		std::vector<Vulkan::Physics::Hitbox*> balls{ &(+ball1), &(+ball2), &(+ball3) };
+		(+bumper1).setCollisionAction([&balls]() {
+			auto [activeBalls, restingBalls] = getBallsStatus(balls);
+			if (activeBalls.size() == 1) {
+				for (int i = 0; i < restingBalls.size(); ++i) {
+					restingBalls[i]->setPosition({ i * 4.0f - 2.0f, 0.0f, 0.0f });
+				}
+			}
+			});
 
 
 

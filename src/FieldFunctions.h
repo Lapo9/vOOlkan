@@ -31,7 +31,7 @@ namespace Vulkan::Physics::FieldFunctions {
 
 	template<float g>
 	Force gravity(const Position& fieldCenter, const Cinematicable& body) {
-		return glm::vec3{0.0f, -1.0f, 0.0f} *g;
+		return glm::vec3{0.0f, -1.0f, 0.0f} * g;
 	}
 
 

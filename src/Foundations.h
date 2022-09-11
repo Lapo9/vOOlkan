@@ -191,15 +191,15 @@ public:
 	Position(float x, float y, float z) : Position{ glm::vec3{x, y, z} } {}
 
 
-	float& x() {
+	const float& x() const {
 		return position.x;
 	}
 
-	float& y() {
+	const float& y() const {
 		return position.y;
 	}
 
-	float& z() {
+	const float& z() const {
 		return position.z;
 	}
 

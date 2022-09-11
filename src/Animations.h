@@ -4,9 +4,11 @@
 
 #include "Pinball.h"
 
-#define FLIPPER_ANGULAR_SPEED 15.0f
-#define FLIPPER_MAX_ANGLE 40.0_deg
-#define FLIPPER_MIN_ANGLE -15.0_deg
+const float FLIPPER_ANGULAR_SPEED = 15.0f;
+const float FLIPPER_MAX_ANGLE = 40.0_deg;
+const float FLIPPER_MIN_ANGLE = -15.0_deg;
+const std::vector<Vulkan::Physics::Position> BALLS_RESTING_POSITIONS{ { 100.0f, 0.0f, 0.0f }, { 200.0f, 0.0f, 0.0f }, { 300.0f, 0.0f, 0.0f } };
+
 
 namespace Vulkan::Animations {
 
