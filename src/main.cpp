@@ -58,6 +58,73 @@ std::pair<std::vector<Vulkan::Physics::Hitbox*>, std::vector<Vulkan::Physics::Hi
 }
 
 
+std::pair<std::vector<Vulkan::Physics::Hitbox*>, std::vector<Vulkan::Physics::Hitbox*>> getBumpersStatus(std::vector<Vulkan::Physics::Hitbox*> bumpers, Lights& lights) {
+	std::vector<Vulkan::Physics::Hitbox*> activeBumpers{};
+	std::vector<Vulkan::Physics::Hitbox*> inactiveBumpers{};
+	
+	if (lights.color0 == glm::vec3{ 0.0f, 0.0f, 0.0f }) {
+		inactiveBumpers.push_back(bumpers[0]);
+	}
+	else {
+		activeBumpers.push_back(bumpers[0]);
+	}
+
+	if (lights.color1 == glm::vec3{ 0.0f, 0.0f, 0.0f }) {
+		inactiveBumpers.push_back(bumpers[1]);
+	}
+	else {
+		activeBumpers.push_back(bumpers[1]);
+	}
+
+	if (lights.color2 == glm::vec3{ 0.0f, 0.0f, 0.0f }) {
+		inactiveBumpers.push_back(bumpers[2]);
+	}
+	else {
+		activeBumpers.push_back(bumpers[2]);
+	}
+
+	if (lights.color3 == glm::vec3{ 0.0f, 0.0f, 0.0f }) {
+		inactiveBumpers.push_back(bumpers[3]);
+	}
+	else {
+		activeBumpers.push_back(bumpers[3]);
+	}
+
+	if (lights.color4 == glm::vec3{ 0.0f, 0.0f, 0.0f }) {
+		inactiveBumpers.push_back(bumpers[4]);
+	}
+	else {
+		activeBumpers.push_back(bumpers[4]);
+	}
+
+	return { activeBumpers, inactiveBumpers };
+}
+
+
+void deactivateBumpers(Lights& lights) {
+	lights.color0 = { 0.0f, 0.0f, 0.0f };
+	lights.color1 = { 0.0f, 0.0f, 0.0f };
+	lights.color2 = { 0.0f, 0.0f, 0.0f };
+	lights.color3 = { 0.0f, 0.0f, 0.0f };
+	lights.color4 = { 0.0f, 0.0f, 0.0f };
+}
+
+
+void checkMultiball(std::vector<Vulkan::Physics::Hitbox*> balls, std::vector<Vulkan::Physics::Hitbox*> bumpers, Lights& lights, Vulkan::Physics::Universe& physicsUniverse) {
+	auto [activeBalls, restingBalls] = getBallsStatus(balls);
+	if (activeBalls.size() == 1 && getBumpersStatus(bumpers, lights).first.size() == bumpers.size()) {
+		for (int i = 0; i < restingBalls.size(); ++i) {
+			restingBalls[i]->setPosition({ i * 4.0f - 2.0f, 0.0f, 0.0f });
+			physicsUniverse.addBody(*restingBalls[i]);
+		}
+		deactivateBumpers(lights);
+	}
+}
+
+
+
+
+
 int main() {
 	try {
 
@@ -236,56 +303,30 @@ int main() {
 
 		//collision actions
 		std::vector<Vulkan::Physics::Hitbox*> balls{ &(+ball1), &(+ball2), &(+ball3) };
-		(+bumper1).setCollisionAction([&balls, &physicsUniverse, &lights](Vulkan::Physics::Hitbox&) {
-			if (lights.color0 == glm::vec3{ 0.0f, 0.0f, 0.0f }) {
-				lights.color0 = { 1.0f, 0.0f, 1.0f };
-			}
-			else {
-				lights.color0 = { 0.0f, 0.0f, 0.0f };
-			}
-			auto [activeBalls, restingBalls] = getBallsStatus(balls);
-			if (activeBalls.size() == 1) {
-				for (int i = 0; i < restingBalls.size(); ++i) {
-					restingBalls[i]->setPosition({ i * 4.0f - 2.0f, 0.0f, 0.0f });
-					physicsUniverse.addBody(*restingBalls[i]);
-				}
-			}
+		std::vector<Vulkan::Physics::Hitbox*> bumpers{ &(+bumper1), &(+bumper2), &(+bumper3), &(+bumper4), &(+bumper5)};
+		(+bumper1).setCollisionAction([&balls, &bumpers, &physicsUniverse, &lights](Vulkan::Physics::Hitbox&) {
+			lights.color0 = lights.color0 == glm::vec3{ 0.0f, 0.0f, 0.0f } ? glm::vec3{ 1.0f, 0.0f, 1.0f } : glm::vec3{ 0.0f, 0.0f, 0.0f };
+			checkMultiball(balls, bumpers, lights, physicsUniverse);
 			});
 
-		(+bumper2).setCollisionAction([&balls, &physicsUniverse, &lights](Vulkan::Physics::Hitbox&) {
-			if (lights.color1 == glm::vec3{ 0.0f, 0.0f, 0.0f }) {
-				lights.color1 = { 1.0f, 0.0f, 0.0f };
-				}
-			else {
-				lights.color1 = { 0.0f, 0.0f, 0.0f };
-			}
+		(+bumper2).setCollisionAction([&balls, &bumpers, &physicsUniverse, &lights](Vulkan::Physics::Hitbox&) {
+			lights.color1 = lights.color1 == glm::vec3{ 0.0f, 0.0f, 0.0f } ? glm::vec3{ 1.0f, 0.0f, 0.0f } : glm::vec3{ 0.0f, 0.0f, 0.0f };
+			checkMultiball(balls, bumpers, lights, physicsUniverse);
 			});
 
-		(+bumper3).setCollisionAction([&balls, &physicsUniverse, &lights](Vulkan::Physics::Hitbox&) {
-			if (lights.color2 == glm::vec3{ 0.0f, 0.0f, 0.0f }) {
-				lights.color2 = { 1.0f, 0.75f, 0.0f };
-			}
-			else {
-				lights.color2 = { 0.0f, 0.0f, 0.0f };
-			}
+		(+bumper3).setCollisionAction([&balls, &bumpers, &physicsUniverse, &lights](Vulkan::Physics::Hitbox&) {
+			lights.color2 = lights.color2 == glm::vec3{ 0.0f, 0.0f, 0.0f } ? glm::vec3{ 1.0f, 0.75f, 0.0f } : glm::vec3{ 0.0f, 0.0f, 0.0f };
+			checkMultiball(balls, bumpers, lights, physicsUniverse);
 			});
 
-		(+bumper4).setCollisionAction([&balls, &physicsUniverse, &lights](Vulkan::Physics::Hitbox&) {
-			if (lights.color3 == glm::vec3{ 0.0f, 0.0f, 0.0f }) {
-				lights.color3 = { 0.0f, 1.0f, 0.0f };
-			}
-			else {
-				lights.color3 = { 0.0f, 0.0f, 0.0f };
-			}
+		(+bumper4).setCollisionAction([&balls, &bumpers, &physicsUniverse, &lights](Vulkan::Physics::Hitbox&) {
+			lights.color3 = lights.color3 == glm::vec3{ 0.0f, 0.0f, 0.0f } ? glm::vec3{ 0.0f, 1.0f, 0.0f } : glm::vec3{ 0.0f, 0.0f, 0.0f };
+			checkMultiball(balls, bumpers, lights, physicsUniverse);
 			});
 
-		(+bumper5).setCollisionAction([&balls, &physicsUniverse, &lights](Vulkan::Physics::Hitbox&) {
-			if (lights.color4 == glm::vec3{ 0.0f, 0.0f, 0.0f }) {
-				lights.color4 = { 0.0f, 0.0f, 1.0f };
-			}
-			else {
-				lights.color4 = { 0.0f, 0.0f, 0.0f };
-			}
+		(+bumper5).setCollisionAction([&balls, &bumpers, &physicsUniverse, &lights](Vulkan::Physics::Hitbox&) {
+			lights.color4 = lights.color4 == glm::vec3{ 0.0f, 0.0f, 0.0f } ? glm::vec3{ 0.0f, 0.0f, 1.0f } : glm::vec3{ 0.0f, 0.0f, 0.0f };
+			checkMultiball(balls, bumpers, lights, physicsUniverse);
 			});
 
 		
