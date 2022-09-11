@@ -140,7 +140,7 @@ vec3 create_Toon_diffuse(vec3 N, vec3 DC, float thr, mat3 decay0to2, mat3 decay3
 }
 
 //	Function to create the Blinn specular vector
-vec3 create_Blinn_specular (vec3 eyePos, vec3 N, vec3 SC, float gamma) {
+vec3 create_Blinn_specular (vec3 eyePos, vec3 N, vec3 SC, mat3 MSC0, mat3 MSC1, float gamma) {
 	vec3 result;
 
 	vec3 halfVectorD = normalize(gubo.dlightDirection + eyePos);
@@ -152,18 +152,18 @@ vec3 create_Blinn_specular (vec3 eyePos, vec3 N, vec3 SC, float gamma) {
 	vec3 halfVector5 = normalize(normalize(gubo.lightPosition5 - fragPos) + eyePos);
 
 	result = gubo.dlightColor * SC * pow(clamp(dot(N, halfVectorD), 0, 1), gamma);
-	result += gubo.lightColor0 * SC * pow(clamp(dot(N, halfVector0), 0, 1), gamma);
-	result += gubo.lightColor1 * SC * pow(clamp(dot(N, halfVector1), 0, 1), gamma);
-	result += gubo.lightColor2 * SC * pow(clamp(dot(N, halfVector2), 0, 1), gamma);
-	result += gubo.lightColor3 * SC * pow(clamp(dot(N, halfVector3), 0, 1), gamma);
-	result += gubo.lightColor4 * SC * pow(clamp(dot(N, halfVector4), 0, 1), gamma);
-	result += gubo.lightColor5 * SC * pow(clamp(dot(N, halfVector5), 0, 1), gamma);
+	result += gubo.lightColor0 * MSC0[0] * pow(clamp(dot(N, halfVector0), 0, 1), gamma);
+	result += gubo.lightColor1 * MSC0[1] * pow(clamp(dot(N, halfVector1), 0, 1), gamma);
+	result += gubo.lightColor2 * MSC0[2] * pow(clamp(dot(N, halfVector2), 0, 1), gamma);
+	result += gubo.lightColor3 * MSC1[0] * pow(clamp(dot(N, halfVector3), 0, 1), gamma);
+	result += gubo.lightColor4 * MSC1[1] * pow(clamp(dot(N, halfVector4), 0, 1), gamma);
+	result += gubo.lightColor5 * MSC1[2] * pow(clamp(dot(N, halfVector5), 0, 1), gamma);
 
 	return result;
 }
 
 //	Function to create the Phong specular vector
-vec3 create_Phong_specular(vec3 N, vec3 eyePos, vec3 SC, float gamma) {
+vec3 create_Phong_specular(vec3 N, vec3 eyePos, mat3 MSC0, mat3 MSC1, vec3 SC, float gamma) {
 	vec3 result;
 
 	//	Reflex direction for both direct and point lights
@@ -176,18 +176,18 @@ vec3 create_Phong_specular(vec3 N, vec3 eyePos, vec3 SC, float gamma) {
 	vec3 ref5 = 2 * N * dot(normalize(gubo.lightPosition5 - fragPos), N) - normalize(gubo.lightPosition5 - fragPos);
 
 	result = SC * pow(clamp(dot(eyePos, refD), 0.0f, 1.0f), gamma);
-	result += SC * pow(clamp(dot(eyePos, ref0), 0.0f, 1.0f), gamma);
-	result += SC * pow(clamp(dot(eyePos, ref1), 0.0f, 1.0f), gamma);
-	result += SC * pow(clamp(dot(eyePos, ref2), 0.0f, 1.0f), gamma);
-	result += SC * pow(clamp(dot(eyePos, ref3), 0.0f, 1.0f), gamma);
-	result += SC * pow(clamp(dot(eyePos, ref4), 0.0f, 1.0f), gamma);
-	result += SC * pow(clamp(dot(eyePos, ref5), 0.0f, 1.0f), gamma);
+	result += MSC0[0] * pow(clamp(dot(eyePos, ref0), 0.0f, 1.0f), gamma);
+	result += MSC0[1] * pow(clamp(dot(eyePos, ref1), 0.0f, 1.0f), gamma);
+	result += MSC0[2] * pow(clamp(dot(eyePos, ref2), 0.0f, 1.0f), gamma);
+	result += MSC1[0] * pow(clamp(dot(eyePos, ref3), 0.0f, 1.0f), gamma);
+	result += MSC1[2] * pow(clamp(dot(eyePos, ref4), 0.0f, 1.0f), gamma);
+	result += MSC1[2] * pow(clamp(dot(eyePos, ref5), 0.0f, 1.0f), gamma);
 
 	return result;
 }
 
 //	Function to create the Toon specular vector
-vec3 create_Toon_specular (vec3 N, vec3 eyePos, vec3 SC, float thr) {
+vec3 create_Toon_specular (vec3 N, vec3 eyePos, vec3 SC, mat3 MSC0, mat3 MSC1, float thr) {
 	vec3 result = vec3(0,0,0);
 
 	vec3 refD = 2 * N * dot(gubo.dlightDirection, N) - gubo.dlightDirection;
@@ -198,32 +198,32 @@ vec3 create_Toon_specular (vec3 N, vec3 eyePos, vec3 SC, float thr) {
 	vec3 ref0 = 2 * N * dot(normalize(gubo.lightPosition0 - fragPos), N) - normalize(gubo.lightPosition0 - fragPos);
 	toConfront = dot(eyePos, ref0);
 	if (toConfront >= thr)
-		result += SC * toConfront;
+		result += MSC0[0] * toConfront;
 
 	vec3 ref1 = 2 * N * dot(normalize(gubo.lightPosition1 - fragPos), N) - normalize(gubo.lightPosition1 - fragPos);
 	toConfront = dot(eyePos, ref1);
 	if (toConfront >= thr)
-		result += SC * toConfront;
+		result += MSC0[1] * toConfront;
 
 	vec3 ref2 = 2 * N * dot(normalize(gubo.lightPosition2 - fragPos), N) - normalize(gubo.lightPosition2 - fragPos);
 	toConfront = dot(eyePos, ref2);
 	if (toConfront >= thr)
-		result += SC * toConfront;
+		result += MSC0[2] * toConfront;
 
 	vec3 ref3 = 2 * N * dot(normalize(gubo.lightPosition3 - fragPos), N) - normalize(gubo.lightPosition3 - fragPos);
 	toConfront = dot(eyePos, ref3);
 	if (toConfront >= thr)
-		result += SC * toConfront;
+		result += MSC1[0] * toConfront;
 
 	vec3 ref4 = 2 * N * dot(normalize(gubo.lightPosition4 - fragPos), N) - normalize(gubo.lightPosition4 - fragPos);
 	toConfront = dot(eyePos, ref4);
 	if (toConfront >= thr)
-		result += SC * toConfront;
+		result += MSC1[1] * toConfront;
 
 	vec3 ref5 = 2 * N * dot(normalize(gubo.lightPosition5 - fragPos), N) - normalize(gubo.lightPosition5 - fragPos);
 	toConfront = dot(eyePos, ref5);
 	if (toConfront >= thr)
-		result += SC * toConfront;
+		result += MSC1[2] * toConfront;
 
 	return result;
 }
@@ -246,12 +246,49 @@ mat3 create_lights_decay_colors(float num) {
 	return mat;
 }
 
+// Function to create the vectors that contain the specular color for creating the reflection of each light
+mat3 create_specular_colors(float num) {
+	mat3 mat;
+
+	if (num == 0) {
+		mat[0] = vec3 (0.0, 0.0, 0.0);
+		mat[1] = vec3 (0.0, 0.0, 0.0);
+		mat[2] = vec3 (0.0, 0.0, 0.0);
+		if ((gubo.lightColor0.x + gubo.lightColor0.y + gubo.lightColor0.z) > 0.0) {
+			mat[0] = vec3(1.0, 1.0, 1.0);
+		}
+		if ((gubo.lightColor1.x + gubo.lightColor1.y + gubo.lightColor1.z) > 0.0) {
+			mat[1] = vec3(1.0, 1.0, 1.0);
+		}
+		if ((gubo.lightColor2.x + gubo.lightColor2.y + gubo.lightColor2.z) > 0.0) {
+			mat[2] = vec3(1.0, 1.0, 1.0);
+		}
+	}
+	else {
+		mat[0] = vec3 (0.0, 0.0, 0.0);
+		mat[1] = vec3 (0.0, 0.0, 0.0);
+		mat[2] = vec3 (0.0, 0.0, 0.0);
+		if ((gubo.lightColor3.x + gubo.lightColor3.y + gubo.lightColor3.z) > 0.0) {
+			mat[0] = vec3(1.0, 1.0, 1.0);
+		}
+		if ((gubo.lightColor4.x + gubo.lightColor4.y + gubo.lightColor4.z) > 0.0) {
+			mat[1] = vec3(1.0, 1.0, 1.0);
+		}
+		if ((gubo.lightColor5.x + gubo.lightColor5.y + gubo.lightColor5.z) > 0.0) {
+			mat[2] = vec3(1.0, 1.0, 1.0);
+		}
+	}
+
+	return mat;
+}
+
 void main() {
 
 	vec3 normal = normalize(fragNormal); // Normalizes the normals that comes from the vertex shader which have been affected by a transformation
 	vec3 viewDirection = normalize(gubo.eyePosition - fragPos); // Calculates a unitary vector that points from the fragment in xyz coordinates to the point from which we are looking it
 																// Is it gubo.eyePosition.xyz?
     vec3 diffuseColor = texture(texSampler, fragUVText).rgb;
+	//diffuseColor = vec3 (0.0, 0.0, 0.0);
 
 	vec3 diffuseBRDF, specularBRDF, ambientColor;
 	/* 
@@ -277,18 +314,36 @@ void main() {
 
 	
 	//	SPECULAR FUNCTIONS. Note: for specular color I'm not sure about it but for now I'll go with white (the color I thought for the lights).
-	vec3 specularColor = vec3(1.0, 1.0, 1.0);
+
+	// Specular color is the color the reflections of the lights will have on shiny obects, thus it is actually a problem to hardcode it as
+	// white because not all the lights have a white reflection plus if we turn off the lights the hardcoded color remains!
+	//vec3 specularColor = vec3(1.0, 1.0, 1.0);
+
+	// TODO: Still have to fix this part because I don't actually know if it is correct
+	vec3 directSpecularColor = vec3 (0.0, 0.0, 0.0);
+	if ((gubo.dlightColor.x + gubo.dlightColor.y + gubo.dlightColor.z) > 0.0) {
+		directSpecularColor = vec3(1.0, 1.0, 1.0);
+	}
+	else {
+		directSpecularColor = vec3(0.0, 0.0, 0.0);
+	}
+
+	mat3 specularColors0to2 = create_specular_colors(0);
+	mat3 specularColors3to5 = create_specular_colors(1);
 	
 	//	Blinn specular
 	float blinnExponent = 100.0f; // exponent to decide!
 	//specularBRDF = create_Blinn_specular(viewDirection, normal, specularColor, blinnExponent);
+	//specularBRDF = create_Blinn_specular(viewDirection, normal, directSpecularColor, specularColors0to2, specularColors3to5, blinnExponent);
 
 	//	Phong specular
 	float phongExponent = 100.0f;
-	specularBRDF = create_Phong_specular(normal, viewDirection, specularColor, phongExponent);
+	//specularBRDF = create_Phong_specular(normal, viewDirection, specularColor, phongExponent);
+	specularBRDF = create_Phong_specular(normal, viewDirection, specularColors0to2, specularColors3to5, directSpecularColor, phongExponent);
 
 	//	Toon specular (thr to define!)
 	//specularBRDF = create_Toon_specular(normal, viewDirection, specularColor, 0.5f);
+	//specularBRDF = create_Toon_specular(normal, viewDirection, directSpecularColor, specularColors0to2, specularColors3to5, 0.5f);
 
 
 	//	AMBIENT COLOR FUNCTION
@@ -297,10 +352,5 @@ void main() {
 
 	outColor = vec4(diffuseBRDF + specularBRDF + ambientColor, 1.0); 
 
-	//outColor = vec4(diffuseBRDF, 1.0f);
-
-	//outColor = vec4(normal*0.5f+0.5f, 1.0f);
-
-	//outColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
 

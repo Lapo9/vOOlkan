@@ -93,12 +93,12 @@ int main() {
 		//fill global set 
 		Lights lights{
 			//point
-			glm::vec3{1.0f, 0.0f, 0.0f},
+			glm::vec3{1.0f, 0.0f, 0.0f}, //glm::vec3{1.0f, 0.0f, 0.0f}
 			glm::vec3{1.0f, -0.3f, -1.0f},
-			glm::vec3{0.0f, 1.0f, 0.0f},
+			glm::vec3{0.0f, 1.0f, 0.0f}, //glm::vec3{0.0f, 1.0f, 0.0f
 			glm::vec3{-1.0f, -0.3f, -2.0f},
-			glm::vec3{0.0f, 0.0f, 1.0f},
-			glm::vec3{0.0f, 1.0f, -3.0f},
+			glm::vec3{0.0f, 0.0f, 1.0f}, // glm::vec3{0.0f, 0.0f, 1.0f
+			glm::vec3{0.0f, 1.0f, -3.0f}, // glm::vec3{0.0f, 1.0f, -3.0f
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
