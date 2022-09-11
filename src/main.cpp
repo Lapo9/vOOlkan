@@ -20,7 +20,7 @@ std::pair<std::vector<Vulkan::Physics::Hitbox*>, std::vector<Vulkan::Physics::Hi
 	std::vector<Vulkan::Physics::Hitbox*> ballsInPlay{};
 	std::vector<Vulkan::Physics::Hitbox*> ballsResting{};
 	for (int i = 0; i < balls.size(); ++i) {
-		if (balls[i]->getPosition().x() != BALLS_RESTING_POSITIONS[i].x()) {
+		if (balls[i]->getPosition().x() != RESTING_BALLS_POSITION.x()) {
 			ballsInPlay.push_back(balls[i]);
 		}
 		else {
@@ -141,11 +141,11 @@ int main() {
 			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
-		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, BALLS_RESTING_POSITIONS[1], 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
+		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, RESTING_BALLS_POSITION, 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
 			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
-		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, BALLS_RESTING_POSITIONS[2], 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
+		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, RESTING_BALLS_POSITION, 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
 			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
@@ -197,25 +197,34 @@ int main() {
 		};
 
 
+		Vulkan::Physics::FrameHitbox ballKiller{ Vulkan::Physics::Position{0.0f, -5.6f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
+
+
 		Vulkan::Physics::Field gravity{ Vulkan::Physics::Position{1.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::gravity<60> };
 		Vulkan::Physics::Field friction{ Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::friction<3.0> };
 
 		
 		//add models to universe
-		Vulkan::Physics::Universe physicsUniverse{ std::vector<Vulkan::Physics::Field*>{&gravity, &friction}, +ball1, +ball2, +ball3, +bumper1, +rightFlipper, +leftFlipper, +body};
+		Vulkan::Physics::Universe physicsUniverse{ std::vector<Vulkan::Physics::Field*>{&gravity, &friction}, +ball1, +bumper1, +rightFlipper, +leftFlipper, +body, ballKiller};
 
 		//add keyboard press controller
 		Vulkan::Utilities::KeyboardListener keyboardController{ window, rightFlipper, leftFlipper };
 
 		//collision actions
 		std::vector<Vulkan::Physics::Hitbox*> balls{ &(+ball1), &(+ball2), &(+ball3) };
-		(+bumper1).setCollisionAction([&balls]() {
+		(+bumper1).setCollisionAction([&balls, &physicsUniverse](Vulkan::Physics::Hitbox&) {
 			auto [activeBalls, restingBalls] = getBallsStatus(balls);
 			if (activeBalls.size() == 1) {
 				for (int i = 0; i < restingBalls.size(); ++i) {
 					restingBalls[i]->setPosition({ i * 4.0f - 2.0f, 0.0f, 0.0f });
+					physicsUniverse.addBody(*restingBalls[i]);
 				}
 			}
+			});
+
+		ballKiller.setCollisionAction([&balls, &physicsUniverse](Vulkan::Physics::Hitbox& collidingBall) {
+			physicsUniverse.removeBody(collidingBall);
+			collidingBall.reset(RESTING_BALLS_POSITION);
 			});
 
 

@@ -26,20 +26,20 @@ namespace Vulkan::Physics {
 			this->scaleFactor = scaleFactor;
 		}
 
-		virtual void onCollision() {
-			onCollisionAction();
+		virtual void onCollision(Hitbox& collidingObject) {
+			onCollisionAction(collidingObject);
 		}
 
-		virtual void setCollisionAction(const std::function<void()>& action) {
+		virtual void setCollisionAction(const std::function<void(Hitbox&)>& action) {
 			onCollisionAction = action;
 		}
 
 	protected:
 		float scaleFactor;
-		std::function<void()> onCollisionAction;
+		std::function<void(Hitbox&)> onCollisionAction;
 
 		Hitbox(Position position = {0.0f, 0.0f, 0.0f}, float scaleFactor = 1.0f, float mass = 1.0f, Speed initialSpeed = {0.0f, 0.0f, 0.0f}, Acceleration initialAcceleration = {0.0f, 0.0f, 0.0f}, Force internalForce = {0.0f, 0.0f, 0.0f}, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
-			Cinematicable{ position, { 0.0f, 0.0f, 0.0f }, mass, initialSpeed, initialAcceleration, internalForce, emittedField }, scaleFactor{ scaleFactor }, onCollisionAction{ []() {} }
+			Cinematicable{ position, { 0.0f, 0.0f, 0.0f }, mass, initialSpeed, initialAcceleration, internalForce, emittedField }, scaleFactor{ scaleFactor }, onCollisionAction{ [](Hitbox&) {} }
 		{}
 	};
 

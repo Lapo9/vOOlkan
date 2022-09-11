@@ -48,6 +48,14 @@ namespace Vulkan::Physics {
 		}
 
 
+		void addBody(Hitbox& body) {
+			bodies.push_back(&body);
+		}
+
+		void removeBody(Hitbox& body) {
+			bodies.erase(std::remove(bodies.begin(), bodies.end(), &body), bodies.end());
+		}
+
 
 	private:
 
@@ -116,8 +124,8 @@ namespace Vulkan::Physics {
 				c1.addExternalForce(-(impulse * n) / elapsedSeconds);
 				c2.addExternalForce((impulse * n) / elapsedSeconds);
 
-				c1.onCollision();
-				c2.onCollision();
+				c1.onCollision(c2);
+				c2.onCollision(c1);
 			}
 		}
 
@@ -150,8 +158,8 @@ namespace Vulkan::Physics {
 			}
 
 			if (haveCollided) {
-				f.onCollision();
-				c.onCollision();
+				f.onCollision(c);
+				c.onCollision(f);
 			}
 		}
 

@@ -92,6 +92,15 @@ namespace Vulkan::Physics {
 		}
 
 
+		virtual void reset(Position position) {
+			this->position = position;
+			speed = { 0.0f, 0.0f, 0.0f };
+			acceleration = { 0.0f, 0.0f, 0.0f };
+			impulsiveForce = { 0.0f, 0.0f, 0.0f };
+			angularSpeed = 0.0f;
+		}
+
+
 		/**
 		 * @brief Computes the new position of the object based on its current speed and the forces which are acting on the object.
 		 */
