@@ -120,6 +120,7 @@ namespace Vulkan::Physics {
 				auto n = glm::normalize(glm::vec3(c1.getPosition() - c2.getPosition())); //versor pointing the direction between the 2 centers
 				
 				auto impulse = float((s2 - s1) * n * (-e - 1) * ((m1 * m2) / (m1 + m2)));
+				impulse *= 1.01; //FIXTHIS to avoid compenetration due to rounding errors
 
 				c1.addExternalForce(-(impulse * n) / elapsedSeconds);
 				c2.addExternalForce((impulse * n) / elapsedSeconds);
