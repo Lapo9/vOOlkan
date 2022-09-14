@@ -187,7 +187,6 @@ public:
 
 		commandBuffers[currentFrame].reset(renderPass, framebuffers[obtainedSwapchainImageIndex]);
 		//fill the command buffer (for each pipeline)
-		//FROMHERE make the command buffer recording a lambda to repeat for each buffers...
 		unsigned int counter = 0;
 		([&](const Buffers::VertexBuffer& vertexBuffer, const Buffers::IndexBuffer& indexBuffer) {
 			VkDeviceSize offsets[] = { 0 };
