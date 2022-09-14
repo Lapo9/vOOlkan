@@ -243,6 +243,9 @@
     <ClInclude Include="src\Animations.h">
       <Filter>Source Files\Objects</Filter>
     </ClInclude>
+    <ClInclude Include="src\GameStatus.h">
+      <Filter>Source Files\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

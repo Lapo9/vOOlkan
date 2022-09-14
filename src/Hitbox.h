@@ -38,8 +38,8 @@ namespace Vulkan::Physics {
 		float scaleFactor;
 		std::function<void(Hitbox&)> onCollisionAction;
 
-		Hitbox(Position position = {0.0f, 0.0f, 0.0f}, float scaleFactor = 1.0f, float mass = 1.0f, Speed initialSpeed = {0.0f, 0.0f, 0.0f}, Acceleration initialAcceleration = {0.0f, 0.0f, 0.0f}, Force internalForce = {0.0f, 0.0f, 0.0f}, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
-			Cinematicable{ position, { 0.0f, 0.0f, 0.0f }, mass, initialSpeed, initialAcceleration, internalForce, emittedField }, scaleFactor{ scaleFactor }, onCollisionAction{ [](Hitbox&) {} }
+		Hitbox(Position position = {0.0f, 0.0f, 0.0f}, float scaleFactor = 1.0f, Mass mass = 1.0f, Speed initialSpeed = {0.0f, 0.0f, 0.0f}, Acceleration initialAcceleration = {0.0f, 0.0f, 0.0f}, Force internalForce = {0.0f, 0.0f, 0.0f}, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
+			Cinematicable{ position, { 0.0f, 0.0f, 0.0f }, mass, initialSpeed, initialAcceleration, internalForce, 0.0f, emittedField }, scaleFactor{ scaleFactor }, onCollisionAction{ [](Hitbox&) {} }
 		{}
 	};
 
@@ -51,7 +51,7 @@ namespace Vulkan::Physics {
 	class CircleHitbox : public Hitbox {
 	public:
 
-		CircleHitbox(float radius, Position position = { 0.0f, 0.0f, 0.0f }, float scaleFactor = 1.0f, float mass = std::numeric_limits<float>::max()/10.0f, Speed initialSpeed = {0.0f, 0.0f, 0.0f}, Acceleration initialAcceleration = {0.0f, 0.0f, 0.0f}, Force internalForce = {0.0f, 0.0f, 0.0f}, Field emittedField = Field{{0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField}) :
+		CircleHitbox(float radius, Position position = { 0.0f, 0.0f, 0.0f }, float scaleFactor = 1.0f, Mass mass = std::numeric_limits<float>::max()/10.0f, Speed initialSpeed = {0.0f, 0.0f, 0.0f}, Acceleration initialAcceleration = {0.0f, 0.0f, 0.0f}, Force internalForce = {0.0f, 0.0f, 0.0f}, Field emittedField = Field{{0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField}) :
 			Hitbox{ position, scaleFactor, mass, initialSpeed, initialAcceleration, internalForce, emittedField }
 		{
 			setRadius(radius);
@@ -84,6 +84,12 @@ namespace Vulkan::Physics {
 		//FIXTHIS std::numeric_limits<float>::max() / 10.0f this is an hack to deal with masses up to 10.0f
 		template<std::same_as<Position>... P> requires (sizeof...(P) >= 2)
 			FrameHitbox(Position position, float scaleFactor, P... frameVertices) : Hitbox{ position, scaleFactor, std::numeric_limits<float>::max() / 10.0f} {
+			(vertices.push_back(frameVertices), ...);
+		}
+
+
+		template<std::same_as<Position>... P> requires (sizeof...(P) >= 2)
+			FrameHitbox(Position position, float scaleFactor, Mass mass, P... frameVertices) : Hitbox{ position, scaleFactor, mass } {
 			(vertices.push_back(frameVertices), ...);
 		}
 

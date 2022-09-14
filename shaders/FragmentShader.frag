@@ -40,7 +40,11 @@ layout (set = 0, binding = 1) uniform GlobalUniformBufferObject {
 	vec3 lightColor4;
 	vec3 lightPosition4;
 	vec3 lightColor5;
-	vec3 lightPosition5;
+	vec3 lightPosition5;	
+	vec3 lightColor6;
+	vec3 lightPosition6;	
+	vec3 lightColor7;
+	vec3 lightPosition7;
 
 	vec2 pointLightDecayFactors; //vector containing 2 floats: g and beta!
 

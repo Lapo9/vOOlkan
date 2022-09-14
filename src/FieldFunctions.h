@@ -37,8 +37,10 @@ namespace Vulkan::Physics::FieldFunctions {
 
 	template<float intensity, glm::vec3 direction>
 	Force wind(const Position& fieldCenter, const Cinematicable& body) {
-		return direction * intensity;
+		auto directionVersor = glm::normalize(direction);
+		return directionVersor * intensity;
 	}
+
 }
 
 #endif

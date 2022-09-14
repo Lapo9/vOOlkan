@@ -21,8 +21,10 @@ namespace Vulkan::Physics {
 	class Cinematicable : public Moveable {
 	public:
 
-		Cinematicable(Position position = { 0.0f, 0.0f, 0.0f }, glm::vec3 rotationEuler = { 0.0f, 0.0f, 0.0f }, Mass mass = 1.0f, Speed initialSpeed = { 0.0f, 0.0f, 0.0f }, Acceleration initialAcceleration = { 0.0f, 0.0f, 0.0f }, Force internalForce = { 0.0f, 0.0f, 0.0f }, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
-			Moveable{ position, rotationEuler }, mass{ mass }, speed{ initialSpeed }, acceleration{ initialAcceleration }, internalForce{ internalForce }, emittedField{ emittedField } {}
+		Cinematicable(Position position = { 0.0f, 0.0f, 0.0f }, glm::vec3 rotationEuler = { 0.0f, 0.0f, 0.0f }, Mass mass = 1.0f, Speed initialSpeed = { 0.0f, 0.0f, 0.0f }, Acceleration initialAcceleration = { 0.0f, 0.0f, 0.0f }, Force internalForce = { 0.0f, 0.0f, 0.0f }, float angularSpeed = 0.0f, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
+			Moveable{ position, rotationEuler }, mass{ mass }, speed{ initialSpeed }, acceleration{ initialAcceleration }, internalForce{ internalForce }, angularSpeed{ angularSpeed }, emittedField {
+			emittedField
+		} {}
 
 
 		virtual void setMass(Mass mass) {
@@ -105,7 +107,8 @@ namespace Vulkan::Physics {
 		 * @brief Computes the new position of the object based on its current speed and the forces which are acting on the object.
 		 */
 		virtual void move(Time elapsedTime) {
-			if (float(mass) == std::numeric_limits<float>::max()) {
+			//FIXTHIS /10.0f 
+			if (float(mass) == std::numeric_limits<float>::max()/10.0f) {
 				setAcceleration({ 0.0f, 0.0f, 0.0f });
 			}
 			else {

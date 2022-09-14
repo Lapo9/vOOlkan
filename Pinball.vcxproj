@@ -34,6 +34,7 @@
     <ClInclude Include="src\Field.h" />
     <ClInclude Include="src\FieldFunctions.h" />
     <ClInclude Include="src\Foundations.h" />
+    <ClInclude Include="src\GameStatus.h" />
     <ClInclude Include="src\Hitbox.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\KeyboardListener.h" />
