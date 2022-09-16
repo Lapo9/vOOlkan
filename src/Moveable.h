@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <mutex>
 
 #include "Foundations.h"
 
@@ -14,33 +15,38 @@ namespace Vulkan::Physics {
 	 */
 	class Moveable {
 	public:
-		Moveable(Position position = { 0.0f, 0.0f, 0.0f }, glm::vec3 rotationEuler = { 0.0f, 0.0f, 0.0f }) : position{ position } {
+		Moveable(Position position = { 0.0f, 0.0f, 0.0f }, glm::vec3 rotationEuler = { 0.0f, 0.0f, 0.0f }) : position{ position }, mutex{} {
 			setRotation(rotationEuler);
 		}
 
 		virtual Moveable& translate(DeltaSpace delta) {
-			setPosition(getPosition() + delta);
+			std::scoped_lock lock{ mutex };
+			position += delta;
 			return *this;
 		};
 
 		virtual const Position& getPosition() const {
+			std::scoped_lock lock{ mutex };
 			return position;
 		}
 
 		virtual void setPosition(Position position) {
+			std::scoped_lock lock{ mutex };
 			this->position = position;
 		}
 
 		virtual Moveable& rotate(float angle, glm::vec3 axis) {
-			setRotation(glm::rotate(getRotation(), angle, axis));
+			setRotation(glm::rotate(rotation, angle, axis));
 			return *this;
 		};
 
 		virtual const glm::quat& getRotation() const {
+			std::scoped_lock lock{ mutex };
 			return rotation;
 		}
 
 		virtual const glm::vec3& getRotationEuler() const {
+			std::scoped_lock lock{ mutex };
 			auto& q = rotation;
 
 			auto yaw = glm::atan(2 * (q[0] * q[1] + q[2] * q[3]), 1 - 2 * (q[1] * q[1] + q[2] * q[2]));
@@ -51,6 +57,7 @@ namespace Vulkan::Physics {
 		}
 
 		virtual void setRotation(glm::quat rotation) {
+			std::scoped_lock lock{ mutex };
 			this->rotation = rotation;
 		}
 
@@ -59,9 +66,14 @@ namespace Vulkan::Physics {
 		};
 
 
-	protected:
+		std::mutex& getMutex() {
+			return mutex;
+		}
+
+	private:
 		Position position;
 		glm::quat rotation;
+		mutable std::mutex mutex;
 	};
 }
 

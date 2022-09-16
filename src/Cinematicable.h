@@ -64,8 +64,8 @@ namespace Vulkan::Physics {
 		}
 
 		virtual void setPosition(Position position) override {
-			DeltaSpace delta = position - this->position;
-			this->position = position;
+			DeltaSpace delta = position - getPosition();
+			Moveable::setPosition(position);
 			emittedField.setPosition(emittedField.getPosition() + delta); //the field "follows" the object it is attached to
 		}
 
@@ -95,7 +95,7 @@ namespace Vulkan::Physics {
 
 
 		virtual void reset(Position position) {
-			this->position = position;
+			setPosition(position);
 			speed = { 0.0f, 0.0f, 0.0f };
 			acceleration = { 0.0f, 0.0f, 0.0f };
 			impulsiveForce = { 0.0f, 0.0f, 0.0f };

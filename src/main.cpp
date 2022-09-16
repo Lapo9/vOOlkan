@@ -18,6 +18,7 @@ template<typename... Models>
 void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds);
 
 
+void calculatePhysics(std::vector<Vulkan::Physics::Universe*> universes, Vulkan::Utilities::KeyboardListener& kc, Vulkan::Physics::Hitbox& leftFlipper, Vulkan::Physics::Hitbox& rightFlipper, std::chrono::nanoseconds elapsedNanoseconds);
 
 
 int main() {
@@ -158,7 +159,7 @@ int main() {
 		leftFlipper.setKeyPressResponse(Vulkan::Animations::leftPadUp<MyVertex>);
 
 
-		Vulkan::Objects::Model puller{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.05f, PULLER_RESTING_POSITION, 1.0f, 1.0f),
+		Vulkan::Objects::Model puller{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.05f, Vulkan::Physics::Position{ 2.5f, -6.5f, 0.0f }, 1.0f, 1.0f),
 			{ 180.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/puller.obj"
 		};
 		puller.setKeyPressResponse(Vulkan::Animations::pullerDown<MyVertex>);
@@ -185,7 +186,7 @@ int main() {
 
 
 		Vulkan::Physics::FrameHitbox ballKiller{ Vulkan::Physics::Position{0.0f, -5.6f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
-		Vulkan::Physics::FrameHitbox gameStarter{ Vulkan::Physics::Position{2.5f, -5.95f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
+		Vulkan::Physics::FrameHitbox gameStarter{ Vulkan::Physics::Position{2.5f, -6.4f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
 
 
 		Vulkan::Physics::Field gravity{ Vulkan::Physics::Position{1.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::gravity<60> };
@@ -317,9 +318,18 @@ int main() {
 			{mainGlobalSet, backgroundGlobalSet},
 			{mainPerObjectSet, backgroundPerObjectSet} };
 
-
-
 		std::cout << "\n";
+		//physics cycle in new thread
+		std::thread physicsThread{ [&physicsUniverse,& pullerUniverse,& keyboardController,& leftFlipper,& rightFlipper] () {
+			auto lastFrameTime = std::chrono::high_resolution_clock::now();
+			while (true) {
+				auto elapsedNano = std::chrono::high_resolution_clock::now() - lastFrameTime;
+				calculatePhysics(std::vector{ &physicsUniverse, &pullerUniverse }, keyboardController, +leftFlipper, +rightFlipper, std::chrono::nanoseconds{elapsedNano});
+				std::this_thread::sleep_for(std::chrono::nanoseconds{ 100000 });
+				//std::cout << "\n" << elapsedNano.count();
+				lastFrameTime = std::chrono::high_resolution_clock::now();
+			}
+		} };
 
 		//draw cycle
 		auto lastFrameTime = std::chrono::high_resolution_clock::now();
@@ -338,16 +348,10 @@ int main() {
 	} catch (const Vulkan::VulkanException& ve) {
 		std::cout << ve.what();
 	}
-
 	std::cout << "\n\n";
+
 }
 
-
-
-
-Vulkan::Physics::Force foo(Vulkan::Physics::Position fieldPos, Vulkan::Physics::Position objPos) {
-	return Vulkan::Physics::Force{ (fieldPos - objPos) * 1.0f };
-}
 
 
 template<typename... Models>
@@ -367,8 +371,6 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const V
 		0, 0, n / (n - f), 1
 	};
 
-	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
-
 	static auto camera = Vulkan::Objects::Camera{ {0.0f, -4.2f, 5.5f}, {0.0_deg, 60.0_deg, 0.0_deg} };
 	//static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, 0.0_deg, 0.0_deg} };
 	//camera.rotate(0.0f * elapsedSeconds, { 0.0f, 0.0f, 1.0f });
@@ -386,19 +388,6 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const V
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& body = *std::get<10>(models);
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& puller = *std::get<11>(models);
 	auto& skybox = *std::get<12>(models);
-
-	(+rightFlipper).setAngularSpeed(0.0f);
-	if ((+rightFlipper).getRotationEuler()[0] < -FLIPPER_MIN_ANGLE) {
-		(+rightFlipper).setAngularSpeed(FLIPPER_ANGULAR_SPEED);
-	}
-	(+leftFlipper).setAngularSpeed(0.0f);
-	if ((+leftFlipper).getRotationEuler()[0] > 180.0_deg + FLIPPER_MIN_ANGLE || (+leftFlipper).getRotationEuler()[0] < 0.0_deg) {
-		(+leftFlipper).setAngularSpeed(-FLIPPER_ANGULAR_SPEED);
-	}
-	keyboardController.checkKeyPressed();
-
-	universe.calculate(elapsedSeconds);
-	pullerUniverse.calculate(elapsedSeconds);
 
 	lights.position5 = (+ball1).getPosition(); lights.position5.z = 0.16f;
 	lights.position6 = (+ball2).getPosition(); lights.position6.z = 0.16f;
@@ -422,11 +411,29 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const V
 	);
 
 	backgroundSet.fillBuffer(backgroundBuffer, skybox.getUniforms(camera.getViewMatrix(), projection));
-
 	mainGlobalSet.fillBuffer(mainGlobalBuffer, lights);
 }
 
 
 
 
+
+
+void calculatePhysics(std::vector<Vulkan::Physics::Universe*> universes, Vulkan::Utilities::KeyboardListener& kc, Vulkan::Physics::Hitbox& leftFlipper, Vulkan::Physics::Hitbox& rightFlipper, std::chrono::nanoseconds elapsedNanoseconds) {
+	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
+	
+	rightFlipper.setAngularSpeed(0.0f);
+	if (rightFlipper.getRotationEuler()[0] < -FLIPPER_MIN_ANGLE) {
+		rightFlipper.setAngularSpeed(FLIPPER_ANGULAR_SPEED);
+	}
+	leftFlipper.setAngularSpeed(0.0f);
+	if (leftFlipper.getRotationEuler()[0] > 180.0_deg + FLIPPER_MIN_ANGLE || leftFlipper.getRotationEuler()[0] < 0.0_deg) {
+		leftFlipper.setAngularSpeed(-FLIPPER_ANGULAR_SPEED);
+	}
+	kc.checkKeyPressed();
+
+	for (auto universe : universes) {
+		universe->calculate(elapsedSeconds);
+	}
+}
 
