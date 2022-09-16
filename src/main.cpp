@@ -180,7 +180,7 @@ int main() {
 		};
 
 
-		Vulkan::Objects::Model skybox{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, Vulkan::Physics::Position{0.0f, -4.2f, 5.5f}, 30.0f),
+		Vulkan::Objects::Model skybox{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, Vulkan::Physics::Position{0.0f, -4.2f, 5.5f}, 1000.0f),
 			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/cube.obj"
 		};
 
@@ -263,7 +263,7 @@ int main() {
 
 		//texture image
 		Vulkan::TextureImage mainTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(1024, 1024), "textures/white.jpg" };
-		Vulkan::TextureImage backgroundTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(512, 512), "textures/light.png" };
+		Vulkan::TextureImage backgroundTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(2048, 2048), "textures/cubemap.png" };
 
 		//uniform buffers
 		Vulkan::Buffers::UniformBuffer mainGlobalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
@@ -356,7 +356,7 @@ int main() {
 
 template<typename... Models>
 void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds){
-	float n = 0.1f, f = 50.0f, fovY = 120.0f, a = 1.0f, w = 1.0f;
+	float n = 0.1f, f = 10000.0f, fovY = 120.0f, a = 1.0f, w = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
 			0, -1 / glm::tan(glm::radians(fovY / 2)), 0, 0,
@@ -373,7 +373,7 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const V
 
 	static auto camera = Vulkan::Objects::Camera{ {0.0f, -4.2f, 5.5f}, {0.0_deg, 60.0_deg, 0.0_deg} };
 	//static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, 0.0_deg, 0.0_deg} };
-	//camera.rotate(0.0f * elapsedSeconds, { 0.0f, 0.0f, 1.0f });
+	camera.rotate(0.001f, { 0.0f, 0.0f, 1.0f });
 
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball1 = *std::get<0>(models); 
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball2 = *std::get<1>(models); 
