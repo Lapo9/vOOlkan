@@ -114,15 +114,15 @@ int main() {
 		};
 
 		//create models
-		Vulkan::Objects::Model ball1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, Vulkan::Physics::Position{0.9f, -3.0f, 0.0f}, 0.8f, 2.0f),
+		Vulkan::Objects::Model ball1{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, RESTING_BALLS_POSITION, 0.8f, 2.0f),
 			{ 0.0_deg, 180.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
-		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, RESTING_BALLS_POSITION, 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
+		Vulkan::Objects::Model ball2{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, RESTING_BALLS_POSITION, 0.8f, 2.0f),
 			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
-		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, RESTING_BALLS_POSITION, 0.8f, 2.0f, Vulkan::Physics::Speed{0.0f, 0.0f, 0.0f}),
+		Vulkan::Objects::Model ball3{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.162f, RESTING_BALLS_POSITION, 0.8f, 2.0f),
 			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/ball.obj"
 		};
 
@@ -159,7 +159,7 @@ int main() {
 		leftFlipper.setKeyPressResponse(Vulkan::Animations::leftPadUp<MyVertex>);
 
 
-		Vulkan::Objects::Model puller{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.05f, Vulkan::Physics::Position{ 2.5f, -6.5f, 0.0f }, 1.0f, 1.0f),
+		Vulkan::Objects::Model puller{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.05f, PULLER_RESTING_POSITION, 1.0f, 1.0f),
 			{ 180.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/puller.obj"
 		};
 		puller.setKeyPressResponse(Vulkan::Animations::pullerDown<MyVertex>);
@@ -186,7 +186,7 @@ int main() {
 
 
 		Vulkan::Physics::FrameHitbox ballKiller{ Vulkan::Physics::Position{0.0f, -5.6f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
-		Vulkan::Physics::FrameHitbox gameStarter{ Vulkan::Physics::Position{2.5f, -6.4f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
+		Vulkan::Physics::FrameHitbox gameStarter{ Vulkan::Physics::Position{2.5f, -5.95f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
 
 
 		Vulkan::Physics::Field gravity{ Vulkan::Physics::Position{1.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::gravity<60> };
@@ -324,10 +324,10 @@ int main() {
 			auto lastFrameTime = std::chrono::high_resolution_clock::now();
 			while (true) {
 				auto elapsedNano = std::chrono::high_resolution_clock::now() - lastFrameTime;
-				calculatePhysics(std::vector{ &physicsUniverse, &pullerUniverse }, keyboardController, +leftFlipper, +rightFlipper, std::chrono::nanoseconds{elapsedNano});
-				std::this_thread::sleep_for(std::chrono::nanoseconds{ 100000 });
-				//std::cout << "\n" << elapsedNano.count();
-				lastFrameTime = std::chrono::high_resolution_clock::now();
+				if (elapsedNano.count() > 100000) {
+					calculatePhysics(std::vector{ &physicsUniverse, &pullerUniverse }, keyboardController, +leftFlipper, +rightFlipper, std::chrono::nanoseconds{ elapsedNano });
+					lastFrameTime = std::chrono::high_resolution_clock::now();
+				}
 			}
 		} };
 
@@ -388,6 +388,7 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const V
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& body = *std::get<10>(models);
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& puller = *std::get<11>(models);
 	auto& skybox = *std::get<12>(models);
+
 
 	lights.position5 = (+ball1).getPosition(); lights.position5.z = 0.16f;
 	lights.position6 = (+ball2).getPosition(); lights.position6.z = 0.16f;

@@ -70,10 +70,14 @@ namespace Vulkan::Physics {
 			return mutex;
 		}
 
+
+	protected:
+		mutable std::mutex mutex;
+
+
 	private:
 		Position position;
 		glm::quat rotation;
-		mutable std::mutex mutex;
 	};
 }
 

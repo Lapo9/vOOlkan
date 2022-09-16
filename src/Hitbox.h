@@ -19,10 +19,12 @@ namespace Vulkan::Physics {
 	class Hitbox : public Cinematicable {
 	public:
 		virtual float getScaleFactor() const {
+			std::scoped_lock lock{ mutex };
 			return scaleFactor;
 		}
 
 		virtual void setScaleFactor(float scaleFactor) {
+			std::scoped_lock lock{ mutex };
 			this->scaleFactor = scaleFactor;
 		}
 

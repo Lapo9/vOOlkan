@@ -123,14 +123,16 @@ public:
 private:
 
 	void checkMultiball() {
-		bool allActive = true;
+		int activeCount = 0;
 		for (auto bumper : activeBumpers) {
-			allActive &= bumper;
+			if (bumper) {
+				activeCount++;
+			}
 		}
 
-
-		if (allActive && !isMultiball) {
+		if (activeCount >=2 && !isMultiball) {
 			isMultiball = true;
+			deactivateAllBumpers();
 			for (int i = 0, activated = 0; i < balls.size(); ++i) {
 				if (!ballsInPlay[i]) {
 					ballsInPlay[i] = true;

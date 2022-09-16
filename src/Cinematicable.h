@@ -116,7 +116,7 @@ namespace Vulkan::Physics {
 			}
 			impulsiveForce = { 0.0f, 0.0f, 0.0f }; //reset impulsive forces
 			setSpeed(speed + acceleration * elapsedTime); // ds = a/t --> s' = s + a/t
-			translate(speed * elapsedTime); // dp = s/t --> p' = p + v/t
+			translate(speed * elapsedTime); // dp = s/t --> p' = p + v/t (this consider a movement at a uniform speed, which is the final speed)
 			rotate(angularSpeed * float(elapsedTime), glm::vec3(0.0f, 0.0f, 1.0f)); //only xy plane for now, and only arbitrary velocity (no angular acceleration based on momentum)
 		}
 
