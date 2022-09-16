@@ -180,7 +180,7 @@ int main() {
 		};
 
 
-		Vulkan::Objects::Model skybox{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, Vulkan::Physics::Position{0.0f, -4.2f, 5.5f}, 10.0f),
+		Vulkan::Objects::Model skybox{ std::make_unique<Vulkan::Physics::CircleHitbox>(0.5f, Vulkan::Physics::Position{0.0f, -4.2f, 5.5f}, 30.0f),
 			{ 0.0_deg, 0.0_deg, 0.0_deg }, MyVertex{}, "models/cube.obj"
 		};
 
@@ -324,9 +324,9 @@ int main() {
 			auto lastFrameTime = std::chrono::high_resolution_clock::now();
 			while (true) {
 				auto elapsedNano = std::chrono::high_resolution_clock::now() - lastFrameTime;
-				if (elapsedNano.count() > 100000) {
-					calculatePhysics(std::vector{ &physicsUniverse, &pullerUniverse }, keyboardController, +leftFlipper, +rightFlipper, std::chrono::nanoseconds{ elapsedNano });
+				if (elapsedNano.count() > 100) {
 					lastFrameTime = std::chrono::high_resolution_clock::now();
+					calculatePhysics(std::vector{ &physicsUniverse, &pullerUniverse }, keyboardController, +leftFlipper, +rightFlipper, std::chrono::nanoseconds{ elapsedNano });
 				}
 			}
 		} };
@@ -356,7 +356,7 @@ int main() {
 
 template<typename... Models>
 void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds){
-	static float n = 0.1f, f = 9.9f, fovY = 120.0f, a = 1.0f, w = 1.0f;
+	float n = 0.1f, f = 50.0f, fovY = 120.0f, a = 1.0f, w = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
 			0, -1 / glm::tan(glm::radians(fovY / 2)), 0, 0,
