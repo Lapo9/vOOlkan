@@ -72,7 +72,15 @@ int main() {
 			alignas(16) glm::vec3 position4;
 			alignas(16) glm::vec3 color5;
 			alignas(16) glm::vec3 position5;
-			alignas(8) glm::vec2 decayFactor;
+			alignas(8) glm::vec2 decayFactor0;
+			alignas(8) glm::vec2 decayFactor1;
+
+			alignas(16) glm::vec3 auxColor0;
+			alignas(16) glm::vec3 auxPosition0;
+			alignas(16) glm::vec3 auxColor1;
+			alignas(16) glm::vec3 auxPosition1;
+			alignas(16) glm::vec3 auxColor2;
+			alignas(16) glm::vec3 auxPosition2;
 
 			alignas(16) glm::vec3 directionalLightColor;
 			alignas(16) glm::vec3 directionalLightDirection;
@@ -83,6 +91,8 @@ int main() {
 			alignas(16) glm::vec3 dzColor;
 
 			alignas(16) glm::vec3 eyePosition;
+
+			alignas(8) glm::vec2 functionDecider;
 		};
 		using Matrices = struct {
 			alignas(16) glm::mat4 mvp;
@@ -105,7 +115,16 @@ int main() {
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec2{3.0f, 2.0f},
+			glm::vec2{10.0f, 5.0f},
+			glm::vec2{10.0f, 5.0f},
+
+			//aux
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
 
 			//dir
 			glm::vec3{0.0f, 0.0f, 0.0f},
@@ -117,7 +136,9 @@ int main() {
 			glm::vec3{0.0f, 0.0f, 0.0f},
 
 			//eye
-			glm::vec3{0.0f, 0.0f, 0.0f}
+			glm::vec3{0.0f, 0.0f, 0.0f},
+
+			glm::vec2{1.0f, 1.0f}
 		};
 
 		//create models
