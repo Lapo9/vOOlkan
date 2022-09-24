@@ -40,6 +40,12 @@ namespace Vulkan::Objects {
 		}
 
 
+		Model(glm::vec3 rotationEuler, float scale, Physics::Position position, std::vector<Vertex> vertices, std::vector<uint32_t> indexes, Structs... uniforms) : vertices{ vertices }, indexes{ indexes }, uniforms{ Matrices{}, uniforms... }, hitbox{}, reactToKeyPress{ [](Model&, int) {} } {
+			rotation = glm::quat(rotationEuler);
+			hitbox = std::make_unique<Vulkan::Physics::Hitbox>(position, scale);
+		}
+
+
 		void setKeyPressResponse(std::function<void(Model&, int)> reactToKeyPress) {
 			this->reactToKeyPress = reactToKeyPress;
 		}
@@ -47,6 +53,11 @@ namespace Vulkan::Objects {
 
 		const std::vector<Vertex>& getVertices() const {
 			return vertices;
+		}
+
+
+		void setVertices(std::vector<Vertex> vertices) {
+			this->vertices = vertices;
 		}
 
 

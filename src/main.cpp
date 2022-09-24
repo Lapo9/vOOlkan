@@ -15,10 +15,26 @@
 
 
 template<typename... Models>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds);
+void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, Vulkan::Buffers::VertexBuffer& backgroundVertexBuffer, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds, int points);
 
 
 void calculatePhysics(std::vector<Vulkan::Physics::Universe*> universes, Vulkan::Utilities::KeyboardListener& kc, Vulkan::Physics::Hitbox& leftFlipper, Vulkan::Physics::Hitbox& rightFlipper, std::chrono::nanoseconds elapsedNanoseconds);
+
+
+std::vector<MyVertex> buildPointDisplayerVertices(int digit) {
+	const float xOffset = 0.001f; const float yOffset = 0.0f;
+	const float width = 0.07f; const float height = 1.0f/10.0f;
+
+	std::vector<MyVertex> pointDisplayerVertices{
+	{{-0.5f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {xOffset 		, yOffset + height * digit + height }},
+	{{-0.5f,  1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {xOffset 		, yOffset + height * digit			}},
+	{{ 0.5f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {xOffset + width , yOffset + height * digit + height }},
+	{{ 0.5f,  1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {xOffset + width , yOffset + height * digit 			}}
+	};
+
+	return pointDisplayerVertices;
+}
+
 
 
 int main() {
@@ -61,9 +77,6 @@ int main() {
 
 		// ================ MODELS SETUP ================
 
-		//how a vertex is made
-		using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>;
-
 		//uniform sets layouts
 		using Matrices = struct {
 			alignas(16) glm::mat4 mvp;
@@ -73,36 +86,42 @@ int main() {
 
 		//fill global set 
 		Lights lights{
-			//point
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			//point (color, pos)
+			glm::vec3{0.0f, 0.0f, 0.0f}, //bumper1
 			glm::vec3{0.0f, 2.0f, 0.4f},
 
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f}, //bumper2
 			glm::vec3{1.0f, 1.0f, 0.4f},
 
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f}, //bumper3
 			glm::vec3{-1.0f, 1.0f, 0.4f},
 
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f}, //bumper4
 			glm::vec3{0.7f, 3.0f, 0.4f},
 
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f}, //bumper5
 			glm::vec3{-0.7f, 3.0f, 0.4f},
 
-			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec3{0.0f, 0.0f, 0.4f},
-						
-			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec3{0.0f, 0.0f, 0.0f},
-
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.0f}, //ball1
 			glm::vec3{0.0f, 0.0f, 0.4f},
 
+			//decay factors
 			glm::vec2{0.5f, 2.0f},
+			glm::vec2{0.5f, 2.0f},
+			
+			//points (again) (color, pos)
+			glm::vec3{0.0f, 0.0f, 0.0f}, //ball2
+			glm::vec3{0.0f, 0.0f, 0.0f},
+
+			glm::vec3{0.0f, 0.0f, 0.0f}, //ball3
+			glm::vec3{0.0f, 0.0f, 0.4f},
+
+			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.0f, 0.0f, 0.4f},
 
 			//dir
-			glm::vec3{0.2f, 0.2f, 0.2f},
-			glm::vec3{0.0f, 0.0f, 1.0f},
+			glm::vec3{1.0f, 1.0f, 1.0f},
+			glm::vec3{0.0f, -1.0f, 0.7f},
 
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
@@ -110,7 +129,10 @@ int main() {
 			glm::vec3{0.0f, 0.0f, 0.0f},
 
 			//eye
-			glm::vec3{0.0f, 0.0f, 0.0f}
+			glm::vec3{0.0f, 0.0f, 2.0f},
+
+			//shaders to use
+			glm::vec2{0, 0}
 		};
 
 		//create models
@@ -164,6 +186,7 @@ int main() {
 		};
 		puller.setKeyPressResponse(Vulkan::Animations::pullerDown<MyVertex>);
 
+
 		Vulkan::Objects::Model body{ std::make_unique<Vulkan::Physics::FrameHitbox>(Vulkan::Physics::Position{0.0f, 0.0f, 0.0f}, 1.0f, 
 			Vulkan::Physics::Position{-0.949f, -5.950f, 0.0f}, 
 			Vulkan::Physics::Position{-0.949f, -4.127f, 0.0f}, 
@@ -185,12 +208,19 @@ int main() {
 		};
 
 
+		Vulkan::Objects::Model point1{ {95.0_deg, 0.0_deg, 0.0_deg}, 0.7f, {2.0f, 5.89f, 4.0f}, buildPointDisplayerVertices(0), std::vector<uint32_t>{0, 2, 1, 2, 3, 1} };
+		Vulkan::Objects::Model point10{ {95.0_deg, 0.0_deg, 0.0_deg}, 0.7f, {0.6f, 5.89f, 4.0f}, buildPointDisplayerVertices(0), std::vector<uint32_t>{0, 2, 1, 2, 3, 1} };
+		Vulkan::Objects::Model point100{ {95.0_deg, 0.0_deg, 0.0_deg}, 0.7f, {-0.6f, 5.89f, 4.0f}, buildPointDisplayerVertices(0), std::vector<uint32_t>{0, 2, 1, 2, 3, 1} };
+		Vulkan::Objects::Model point1000{ {95.0_deg, 0.0_deg, 0.0_deg}, 0.7f, {-2.0f, 5.89f, 4.0f}, buildPointDisplayerVertices(0), std::vector<uint32_t>{0, 2, 1, 2, 3, 1} };
+
+
+
 		Vulkan::Physics::FrameHitbox ballKiller{ Vulkan::Physics::Position{0.0f, -5.6f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
 		Vulkan::Physics::FrameHitbox gameStarter{ Vulkan::Physics::Position{2.5f, -5.95f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
 
 
-		Vulkan::Physics::Field gravity{ Vulkan::Physics::Position{1.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::gravity<30> };
-		Vulkan::Physics::Field friction{ Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::friction<3.0> };
+		Vulkan::Physics::Field gravity{ Vulkan::Physics::Position{1.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::gravity<20> };
+		Vulkan::Physics::Field friction{ Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::friction<2.0> };
 		Vulkan::Physics::Field pullerForce{ Vulkan::Physics::Position{PULLER_RESTING_POSITION}, Vulkan::Physics::FieldFunctions::centralField<PULLER_PULLUP_FORCE> };
 
 
@@ -199,13 +229,23 @@ int main() {
 		Vulkan::Physics::Universe physicsUniverse{ std::vector<Vulkan::Physics::Field*>{&gravity, &friction}, +bumper1, +bumper2, +bumper3, +bumper4, +bumper5, +rightFlipper, +leftFlipper, +body, ballKiller};
 		Vulkan::Physics::Universe pullerUniverse{ std::vector<Vulkan::Physics::Field*>{&pullerForce}, gameStarter, +puller };
 
-		//add keyboard press controller
-		Vulkan::Utilities::KeyboardListener keyboardController{ window, rightFlipper, leftFlipper, puller };
 
 		//add game status object
 		std::vector<Vulkan::Physics::Hitbox*> balls{ &(+ball1), &(+ball2), &(+ball3) };
 		std::vector<Vulkan::Physics::Hitbox*> bumpers{ &(+bumper1), &(+bumper2), &(+bumper3), &(+bumper4), &(+bumper5)};
 		GameStatus gameStatus{ balls, bumpers, lights, physicsUniverse };
+
+
+		//additional keyboard observer (for actions not realted to a specific object)
+		Vulkan::Utilities::ConcreteKeyboardObserver additionalKeyboardObserver{ [&gameStatus](int keyPressed) {
+			if (keyPressed == GLFW_KEY_M) {
+				gameStatus.activateMultiball();
+				}
+			} };
+
+		//add keyboard press controller
+		Vulkan::Utilities::KeyboardListener keyboardController{ window, rightFlipper, leftFlipper, puller, additionalKeyboardObserver };
+
 
 		//collision actions
 		(+bumper1).setCollisionAction([&gameStatus, &bumper1](Vulkan::Physics::Hitbox&) {
@@ -244,15 +284,15 @@ int main() {
 
 		//vertex buffers
 		Vulkan::Buffers::VertexBuffer mainVertexBuffer{ virtualGpu, realGpu, (ball1.getVertices().size() + ball2.getVertices().size() + ball3.getVertices().size() + bumper1.getVertices().size() + bumper2.getVertices().size() + bumper3.getVertices().size() + bumper4.getVertices().size() + bumper5.getVertices().size() + rightFlipper.getVertices().size() + leftFlipper.getVertices().size() + body.getVertices().size() + puller.getVertices().size()) * sizeof(MyVertex)};
-		Vulkan::Buffers::VertexBuffer backgroundVertexBuffer{ virtualGpu, realGpu, (skybox.getVertices().size()) * sizeof(MyVertex) };
+		Vulkan::Buffers::VertexBuffer backgroundVertexBuffer{ virtualGpu, realGpu, (skybox.getVertices().size() + point1.getVertices().size() + point10.getVertices().size() + point100.getVertices().size() + point1000.getVertices().size()) * sizeof(MyVertex) };
 		mainVertexBuffer.fillBuffer(ball1, ball2, ball3, bumper1, bumper2, bumper3, bumper4, bumper5, rightFlipper, leftFlipper, body, puller);
-		backgroundVertexBuffer.fillBuffer(skybox);
+		backgroundVertexBuffer.fillBuffer(skybox, point1, point10, point100, point1000);
 
 		//index buffers
 		Vulkan::Buffers::IndexBuffer mainIndexBuffer{ virtualGpu, realGpu, (ball1.getIndexes().size() + ball2.getIndexes().size() + ball3.getIndexes().size() + bumper1.getIndexes().size() + bumper2.getIndexes().size() + bumper3.getIndexes().size() + bumper4.getIndexes().size() + bumper5.getIndexes().size() + rightFlipper.getIndexes().size() + leftFlipper.getIndexes().size() + body.getIndexes().size() + body.getIndexes().size()) * sizeof(uint32_t)};
-		Vulkan::Buffers::IndexBuffer backgroundIndexBuffer{ virtualGpu, realGpu, (skybox.getIndexes().size()) * sizeof(uint32_t) };
+		Vulkan::Buffers::IndexBuffer backgroundIndexBuffer{ virtualGpu, realGpu, (skybox.getIndexes().size() + point1.getIndexes().size() + point10.getIndexes().size() + point100.getIndexes().size() + point1000.getIndexes().size()) * sizeof(uint32_t) };
 		mainIndexBuffer.fillBuffer(ball1, ball2, ball3, bumper1, bumper2, bumper3, bumper4, bumper5, rightFlipper, leftFlipper, body, puller);
-		backgroundIndexBuffer.fillBuffer(skybox);
+		backgroundIndexBuffer.fillBuffer(skybox, point1, point10, point100, point1000);
 
 
 
@@ -262,8 +302,8 @@ int main() {
 		// ================ UNIFORMS/TEXTURES SETUP ================
 
 		//texture image
-		Vulkan::TextureImage mainTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(1024, 1024), "textures/white.jpg" };
-		Vulkan::TextureImage backgroundTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(2048, 2048), "textures/cubemap.png" };
+		Vulkan::TextureImage mainTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(2048, 2048), "textures/main_texture.png" };
+		Vulkan::TextureImage backgroundTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(2048, 2048), "textures/skybox.png" };
 
 		//uniform buffers
 		Vulkan::Buffers::UniformBuffer mainGlobalUniformBuffer{ virtualGpu, realGpu, 2048 * sizeof(float) };
@@ -335,7 +375,7 @@ int main() {
 		auto lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(mainPerObjectUniformBuffer, mainPerObjectSet, mainGlobalUniformBuffer, mainGlobalSet, backgroundPerObjectUniformBuffer, backgroundPerObjectSet, std::tuple{ &ball1, &ball2, &ball3, &bumper1, &bumper2, &bumper3, &bumper4, &bumper5, &rightFlipper, &leftFlipper, &body, &puller, &skybox }, lights, physicsUniverse, pullerUniverse, keyboardController, std::chrono::high_resolution_clock::now() - lastFrameTime);
+			debugAnimation(mainPerObjectUniformBuffer, mainPerObjectSet, mainGlobalUniformBuffer, mainGlobalSet, backgroundPerObjectUniformBuffer, backgroundPerObjectSet, backgroundVertexBuffer, std::tuple{ &ball1, &ball2, &ball3, &bumper1, &bumper2, &bumper3, &bumper4, &bumper5, &rightFlipper, &leftFlipper, &body, &puller, &point1, &point10, &point100, &point1000, &skybox }, lights, physicsUniverse, pullerUniverse, keyboardController, std::chrono::high_resolution_clock::now() - lastFrameTime, gameStatus.getPoints());
 			lastFrameTime = std::chrono::high_resolution_clock::now();
 			drawer.draw(
 				std::pair< std::reference_wrapper<Vulkan::Buffers::VertexBuffer>, std::reference_wrapper<Vulkan::Buffers::IndexBuffer>>{ mainVertexBuffer, mainIndexBuffer },
@@ -357,7 +397,7 @@ int main() {
 
 
 template<typename... Models>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds){
+void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, Vulkan::Buffers::VertexBuffer& backgroundVertexBuffer, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds, int points) {
 	float n = 0.1f, f = 10000.0f, fovY = 120.0f, a = 1.0f, w = 1.0f;
 	static  glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
@@ -377,19 +417,23 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const V
 	//static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, 0.0_deg, 0.0_deg} };
 	//camera.rotate(0.001f, { 0.0f, 0.0f, 1.0f });
 
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball1 = *std::get<0>(models); 
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball2 = *std::get<1>(models); 
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball3 = *std::get<2>(models); 
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball1 = *std::get<0>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball2 = *std::get<1>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball3 = *std::get<2>(models);
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& bumper1 = *std::get<3>(models);
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& bumper2 = *std::get<4>(models);
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& bumper3 = *std::get<5>(models);
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& bumper4 = *std::get<6>(models);
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& bumper5 = *std::get<7>(models);
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& rightFlipper = *std::get<8>(models); 
-	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& leftFlipper = *std::get<9>(models); 
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& rightFlipper = *std::get<8>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& leftFlipper = *std::get<9>(models);
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& body = *std::get<10>(models);
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& puller = *std::get<11>(models);
-	auto& skybox = *std::get<12>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& point1 = *std::get<12>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& point10 = *std::get<13>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& point100 = *std::get<14>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& point1000 = *std::get<15>(models);
+	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& skybox = *std::get<16>(models);
 
 
 	lights.position5 = (+ball1).getPosition(); lights.position5.z = 0.16f;
@@ -398,24 +442,33 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const V
 
 	glm::mat4 projection = perspective;
 
-	mainPerObjectSet.fillBuffer(mainPerObjectBuffer, 
-		ball1.getUniforms(camera.getViewMatrix(), projection), 
-		ball2.getUniforms(camera.getViewMatrix(), projection), 
-		ball3.getUniforms(camera.getViewMatrix(), projection), 
+	mainPerObjectSet.fillBuffer(mainPerObjectBuffer,
+		ball1.getUniforms(camera.getViewMatrix(), projection),
+		ball2.getUniforms(camera.getViewMatrix(), projection),
+		ball3.getUniforms(camera.getViewMatrix(), projection),
 		bumper1.getUniforms(camera.getViewMatrix(), projection),
 		bumper2.getUniforms(camera.getViewMatrix(), projection),
 		bumper3.getUniforms(camera.getViewMatrix(), projection),
 		bumper4.getUniforms(camera.getViewMatrix(), projection),
 		bumper5.getUniforms(camera.getViewMatrix(), projection),
-		rightFlipper.getUniforms(camera.getViewMatrix(), projection), 
-		leftFlipper.getUniforms(camera.getViewMatrix(), projection), 
+		rightFlipper.getUniforms(camera.getViewMatrix(), projection),
+		leftFlipper.getUniforms(camera.getViewMatrix(), projection),
 		body.getUniforms(camera.getViewMatrix(), projection),
 		puller.getUniforms(camera.getViewMatrix(), projection)
 	);
 
-	backgroundSet.fillBuffer(backgroundBuffer, skybox.getUniforms(camera.getViewMatrix(), projection));
+	point1.setVertices(buildPointDisplayerVertices(points / 1 % 10));
+	point10.setVertices(buildPointDisplayerVertices(points / 10 % 10));
+	point100.setVertices(buildPointDisplayerVertices(points / 100 % 10));
+	point1000.setVertices(buildPointDisplayerVertices(points / 1000 % 10));
+
+	//fill background vertices (because texture coordinates of the point displayer changes)
+	backgroundVertexBuffer.fillBuffer(skybox, point1, point10, point100, point1000);
+
+	//fill uniform buffers
+	backgroundSet.fillBuffer(backgroundBuffer, skybox.getUniforms(camera.getViewMatrix(), projection), point1.getUniforms(camera.getViewMatrix(), projection), point10.getUniforms(camera.getViewMatrix(), projection), point100.getUniforms(camera.getViewMatrix(), projection), point1000.getUniforms(camera.getViewMatrix(), projection));
 	mainGlobalSet.fillBuffer(mainGlobalBuffer, lights);
-}
+};
 
 
 
@@ -424,7 +477,7 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const V
 
 void calculatePhysics(std::vector<Vulkan::Physics::Universe*> universes, Vulkan::Utilities::KeyboardListener& kc, Vulkan::Physics::Hitbox& leftFlipper, Vulkan::Physics::Hitbox& rightFlipper, std::chrono::nanoseconds elapsedNanoseconds) {
 	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
-	
+
 	rightFlipper.setAngularSpeed(0.0f);
 	if (rightFlipper.getRotationEuler()[0] < -FLIPPER_MIN_ANGLE) {
 		rightFlipper.setAngularSpeed(FLIPPER_ANGULAR_SPEED);
@@ -438,5 +491,5 @@ void calculatePhysics(std::vector<Vulkan::Physics::Universe*> universes, Vulkan:
 	for (auto universe : universes) {
 		universe->calculate(elapsedSeconds);
 	}
-}
+};
 

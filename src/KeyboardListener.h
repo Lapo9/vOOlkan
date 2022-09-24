@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <functional>
 
 #include "Window.h"
 
@@ -12,6 +13,19 @@ namespace Vulkan::Utilities {
 	class KeyboardObserver{
 	public:
 		virtual void onKeyPress(int keyPressed) = 0;
+	};
+
+
+	class ConcreteKeyboardObserver : public KeyboardObserver {
+	public:
+		ConcreteKeyboardObserver(std::function<void(int)> action) : reactToKeyPress{ action }{}
+
+		void onKeyPress(int keyPressed) override {
+			reactToKeyPress(keyPressed);
+		 }
+
+	private:
+		std::function<void(int)> reactToKeyPress;
 	};
 
 

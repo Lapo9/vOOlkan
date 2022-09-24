@@ -23,11 +23,16 @@ using Lights = struct {
 	alignas(16) glm::vec3 position4;
 	alignas(16) glm::vec3 color5;
 	alignas(16) glm::vec3 position5;
+
+	alignas(8) glm::vec2 decayFactorBumpers;
+	alignas(8) glm::vec2 decayFactorBalls;
+
 	alignas(16) glm::vec3 color6;
 	alignas(16) glm::vec3 position6;
 	alignas(16) glm::vec3 color7;
 	alignas(16) glm::vec3 position7;
-	alignas(8) glm::vec2 decayFactor;
+	alignas(16) glm::vec3 color8;
+	alignas(16) glm::vec3 position8;
 
 	alignas(16) glm::vec3 directionalLightColor;
 	alignas(16) glm::vec3 directionalLightDirection;
@@ -38,13 +43,15 @@ using Lights = struct {
 	alignas(16) glm::vec3 dzColor;
 
 	alignas(16) glm::vec3 eyePosition;
+
+	alignas(16) glm::vec2 shadersToUse;
 };
 
 class GameStatus {
 public:
 
 	GameStatus(std::vector<Vulkan::Physics::Hitbox*> balls, std::vector<Vulkan::Physics::Hitbox*> bumpers, Lights& lights, Vulkan::Physics::Universe& universe) :
-		balls{ balls }, bumpers{ bumpers }, universe{ universe }, pointLightsInfo{}, inGame{ false }, isMultiball{ false }, ballsInPlay(balls.size()), activeBumpers(bumpers.size()), lights{ lights }, lightsOff{ false } {
+		points{ 0 }, balls{ balls }, bumpers{ bumpers }, universe{ universe }, pointLightsInfo{}, inGame{ false }, isMultiball{ false }, ballsInPlay(balls.size()), activeBumpers(bumpers.size()), lights{ lights }, lightsOff{ false } {
 		pointLightsInfo.push_back({ lights.color0, lights.position0 });
 		pointLightsInfo.push_back({ lights.color1, lights.position1 });
 		pointLightsInfo.push_back({ lights.color2, lights.position2 });
@@ -59,6 +66,7 @@ public:
 
 
 	void invertBumper(Vulkan::Physics::Hitbox* bumper) {
+		points += 1 + 1 * lightsOff * 2; //with lights off you get 3x the points
 		auto foundBumper = std::find(bumpers.begin(), bumpers.end(), bumper);
 		if (foundBumper != bumpers.end()) {
 			int i = std::distance(bumpers.begin(), foundBumper);
@@ -86,6 +94,7 @@ public:
 
 	void startNewGame(Vulkan::Physics::Speed speed) {
 		if (!inGame) {
+			points = 0;
 			ballsInPlay[0] = true;
 			balls[0]->addExternalForce(Vulkan::Physics::Force{ speed * 5000.0f});
 			universe.addBody(*balls[0]);
@@ -120,17 +129,9 @@ public:
 	}
 
 
-private:
 
-	void checkMultiball() {
-		int activeCount = 0;
-		for (auto bumper : activeBumpers) {
-			if (bumper) {
-				activeCount++;
-			}
-		}
-
-		if (activeCount >=2 && !isMultiball) {
+	void activateMultiball() {
+		if (!isMultiball && inGame) {
 			isMultiball = true;
 			deactivateAllBumpers();
 			for (int i = 0, activated = 0; i < balls.size(); ++i) {
@@ -141,6 +142,28 @@ private:
 					activated++;
 				}
 			}
+		}
+	}
+
+
+	int getPoints() const {
+		return points;
+	}
+
+
+private:
+
+	void checkMultiball() {
+		int activeCount = 0;
+		for (auto bumper : activeBumpers) {
+			if (bumper) {
+				activeCount++;
+			}
+		}
+
+		if (activeCount == 5) {
+			points += 100;
+			activateMultiball();
 		}
 	}
 
@@ -196,6 +219,7 @@ private:
 			pointLightsInfo[i].first = { 0.0f, 0.0f, 0.0f };
 			activeBumpers[i] = false;
 		}
+		checkLight();
 	}
 
 
@@ -232,6 +256,8 @@ private:
 	std::vector<std::pair<glm::vec3&, glm::vec3&>> pointLightsInfo;
 	Lights& lights;
 	Vulkan::Physics::Universe& universe;
+
+	int points;
 };
 
 

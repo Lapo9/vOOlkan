@@ -18,6 +18,10 @@ namespace Vulkan::Physics {
 	 */
 	class Hitbox : public Cinematicable {
 	public:
+		Hitbox(Position position = {0.0f, 0.0f, 0.0f}, float scaleFactor = 1.0f, Mass mass = 1.0f, Speed initialSpeed = {0.0f, 0.0f, 0.0f}, Acceleration initialAcceleration = {0.0f, 0.0f, 0.0f}, Force internalForce = {0.0f, 0.0f, 0.0f}, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
+			Cinematicable{ position, { 0.0f, 0.0f, 0.0f }, mass, initialSpeed, initialAcceleration, internalForce, 0.0f, emittedField }, scaleFactor{ scaleFactor }, onCollisionAction{ [](Hitbox&) {} }
+		{}
+
 		virtual float getScaleFactor() const {
 			std::scoped_lock lock{ mutex };
 			return scaleFactor;
@@ -40,9 +44,6 @@ namespace Vulkan::Physics {
 		float scaleFactor;
 		std::function<void(Hitbox&)> onCollisionAction;
 
-		Hitbox(Position position = {0.0f, 0.0f, 0.0f}, float scaleFactor = 1.0f, Mass mass = 1.0f, Speed initialSpeed = {0.0f, 0.0f, 0.0f}, Acceleration initialAcceleration = {0.0f, 0.0f, 0.0f}, Force internalForce = {0.0f, 0.0f, 0.0f}, Field emittedField = Field{ {0.0f, 0.0f, 0.0f}, FieldFunctions::emptyField }) :
-			Cinematicable{ position, { 0.0f, 0.0f, 0.0f }, mass, initialSpeed, initialAcceleration, internalForce, 0.0f, emittedField }, scaleFactor{ scaleFactor }, onCollisionAction{ [](Hitbox&) {} }
-		{}
 	};
 
 

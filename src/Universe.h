@@ -147,7 +147,7 @@ namespace Vulkan::Physics {
 					auto sr2 = f.getAngularSpeed(); //in this simplified simulation, only frame hitboxes can rotate
 					auto distanceFromCenterOfRotation = glm::length(glm::vec3((c.getPosition() + n * c.getRadius()) - f.getPosition())); //distance of the colliding point from the center of rotation
 
-					auto tangentialSpeed = Speed(-segment.normal() * (sr2 * distanceFromCenterOfRotation)) * 2; //"linear" speed of the point of the frame that touched the circle
+					auto tangentialSpeed = Speed(-segment.normal() * (sr2 * distanceFromCenterOfRotation)) * 1.1f; //"linear" speed of the point of the frame that touched the circle
 					auto massCoefficient = (m1 * m2) / (m1 + m2);
 					auto impulse = float(((s2 + tangentialSpeed - s1) * n) * (-e - 1) * massCoefficient);
 

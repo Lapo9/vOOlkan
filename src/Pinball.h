@@ -53,4 +53,7 @@
 #include "Window.h"
 #include "WindowSurface.h"
 
+//how a vertex is made
+using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>;
+
 #endif
