@@ -189,7 +189,7 @@ int main() {
 		Vulkan::Physics::FrameHitbox gameStarter{ Vulkan::Physics::Position{2.5f, -5.95f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
 
 
-		Vulkan::Physics::Field gravity{ Vulkan::Physics::Position{1.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::gravity<60> };
+		Vulkan::Physics::Field gravity{ Vulkan::Physics::Position{1.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::gravity<30> };
 		Vulkan::Physics::Field friction{ Vulkan::Physics::Position{0.0f, 0.0f, -2.0f}, Vulkan::Physics::FieldFunctions::friction<3.0> };
 		Vulkan::Physics::Field pullerForce{ Vulkan::Physics::Position{PULLER_RESTING_POSITION}, Vulkan::Physics::FieldFunctions::centralField<PULLER_PULLUP_FORCE> };
 
@@ -320,9 +320,9 @@ int main() {
 
 		std::cout << "\n";
 		//physics cycle in new thread
-		std::thread physicsThread{ [&physicsUniverse,& pullerUniverse,& keyboardController,& leftFlipper,& rightFlipper] () {
+		std::thread physicsThread{ [&physicsUniverse, &pullerUniverse, &keyboardController, &leftFlipper, &rightFlipper, &window] () {
 			auto lastFrameTime = std::chrono::high_resolution_clock::now();
-			while (true) {
+			while (!glfwWindowShouldClose(+window)) {
 				auto elapsedNano = std::chrono::high_resolution_clock::now() - lastFrameTime;
 				if (elapsedNano.count() > 100) {
 					lastFrameTime = std::chrono::high_resolution_clock::now();
@@ -343,6 +343,8 @@ int main() {
 			);
 		}
 		vkDeviceWaitIdle(+virtualGpu);
+
+		physicsThread.join();
 
 		std::cout << "\n";
 	} catch (const Vulkan::VulkanException& ve) {
@@ -373,7 +375,7 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const V
 
 	static auto camera = Vulkan::Objects::Camera{ {0.0f, -4.2f, 5.5f}, {0.0_deg, 60.0_deg, 0.0_deg} };
 	//static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, 0.0_deg, 0.0_deg} };
-	camera.rotate(0.001f, { 0.0f, 0.0f, 1.0f });
+	//camera.rotate(0.001f, { 0.0f, 0.0f, 1.0f });
 
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball1 = *std::get<0>(models); 
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball2 = *std::get<1>(models); 
