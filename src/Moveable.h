@@ -47,11 +47,10 @@ namespace Vulkan::Physics {
 
 		virtual const glm::vec3& getRotationEuler() const {
 			std::scoped_lock lock{ mutex };
-			auto& q = rotation;
 
-			auto yaw = glm::atan(2 * (q[0] * q[1] + q[2] * q[3]), 1 - 2 * (q[1] * q[1] + q[2] * q[2]));
-			auto pitch = glm::asin(2 * (q[0] * q[2] - q[3] * q[1]));
-			auto roll = glm::atan(2 * (q[0] * q[3] + q[1] * q[2]), 1 - 2 * (q[2] * q[2] + q[3] * q[3]));
+			auto yaw = glm::yaw(rotation);
+			auto pitch = glm::pitch(rotation);
+			auto roll = glm::roll(rotation);
 		
 			return { yaw, pitch, roll };
 		}

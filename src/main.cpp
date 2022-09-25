@@ -240,6 +240,13 @@ int main() {
 			if (keyPressed == GLFW_KEY_M) {
 				gameStatus.activateMultiball();
 				}
+
+			if (keyPressed == GLFW_KEY_W) {
+				
+			}
+			if (keyPressed == GLFW_KEY_S) {
+
+			}
 			} };
 
 		//add keyboard press controller
@@ -478,13 +485,15 @@ void calculatePhysics(std::vector<Vulkan::Physics::Universe*> universes, Vulkan:
 	float elapsedSeconds = elapsedNanoseconds.count() / 1000000000.0f;
 
 	rightFlipper.setAngularSpeed(0.0f);
-	if (rightFlipper.getRotationEuler()[0] < -FLIPPER_MIN_ANGLE) {
+	if (Vulkan::Animations::checkRightPadArea(static_cast<Vulkan::Physics::FrameHitbox&>(rightFlipper), 0.1f)) {
 		rightFlipper.setAngularSpeed(FLIPPER_ANGULAR_SPEED);
 	}
+
 	leftFlipper.setAngularSpeed(0.0f);
-	if (leftFlipper.getRotationEuler()[0] > 180.0_deg + FLIPPER_MIN_ANGLE || leftFlipper.getRotationEuler()[0] < 0.0_deg) {
+	if (Vulkan::Animations::checkLeftPadArea(static_cast<Vulkan::Physics::FrameHitbox&>(leftFlipper), 0.1f)) {
 		leftFlipper.setAngularSpeed(-FLIPPER_ANGULAR_SPEED);
 	}
+
 	kc.checkKeyPressed();
 
 	for (auto universe : universes) {

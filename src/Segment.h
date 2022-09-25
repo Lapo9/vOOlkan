@@ -59,6 +59,10 @@ namespace Vulkan::Physics {
 			return origin;
 		}
 
+		const Position& getEnd() const {
+			return origin + direction;
+		}
+
 		const DeltaSpace& getDirection() const {
 			return direction;
 		}
