@@ -9,9 +9,13 @@
 
 #include "VertexInput.h"
 #include "ModelLoader.h"
+#include "Cinematicable.h"
+#include "Foundations.h"
+#include "Hitbox.h"
+#include "KeyboardListener.h"
 
 
-namespace Vulkan {
+namespace Vulkan::Objects {
 
 	template<typename V>
 	concept IsVertex = requires(V v) {
@@ -20,7 +24,7 @@ namespace Vulkan {
 
 
 	template<IsVertex Vertex, typename... Structs>
-	class Model {
+	class Model : public Utilities::KeyboardObserver {
 
 		using Matrices = struct {
 			alignas(16) glm::mat4 mvp;
@@ -30,15 +34,20 @@ namespace Vulkan {
 
 	public:
 
-		Model(Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... } {
+		Model(std::unique_ptr<Vulkan::Physics::Hitbox> hitbox, glm::vec3 rotationEuler, Vertex, std::string pathToModel, Structs... uniforms) : vertices{}, indexes{}, uniforms{ Matrices{}, uniforms... }, hitbox{ std::move(hitbox) }, reactToKeyPress{ [](Model&, int) {} } {
 			ModelLoader<Vertex>::loadModel(pathToModel, vertices, indexes);
+			rotation = glm::quat(rotationEuler);
 		}
 
 
-		Model(Vertex v, std::string pathToModel, glm::vec3 rotation, glm::vec3 scale, glm::vec3 position, Structs... uniforms) : Model{ v, pathToModel, uniforms... } {
-			this->rotation = glm::quat(rotation);
-			this->scaleFactor = scale;
-			this->position = position;
+		Model(glm::vec3 rotationEuler, float scale, Physics::Position position, std::vector<Vertex> vertices, std::vector<uint32_t> indexes, Structs... uniforms) : vertices{ vertices }, indexes{ indexes }, uniforms{ Matrices{}, uniforms... }, hitbox{}, reactToKeyPress{ [](Model&, int) {} } {
+			rotation = glm::quat(rotationEuler);
+			hitbox = std::make_unique<Vulkan::Physics::Hitbox>(position, scale);
+		}
+
+
+		void setKeyPressResponse(std::function<void(Model&, int)> reactToKeyPress) {
+			this->reactToKeyPress = reactToKeyPress;
 		}
 
 
@@ -47,39 +56,26 @@ namespace Vulkan {
 		}
 
 
+		void setVertices(std::vector<Vertex> vertices) {
+			this->vertices = vertices;
+		}
+
+
 		const std::vector<uint32_t>& getIndexes() const {
 			return indexes;
 		}
 
 
-		Model& rotate(float angle, glm::vec3 axis) {
+		Model& rotateModel(float angle, glm::vec3 axis) {
 			rotation = glm::rotate(rotation, angle, axis);
 			return *this;
 		}
 
 
-		Model& translate(glm::vec3 deltaSpace) {
-			position += deltaSpace;
-			return *this;
-		}
-
-
-		Model& scale(glm::vec3 deltaFactors) {
-			scale += deltaFactors;
-			return *this;
-		}
-
-
-		Model& scale(float deltaFactor) {
-			scale += glm::vec3{ deltaFactor, deltaFactor, deltaFactor };
-			return *this;
-		}
-
-
 		const glm::mat4& calculateModelMatrix() const {
-			return glm::translate(glm::mat4{ 1.0f }, position) *
-				glm::scale(glm::mat4{ 1.0f }, scaleFactor) *
-				glm::mat4{ rotation };
+			return glm::translate(glm::mat4{ 1.0f }, glm::vec3(hitbox->getPosition())) *
+				glm::scale(glm::mat4{ 1.0f }, glm::vec3{ hitbox->getScaleFactor() }) *
+				glm::mat4{ hitbox->getRotation() * rotation};
 		}
 
 
@@ -112,30 +108,28 @@ namespace Vulkan {
 			std::get<0>(uniforms) = calculateMvpMatrix(viewMatrix, projectionMatrix);
 			return std::get<0>(uniforms);
 		}
+		
 
+		Vulkan::Physics::Hitbox& operator+() {
+			return *hitbox;
+		}
+		
 
-		glm::vec3& getPosition() {
-			return position;
+		void onKeyPress(int keyPressed) override {
+			reactToKeyPress(*this, keyPressed);
 		}
 
-
-		glm::vec3& getScaleFactor() {
-			return scaleFactor;
-		}
-
-
-		glm::quat& getRotation() {
-			return rotation;
-		}
 
 	private:
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indexes;
 		std::tuple<Matrices, Structs...> uniforms;
 
-		glm::vec3 position;
-		glm::quat rotation;
-		glm::vec3 scaleFactor;
+		glm::quat rotation; //in this simplified version of the physics (2D) a model can have a different rotation than the one of its hitbox
+
+		std::unique_ptr<Vulkan::Physics::Hitbox> hitbox;
+
+		std::function<void(Model&, int)> reactToKeyPress;
 	};
 }
 

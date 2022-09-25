@@ -4,6 +4,7 @@
 #include "AnglesLiterals.h"
 #include "Attachment.h"
 #include "AttachmentColorBlendingMode.h"
+#include "Camera.h"
 #include "CommandBuffer.h"
 #include "CommandBufferPool.h"
 #include "DepthImage.h"
@@ -14,7 +15,11 @@
 #include "DynamicSet.h"
 #include "DynamicState.h"
 #include "Fence.h"
+#include "Field.h"
+#include "FieldFunctions.h"
+#include "Foundations.h"
 #include "Framebuffer.h"
+#include "Hitbox.h"
 #include "Image.h"
 #include "ImageView.h"
 #include "IndexBuffer.h"
@@ -40,11 +45,15 @@
 #include "SwapchainPresentMode.h"
 #include "SwapchainSurfaceFormat.h"
 #include "UniformBuffer.h"
+#include "Universe.h"
 #include "VertexBuffer.h"
 #include "VertexInput.h"
 #include "Viewport.h"
 #include "VulkanException.h"
 #include "Window.h"
 #include "WindowSurface.h"
+
+//how a vertex is made
+using MyVertex = Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>;
 
 #endif

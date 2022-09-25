@@ -40,6 +40,15 @@
     <Filter Include="Source Files\DescriptorSetOptions">
       <UniqueIdentifier>{bb391eb2-8085-49a9-8a74-81c642ace6df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Objects">
+      <UniqueIdentifier>{56e632a6-c686-480d-9b2c-9a27495d4120}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Physics">
+      <UniqueIdentifier>{7b9e6ef0-cf2f-4417-a177-f2f2956c5989}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{351094bf-aeb9-4a20-a6f0-cd34a8a75b1e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Instance.h">
@@ -153,9 +162,6 @@
     <ClInclude Include="src\Buffer.h">
       <Filter>Source Files\Buffers</Filter>
     </ClInclude>
-    <ClInclude Include="src\Model.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\IndexBuffer.h">
       <Filter>Source Files\Buffers</Filter>
     </ClInclude>
@@ -198,8 +204,47 @@
     <ClInclude Include="src\StaticSet.h">
       <Filter>Source Files\DescriptorSetOptions</Filter>
     </ClInclude>
+    <ClInclude Include="src\Model.h">
+      <Filter>Source Files\Objects</Filter>
+    </ClInclude>
     <ClInclude Include="src\ModelLoader.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera.h">
+      <Filter>Source Files\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Moveable.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Foundations.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Cinematicable.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Field.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hitbox.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Universe.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FieldFunctions.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Segment.h">
+      <Filter>Source Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\KeyboardListener.h">
+      <Filter>Source Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Animations.h">
+      <Filter>Source Files\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GameStatus.h">
+      <Filter>Source Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -255,6 +300,9 @@
       <Filter>Source Files\Images</Filter>
     </ClCompile>
     <ClCompile Include="src\ModelLoader.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Foundations.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

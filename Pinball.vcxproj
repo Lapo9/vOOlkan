@@ -19,24 +19,36 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Animations.h" />
     <ClInclude Include="src\Attachment.h" />
     <ClInclude Include="src\AttachmentColorBlendingMode.h" />
     <ClInclude Include="src\Barriers.h" />
+    <ClInclude Include="src\Camera.h" />
+    <ClInclude Include="src\Cinematicable.h" />
     <ClInclude Include="src\DescriptorSet.h" />
     <ClInclude Include="src\DescriptorSetBindingCreationInfo.h" />
     <ClInclude Include="src\DynamicSet.h" />
     <ClInclude Include="src\Buffer.h" />
     <ClInclude Include="src\DepthImage.h" />
     <ClInclude Include="src\DescriptorSetPool.h" />
+    <ClInclude Include="src\Field.h" />
+    <ClInclude Include="src\FieldFunctions.h" />
+    <ClInclude Include="src\Foundations.h" />
+    <ClInclude Include="src\GameStatus.h" />
+    <ClInclude Include="src\Hitbox.h" />
     <ClInclude Include="src\IndexBuffer.h" />
+    <ClInclude Include="src\KeyboardListener.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\ModelLoader.h" />
+    <ClInclude Include="src\Moveable.h" />
+    <ClInclude Include="src\Segment.h" />
     <ClInclude Include="src\Set.h" />
     <ClInclude Include="src\StagingBuffer.h" />
     <ClInclude Include="src\StaticSet.h" />
     <ClInclude Include="src\TextureImage.h" />
     <ClInclude Include="src\TextureSampler.h" />
     <ClInclude Include="src\UniformBuffer.h" />
+    <ClInclude Include="src\Universe.h" />
     <ClInclude Include="src\VertexBuffer.h" />
     <ClInclude Include="src\CommandBuffer.h" />
     <ClInclude Include="src\CommandBufferPool.h" />
@@ -76,6 +88,7 @@
   <ItemGroup>
     <ClCompile Include="src\CommandBufferPool.cpp" />
     <ClCompile Include="src\DescriptorSetBindingCreationInfo.cpp" />
+    <ClCompile Include="src\Foundations.cpp" />
     <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\ImageView.cpp" />
     <ClCompile Include="src\Instance.cpp" />
