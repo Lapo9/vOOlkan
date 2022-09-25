@@ -10,6 +10,8 @@ const float FLIPPER_MIN_ANGLE = -15.0_deg;
 const float PULLER_MIN_Y = -6.700;
 constexpr float PULLER_PULLUP_FORCE = 5000.0f;
 const Vulkan::Physics::Position PULLER_RESTING_POSITION = Vulkan::Physics::Position{ 2.5f, -6.0f, 0.0f };
+const glm::vec3 DEFAULT_CAMERA_ANGLE = { 0.0_deg, 70.0_deg, 0.0_deg };
+const glm::vec3 DEFAULT_CAMERA_POSITION = { 0.0f, -4.2f, 5.5f };
 
 
 namespace Vulkan::Animations {
@@ -66,9 +68,9 @@ namespace Vulkan::Animations {
 
 	template<Vulkan::Objects::IsVertex V, typename... S>
 	void pullerDown(Vulkan::Objects::Model<V, S...>& puller, int keyPressed) {
-		if (keyPressed == GLFW_KEY_DOWN || keyPressed == GLFW_KEY_S) {
+		if (keyPressed == GLFW_KEY_DOWN || keyPressed == GLFW_KEY_SPACE) {
 			if ((+puller).getPosition().y() > PULLER_MIN_Y) {
-				(+puller).addExternalForce(Vulkan::Physics::Force{ 0.0f, -PULLER_PULLUP_FORCE - 0.1f, 0.0f });
+				(+puller).addExternalForce(Vulkan::Physics::Force{ 0.0f, -PULLER_PULLUP_FORCE - 0.000001f, 0.0f });
 			}
 			else {
 				(+puller).reset(Vulkan::Physics::Position{ PULLER_RESTING_POSITION.x(),PULLER_MIN_Y, PULLER_RESTING_POSITION.z() });

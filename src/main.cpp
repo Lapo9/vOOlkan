@@ -15,7 +15,7 @@
 
 
 template<typename... Models>
-void calculateGraphics(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, Vulkan::Buffers::VertexBuffer& backgroundVertexBuffer, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, float aspectRatio, int points);
+void calculateGraphics(Vulkan::Objects::Camera& camera, Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, Vulkan::Buffers::VertexBuffer& backgroundVertexBuffer, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, float aspectRatio, int points);
 
 
 void calculatePhysics(std::vector<Vulkan::Physics::Universe*> universes, Vulkan::Utilities::KeyboardListener& kc, Vulkan::Physics::Hitbox& leftFlipper, Vulkan::Physics::Hitbox& rightFlipper, std::chrono::nanoseconds elapsedNanoseconds);
@@ -116,11 +116,11 @@ int main() {
 			glm::vec3{0.0f, 0.0f, 0.4f},
 
 			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec3{0.0f, 0.0f, 0.4f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
 
 			//dir
 			glm::vec3{1.0f, 1.0f, 1.0f},
-			glm::vec3{0.0f, -1.0f, 0.7f},
+			glm::vec3{0.2f, -1.0f, 0.7f},
 
 			glm::vec3{0.0f, 0.0f, 0.0f},
 			glm::vec3{0.0f, 0.0f, 0.0f},
@@ -214,6 +214,9 @@ int main() {
 
 
 
+		Vulkan::Objects::Camera camera{ DEFAULT_CAMERA_POSITION, DEFAULT_CAMERA_ANGLE };
+
+
 		Vulkan::Physics::FrameHitbox ballKiller{ Vulkan::Physics::Position{0.0f, -5.6f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
 		Vulkan::Physics::FrameHitbox gameStarter{ Vulkan::Physics::Position{2.5f, -5.95f, 0.0f}, 1.0f, Vulkan::Physics::Position{-2.0f, 0.0f,0.0f}, Vulkan::Physics::Position{2.0f, 0.0f,0.0f} };
 
@@ -236,17 +239,21 @@ int main() {
 
 
 		//additional keyboard observer (for actions not realted to a specific object)
-		Vulkan::Utilities::ConcreteKeyboardObserver additionalKeyboardObserver{ [&gameStatus](int keyPressed) {
+		Vulkan::Utilities::ConcreteKeyboardObserver additionalKeyboardObserver{ [&gameStatus, &camera](int keyPressed) {
 			if (keyPressed == GLFW_KEY_M) {
 				gameStatus.activateMultiball();
 				}
 
-			if (keyPressed == GLFW_KEY_W) {
-				
+			if (keyPressed == GLFW_KEY_R) {
+				camera.setRotation(DEFAULT_CAMERA_ANGLE);
+				camera.setPosition(DEFAULT_CAMERA_POSITION);
 			}
-			if (keyPressed == GLFW_KEY_S) {
-
+			else if (keyPressed == GLFW_KEY_W) {
+				camera.rotate(0.005_deg, { 0.0f, 1.0f, 0.0f });
 			}
+			else if (keyPressed == GLFW_KEY_S) {
+				camera.rotate(-0.005_deg, { 0.0f, 1.0f, 0.0f });
+			}			
 			} };
 
 		//add keyboard press controller
@@ -365,12 +372,13 @@ int main() {
 			{mainPerObjectSet, backgroundPerObjectSet} };
 
 		std::cout << "\n";
-		//physics cycle in new thread
+		//physics cycle in new thread (so that it isn't dependant on FPS)
 		std::thread physicsThread{ [&physicsUniverse, &pullerUniverse, &keyboardController, &leftFlipper, &rightFlipper, &window] () {
 			auto lastFrameTime = std::chrono::high_resolution_clock::now();
 			while (!glfwWindowShouldClose(+window)) {
 				auto elapsedNano = std::chrono::high_resolution_clock::now() - lastFrameTime;
-				if (elapsedNano.count() > 100) {
+				//1/100000 is the maximum physics "framerate". If we higher it then it won't work properly in release mode, because debug mode cannot do better than 1/100000
+				if (elapsedNano.count() > 100000) {
 					lastFrameTime = std::chrono::high_resolution_clock::now();
 					calculatePhysics(std::vector{ &physicsUniverse, &pullerUniverse }, keyboardController, +leftFlipper, +rightFlipper, std::chrono::nanoseconds{ elapsedNano });
 				}
@@ -381,7 +389,7 @@ int main() {
 		auto lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			calculateGraphics(mainPerObjectUniformBuffer, mainPerObjectSet, mainGlobalUniformBuffer, mainGlobalSet, backgroundPerObjectUniformBuffer, backgroundPerObjectSet, backgroundVertexBuffer, std::tuple{ &ball1, &ball2, &ball3, &bumper1, &bumper2, &bumper3, &bumper4, &bumper5, &rightFlipper, &leftFlipper, &body, &puller, &point1, &point10, &point100, &point1000, &skybox }, lights, physicsUniverse, pullerUniverse, keyboardController, (float)swapchain.getResolution().first/swapchain.getResolution().second, gameStatus.getPoints());
+			calculateGraphics(camera, mainPerObjectUniformBuffer, mainPerObjectSet, mainGlobalUniformBuffer, mainGlobalSet, backgroundPerObjectUniformBuffer, backgroundPerObjectSet, backgroundVertexBuffer, std::tuple{ &ball1, &ball2, &ball3, &bumper1, &bumper2, &bumper3, &bumper4, &bumper5, &rightFlipper, &leftFlipper, &body, &puller, &point1, &point10, &point100, &point1000, &skybox }, lights, physicsUniverse, pullerUniverse, keyboardController, (float)swapchain.getResolution().first/swapchain.getResolution().second, gameStatus.getPoints());
 			lastFrameTime = std::chrono::high_resolution_clock::now();
 			drawer.draw(
 				std::pair< std::reference_wrapper<Vulkan::Buffers::VertexBuffer>, std::reference_wrapper<Vulkan::Buffers::IndexBuffer>>{ mainVertexBuffer, mainIndexBuffer },
@@ -403,7 +411,7 @@ int main() {
 
 
 template<typename... Models>
-void calculateGraphics(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, Vulkan::Buffers::VertexBuffer& backgroundVertexBuffer, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, float aspectRatio, int points) {
+void calculateGraphics(Vulkan::Objects::Camera& camera, Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, Vulkan::Buffers::VertexBuffer& backgroundVertexBuffer, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, float aspectRatio, int points) {
 	float n = 0.1f, f = 10000.0f, fovY = 120.0f, a = aspectRatio, w = 1.0f;
 	glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
@@ -419,9 +427,6 @@ void calculateGraphics(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, cons
 		0, 0, n / (n - f), 1
 	};
 
-	auto camera = Vulkan::Objects::Camera{ {0.0f, -4.2f, 5.5f}, {0.0_deg, 60.0_deg, 0.0_deg} };
-	//static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, 0.0_deg, 0.0_deg} };
-	//camera.rotate(0.001f, { 0.0f, 0.0f, 1.0f });
 
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball1 = *std::get<0>(models);
 	Vulkan::Objects::Model<Vulkan::PipelineOptions::Vertex<glm::vec3, glm::vec3, glm::vec2>>& ball2 = *std::get<1>(models);
@@ -467,6 +472,8 @@ void calculateGraphics(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, cons
 	point10.setVertices(buildPointDisplayerVertices(points / 10 % 10));
 	point100.setVertices(buildPointDisplayerVertices(points / 100 % 10));
 	point1000.setVertices(buildPointDisplayerVertices(points / 1000 % 10));
+
+	lights.eyePosition = camera.getPosition();
 
 	//fill background vertices (because texture coordinates of the point displayer changes)
 	backgroundVertexBuffer.fillBuffer(skybox, point1, point10, point100, point1000);
