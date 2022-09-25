@@ -239,7 +239,7 @@ int main() {
 
 
 		//additional keyboard observer (for actions not realted to a specific object)
-		Vulkan::Utilities::ConcreteKeyboardObserver additionalKeyboardObserver{ [&gameStatus, &camera](int keyPressed) {
+		Vulkan::Utilities::ConcreteKeyboardObserver additionalKeyboardObserver{ [&gameStatus, &camera, &lights](int keyPressed) {
 			if (keyPressed == GLFW_KEY_M) {
 				gameStatus.activateMultiball();
 				}
@@ -253,7 +253,14 @@ int main() {
 			}
 			else if (keyPressed == GLFW_KEY_S) {
 				camera.rotate(-0.005_deg, { 0.0f, 1.0f, 0.0f });
-			}			
+			}
+
+			if (keyPressed == GLFW_KEY_K) {
+				lights.shadersToUse = glm::vec2{ 0, 0 };
+			}
+			else if (keyPressed == GLFW_KEY_L) {
+				lights.shadersToUse = glm::vec2{ 1, 1 };
+			}
 			} };
 
 		//add keyboard press controller
