@@ -107,7 +107,7 @@ int main() {
 
 			//decay factors
 			glm::vec2{0.5f, 2.0f},
-			glm::vec2{0.5f, 2.0f},
+			glm::vec2{1.0f, 2.0f},
 			
 			//points (again) (color, pos)
 			glm::vec3{0.0f, 0.0f, 0.0f}, //ball2
@@ -406,7 +406,7 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const V
 			0, 0, (n * f) / (n - f), 0
 	};
 
-	static glm::mat4 parallel{
+	static glm::mat4 parallel {
 		1 / w, 0, 0, 0,
 		0, -a / w, 0, 0,
 		0, 0, 1 / (n - f), 0,
