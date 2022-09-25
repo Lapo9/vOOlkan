@@ -15,7 +15,7 @@
 
 
 template<typename... Models>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, Vulkan::Buffers::VertexBuffer& backgroundVertexBuffer, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds, int points);
+void calculateGraphics(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, Vulkan::Buffers::VertexBuffer& backgroundVertexBuffer, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, float aspectRatio, int points);
 
 
 void calculatePhysics(std::vector<Vulkan::Physics::Universe*> universes, Vulkan::Utilities::KeyboardListener& kc, Vulkan::Physics::Hitbox& leftFlipper, Vulkan::Physics::Hitbox& rightFlipper, std::chrono::nanoseconds elapsedNanoseconds);
@@ -77,7 +77,6 @@ int main() {
 
 		// ================ MODELS SETUP ================
 
-		//uniform sets layouts
 		using Matrices = struct {
 			alignas(16) glm::mat4 mvp;
 			alignas(16) glm::mat4 model;
@@ -375,7 +374,7 @@ int main() {
 		auto lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!glfwWindowShouldClose(+window)) {
 			glfwPollEvents();
-			debugAnimation(mainPerObjectUniformBuffer, mainPerObjectSet, mainGlobalUniformBuffer, mainGlobalSet, backgroundPerObjectUniformBuffer, backgroundPerObjectSet, backgroundVertexBuffer, std::tuple{ &ball1, &ball2, &ball3, &bumper1, &bumper2, &bumper3, &bumper4, &bumper5, &rightFlipper, &leftFlipper, &body, &puller, &point1, &point10, &point100, &point1000, &skybox }, lights, physicsUniverse, pullerUniverse, keyboardController, std::chrono::high_resolution_clock::now() - lastFrameTime, gameStatus.getPoints());
+			calculateGraphics(mainPerObjectUniformBuffer, mainPerObjectSet, mainGlobalUniformBuffer, mainGlobalSet, backgroundPerObjectUniformBuffer, backgroundPerObjectSet, backgroundVertexBuffer, std::tuple{ &ball1, &ball2, &ball3, &bumper1, &bumper2, &bumper3, &bumper4, &bumper5, &rightFlipper, &leftFlipper, &body, &puller, &point1, &point10, &point100, &point1000, &skybox }, lights, physicsUniverse, pullerUniverse, keyboardController, (float)swapchain.getResolution().first/swapchain.getResolution().second, gameStatus.getPoints());
 			lastFrameTime = std::chrono::high_resolution_clock::now();
 			drawer.draw(
 				std::pair< std::reference_wrapper<Vulkan::Buffers::VertexBuffer>, std::reference_wrapper<Vulkan::Buffers::IndexBuffer>>{ mainVertexBuffer, mainIndexBuffer },
@@ -397,9 +396,9 @@ int main() {
 
 
 template<typename... Models>
-void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, Vulkan::Buffers::VertexBuffer& backgroundVertexBuffer, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, std::chrono::nanoseconds elapsedNanoseconds, int points) {
-	float n = 0.1f, f = 10000.0f, fovY = 120.0f, a = 1.0f, w = 1.0f;
-	static  glm::mat4 perspective{
+void calculateGraphics(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const Vulkan::DynamicSet& mainPerObjectSet, Vulkan::Buffers::UniformBuffer& mainGlobalBuffer, const Vulkan::StaticSet& mainGlobalSet, Vulkan::Buffers::UniformBuffer& backgroundBuffer, const Vulkan::DynamicSet& backgroundSet, Vulkan::Buffers::VertexBuffer& backgroundVertexBuffer, const std::tuple<Models*...>& models, Lights& lights, Vulkan::Physics::Universe& universe, Vulkan::Physics::Universe& pullerUniverse, Vulkan::Utilities::KeyboardListener& keyboardController, float aspectRatio, int points) {
+	float n = 0.1f, f = 10000.0f, fovY = 120.0f, a = aspectRatio, w = 1.0f;
+	glm::mat4 perspective{
 			1 / (a * glm::tan(glm::radians(fovY / 2))), 0, 0, 0,
 			0, -1 / glm::tan(glm::radians(fovY / 2)), 0, 0,
 			0, 0, f / (n - f), -1,
@@ -413,7 +412,7 @@ void debugAnimation(Vulkan::Buffers::UniformBuffer& mainPerObjectBuffer, const V
 		0, 0, n / (n - f), 1
 	};
 
-	static auto camera = Vulkan::Objects::Camera{ {0.0f, -4.2f, 5.5f}, {0.0_deg, 60.0_deg, 0.0_deg} };
+	auto camera = Vulkan::Objects::Camera{ {0.0f, -4.2f, 5.5f}, {0.0_deg, 60.0_deg, 0.0_deg} };
 	//static auto camera = Vulkan::Objects::Camera{ {0.0f, 0.0f, 0.0f}, {0.0_deg, 0.0_deg, 0.0_deg} };
 	//camera.rotate(0.001f, { 0.0f, 0.0f, 1.0f });
 
