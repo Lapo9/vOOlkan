@@ -116,22 +116,24 @@ int main() {
 			glm::vec3{0.0f, 0.0f, 0.4f},
 
 			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec3{0.0f, 0.0f, 0.4f},
+			glm::vec3{0.0f, 0.0f, 0.0f},
 
 			//dir
 			glm::vec3{1.0f, 1.0f, 1.0f},
+			//glm::vec3{0.0f, -1.0f, 0.7f},
 			glm::vec3{0.0f, -1.0f, 0.7f},
 
-			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			//glm::vec3{0.87891f, 0.87891f, 0.87891f}, -> This is a bit too light up!
+			glm::vec3{0.44141f, 0.44141f, 0.44141f},
+			glm::vec3{0.89453f, 0.83984f, 0.64844f}, // This is a light brown for the base of the pinball
+			glm::vec3{0.48828f, 0.23047f, 0.93750f}, // This is a blue for the sky
+			glm::vec3{0.0f, -1.0f, 0.0f},
 
 			//eye
 			glm::vec3{0.0f, 0.0f, 2.0f},
 
 			//shaders to use
-			glm::vec2{0, 0}
+			glm::vec2{1, 1}
 		};
 
 		//create models
