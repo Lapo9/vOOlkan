@@ -443,7 +443,7 @@ void main() {
 		specularBRDF = create_Toon_specular(normal, viewDirection, directSpecularColor, specularColors0to2, specularColors3to5, auxSpecularColors, 0.0f);
 	} else if (gubo.functionDecider.y == 2.0) {
 		//	Phong specular
-		float phongExponent = 100.0f;
+		float phongExponent = 50.0f;
 		specularBRDF = create_Phong_specular(normal, viewDirection, specularColors0to2, specularColors3to5, directSpecularColor, auxSpecularColors, phongExponent);
 	}
 

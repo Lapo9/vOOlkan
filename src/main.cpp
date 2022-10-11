@@ -133,7 +133,7 @@ int main() {
 			glm::vec3{0.0f, 0.0f, 2.0f},
 
 			//shaders to use
-			glm::vec2{1, 1}
+			glm::vec2{0, 2}
 		};
 
 		//create models
@@ -303,7 +303,7 @@ int main() {
 		// ================ UNIFORMS/TEXTURES SETUP ================
 
 		//texture image
-		Vulkan::TextureImage mainTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(2048, 2048), "textures/main_texture.png" };
+		Vulkan::TextureImage mainTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(2048, 2048), "textures/Mario11.png" };
 		Vulkan::TextureImage backgroundTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(2048, 2048), "textures/skybox.png" };
 
 		//uniform buffers
