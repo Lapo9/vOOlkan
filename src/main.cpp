@@ -303,7 +303,7 @@ int main() {
 		// ================ UNIFORMS/TEXTURES SETUP ================
 
 		//texture image
-		Vulkan::TextureImage mainTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(2048, 2048), "textures/Mario11.png" };
+		Vulkan::TextureImage mainTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(2048, 2048), "textures/Mario_sat_eaeg.png" };
 		Vulkan::TextureImage backgroundTexture{ virtualGpu, realGpu, commandBufferPool, std::pair(2048, 2048), "textures/skybox.png" };
 
 		//uniform buffers
