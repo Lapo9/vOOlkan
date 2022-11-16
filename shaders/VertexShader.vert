@@ -4,7 +4,6 @@
 
 /*
 *	First shader implementation, this should be almost a final one
-*	TODO: implement the texture part!
 */
 
 layout (set = 1, binding = 0) uniform UniformBufferObject {
@@ -25,5 +24,5 @@ void main() {
 	gl_Position = ubo.wvpMat * vec4(inPosition, 1.0); // vec4 is to transform local coordinates into homogeneous coordinates
 	fragPos = (ubo.mMat * vec4(inPosition, 1.0)).xyz;  // after applying the transposition the w component is elicited to send screen coordinates
 	fragNormal = mat3(ubo.nMat) * inNormal; // multiplication of the normal vector with the normal transformation matrix
-	fragUVText = inUVText;	// This may need some modification I am still trying to figure it out
+	fragUVText = inUVText;	
 }

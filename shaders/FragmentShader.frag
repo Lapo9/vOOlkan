@@ -11,6 +11,9 @@ const float toon_scale_factor = 1.0 / toon_color_lvls;
 *	as for this possibility they could point to the center of the table (but it could not be enough). For the color of the lights I would opt 
 *   for a plain white, but the yellow light could give the game a more "old style" type of vibe.
 *	For the lights I must decide the decading factor!!!
+*
+*	The final decision has been to use only the directional light for the field and use 8 pointlights in total!
+*	5 of which are used to light up the 5 bumpers, the remaining 3 are used to light up the balls.
 */
 
 layout (location = 0) in vec3 fragPos;	// position of the fragment the shader is working on
@@ -19,12 +22,14 @@ layout (location = 2) in vec2 fragUVText; // determines where to read the texel
 
 layout (location = 0) out vec4 outColor;  // vector containing the final color of the fragment
 
-layout (set = 0, binding = 0) uniform sampler2D texSampler; // I assume this is used for attaching the texture to the image
+layout (set = 0, binding = 0) uniform sampler2D texSampler; // This is used for attaching the texture to the image
 
 /*
 *	I'm already inserting some lights that I think are what we need to illuminate the flipper's field. These consist of one directional light
 *	coming from the top of the room that iluminates the entire pinball and 6 point lights at the corners of the field that simulate some led  
 *	lights. Those 6 may be too much but it should be easier to eliminate some than to increase it.
+*
+*	In the end we decided to use 1 directional light and 8 point lights. The number of point lights is 9 in total in case we want to use one more
 */
 layout (set = 0, binding = 1) uniform GlobalUniformBufferObject {
 	//Point lights for lights inside the pinball
@@ -91,7 +96,6 @@ vec3 create_Lambert_diffuse (vec3 N, vec3 DC, mat3 decay0to2, mat3 decay3to5, ma
 }
 
 //Function to create the toon diffuse vector
-//TODO: Fix this function!
 vec3 create_Toon_diffuse(vec3 N, vec3 DC, float thr, mat3 decay0to2, mat3 decay3to5, mat3 ALD) {
 	vec3 result = vec3(0.0);
 	
@@ -222,60 +226,61 @@ vec3 create_Phong_specular(vec3 N, vec3 eyePos, mat3 MSC0, mat3 MSC1, vec3 SC, m
 	return result;
 }
 
-//	Function to create the Toon specular vector
-//TODO: see if it works correctly
+//	Function to create the Toon specular vector, it uses a constant parameter for the number of color levels, for now it is set to 5
 vec3 create_Toon_specular (vec3 N, vec3 eyePos, vec3 SC, mat3 MSC0, mat3 MSC1, mat3 ASC, float thr) {
 	vec3 result = vec3(0,0,0);
+	float dlightAttenuation = 0.05; //attenuation for the specular color of the direct light
+	float plightAttenuation = 0.3; //attenuation for the specular color of the point lights
 
 	vec3 refD = 2 * N * dot(gubo.dlightDirection, N) - gubo.dlightDirection;
 	float toConfront = dot(eyePos, refD);
 	if (toConfront > thr)
-		result += SC * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * 0.15;
+		result += SC * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * dlightAttenuation;
 
 	vec3 ref0 = 2 * N * dot(normalize(gubo.lightPosition0 - fragPos), N) - normalize(gubo.lightPosition0 - fragPos);
 	toConfront = dot(eyePos, ref0);
 	if (toConfront > thr)
-		result += MSC0[0] * pow(toConfront, 100) * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * 0.5;
+		result += MSC0[0] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
 
 	vec3 ref1 = 2 * N * dot(normalize(gubo.lightPosition1 - fragPos), N) - normalize(gubo.lightPosition1 - fragPos);
 	toConfront = dot(eyePos, ref1);
 	if (toConfront > thr)
-		result += MSC0[1] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * 0.5;
+		result += MSC0[1] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
 
 	vec3 ref2 = 2 * N * dot(normalize(gubo.lightPosition2 - fragPos), N) - normalize(gubo.lightPosition2 - fragPos);
 	toConfront = dot(eyePos, ref2);
 	if (toConfront > thr)
-		result += MSC0[2] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * 0.5;
+		result += MSC0[2] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
 
 	vec3 ref3 = 2 * N * dot(normalize(gubo.lightPosition3 - fragPos), N) - normalize(gubo.lightPosition3 - fragPos);
 	toConfront = dot(eyePos, ref3);
 	if (toConfront > thr)
-		result += MSC1[0] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * 0.5;
+		result += MSC1[0] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
 
 	vec3 ref4 = 2 * N * dot(normalize(gubo.lightPosition4 - fragPos), N) - normalize(gubo.lightPosition4 - fragPos);
 	toConfront = dot(eyePos, ref4);
 	if (toConfront > thr)
-		result += MSC1[1] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * 0.5;
+		result += MSC1[1] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
 
 	vec3 ref5 = 2 * N * dot(normalize(gubo.lightPosition5 - fragPos), N) - normalize(gubo.lightPosition5 - fragPos);
 	toConfront = dot(eyePos, ref5);
 	if (toConfront > thr)
-		result += MSC1[2] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * 0.5;
+		result += MSC1[2] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
 
 	vec3 aref0 = 2 * N * dot(normalize(gubo.auxLightPos0 - fragPos), N) - normalize(gubo.auxLightPos0 - fragPos);
 	toConfront = dot(eyePos, aref0);
 	if (toConfront > thr)
-		result += ASC[0] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * 0.5;
+		result += ASC[0] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
 
 	vec3 aref1 = 2 * N * dot(normalize(gubo.auxLightPos1 - fragPos), N) - normalize(gubo.auxLightPos1 - fragPos);
 	toConfront = dot(eyePos, aref1);
 	if (toConfront > thr)
-		result += ASC[1] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * 0.5;
+		result += ASC[1] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
 
 	vec3 aref2 = 2 * N * dot(normalize(gubo.auxLightPos2 - fragPos), N) - normalize(gubo.auxLightPos2 - fragPos);
 	toConfront = dot(eyePos, aref2);
 	if (toConfront > thr)
-		result += ASC[2] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * 0.5;
+		result += ASC[2] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
 
 	return result;
 }
@@ -395,7 +400,7 @@ void main() {
 	*	In the following I'll put the code for both computing the BRDF function including:
 	*		- DIFFUSE part, for which I will discard Oren_Nayar a priori due to the nature of the material that compose the pinball;
 	*		- SPECULAR part, for which I will discard the Ward anisotropic model;
-	*		- AMBIENT part
+	*		- AMBIENT part, for which I used the hemispheric lighting model over the y-axis.
 	*/
 
 	//--------- DIFFUSE FUNCTIONS ---------// 
@@ -418,7 +423,7 @@ void main() {
 	//Note: for specular color I'm not sure about it but for now I'll go with white (the color I thought for the lights).
 
 	// Specular color is the color the reflections of the lights will have on shiny obects, thus it is actually a problem to hardcode it as
-	// white because not all the lights have a white reflection plus if we turn off the lights the hardcoded color remains!
+	// white because not all the lights have a white reflection, plus if we turn off the lights the hardcoded color remains!
 	//vec3 specularColor = vec3(1.0, 1.0, 1.0);
 
 	vec3 directSpecularColor = vec3 (0.0, 0.0, 0.0);
@@ -436,10 +441,10 @@ void main() {
 	
 	if (gubo.functionDecider.y == 0.0) {
 		//	Blinn specular
-		float blinnExponent = 100.0f; // exponent to decide!
+		float blinnExponent = 100.0f; // exponent decided
 		specularBRDF = create_Blinn_specular(viewDirection, normal, directSpecularColor, specularColors0to2, specularColors3to5, auxSpecularColors, blinnExponent);
 	} else if (gubo.functionDecider.y == 1.0) {
-		//	Toon specular (thr to define!)
+		//	Toon specular 
 		specularBRDF = create_Toon_specular(normal, viewDirection, directSpecularColor, specularColors0to2, specularColors3to5, auxSpecularColors, 0.0f);
 	} else if (gubo.functionDecider.y == 2.0) {
 		//	Phong specular
@@ -448,15 +453,11 @@ void main() {
 	}
 
 	//--------- AMBIENT COLOR FUNCTION ---------// 
-	//	For ambient lighting I think that spherical harmonics suits best our project but I still have to figure out how to get the proper colors!
-	float ambientRefCoefficient = 0.025;
+	//	For ambient lighting we used Hemispheric lighting over the y-axis
+	float ambientRefCoefficient = 0.025; 
 	ambientColor = gubo.basicAmbient * ((normal * gubo.definingDirection + 1)/2 * gubo.skyColor + 
 		(1 - normal * gubo.definingDirection)/2 * gubo.floorColor) * ambientRefCoefficient;
 
-	//float lightAttenuation = 0.5;
-	//outColor = vec4((diffuseBRDF + specularBRDF + ambientColor), 1.0)
-	//outColor = vec4(lightAttenuation * (diffuseBRDF + specularBRDF + ambientColor), 1.0); 
-	//outColor = vec4(clamp(diffuseBRDF + specularBRDF + ambientColor, 0, 1), 1.0);
 	float xColor = clamp((diffuseBRDF.x + specularBRDF.x + ambientColor.x), 0.0f, 1.0f);
 	float yColor = clamp((diffuseBRDF.y + specularBRDF.y + ambientColor.y), 0.0f, 1.0f);
 	float zColor = clamp((diffuseBRDF.z + specularBRDF.z + ambientColor.z), 0.0f, 1.0f);

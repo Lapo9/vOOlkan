@@ -2,10 +2,6 @@
 #extension GL_KHR_vulkan_glsl : enable
 // #GL_ARB_separate_shader_onjects : enable
 
-/*
-*	TODO: Understand this shader better
-*/
-
 layout (set = 1, binding = 0) uniform UniformBufferObject {
 	mat4 wvpMat; // world-view-projection matrix
 	mat4 mMat;   // world matrix, converts from local space to global space
