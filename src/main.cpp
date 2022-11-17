@@ -122,10 +122,10 @@ int main() {
 			glm::vec3{1.0f, 1.0f, 1.0f},
 			glm::vec3{0.2f, -1.0f, 0.7f},
 
-			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec3{0.0f, 0.0f, 0.0f},
-			glm::vec3{0.0f, 0.0f, 0.0f},
+			glm::vec3{0.88f, 0.88f, 0.88f},
+			glm::vec3{0.55f, 0.39f, 0.57f},
+			glm::vec3{0.49f, 0.23f, 0.94f},
+			glm::vec3{0.0f, 1.0f, 0.0f},
 
 			//eye
 			glm::vec3{0.0f, 0.0f, 2.0f},
