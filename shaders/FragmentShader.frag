@@ -100,11 +100,11 @@ vec3 create_Toon_diffuse(vec3 N, vec3 DC, float thr, mat3 decay0to2, mat3 decay3
 	vec3 result = vec3(0.0);
 	
 	//directional light
-	float toConfront = dot(N, gubo.dlightDirection);
+	float toConfront = dot(N, gubo.dlightDirection); //cosine of the angle between the normal and the direction of the light
 	if (toConfront <= 0.0) 
-		result += vec3(0.0);
+		result += vec3(0.0); //if less than 0 -> black spot, the light doesn't illuminate it
 	else
-		result += (floor(toConfront * toon_color_lvls) * toon_scale_factor) * gubo.dlightColor * DC;
+		result += (floor(toConfront * toon_color_lvls) * toon_scale_factor) * gubo.dlightColor * DC; //if more than 0, depending on the level in which the fragment is, an intensity of color is calculated 
 
 	//point lights
 	toConfront = dot(normalize(gubo.lightPosition0 - fragPos), N);
@@ -169,6 +169,8 @@ vec3 create_Toon_diffuse(vec3 N, vec3 DC, float thr, mat3 decay0to2, mat3 decay3
 vec3 create_Blinn_specular (vec3 eyePos, vec3 N, vec3 SC, mat3 MSC0, mat3 MSC1, mat3 ASC, float gamma) {
 	vec3 result;
 
+	float lightAttenuation = 0.3;
+
 	vec3 halfVectorD = normalize(gubo.dlightDirection + eyePos);
 	vec3 halfVector0 = normalize(normalize(gubo.lightPosition0 - fragPos) + eyePos);
 	vec3 halfVector1 = normalize(normalize(gubo.lightPosition1 - fragPos) + eyePos);
@@ -180,16 +182,16 @@ vec3 create_Blinn_specular (vec3 eyePos, vec3 N, vec3 SC, mat3 MSC0, mat3 MSC1, 
 	vec3 auxHalfVector1 = normalize(normalize(gubo.auxLightPos1 - fragPos) + eyePos);
 	vec3 auxHalfVector2 = normalize(normalize(gubo.auxLightPos2 - fragPos) + eyePos);
 
-	result = gubo.dlightColor * SC * pow(clamp(dot(N, halfVectorD), 0, 1), gamma);
-	result += gubo.lightColor0 * MSC0[0] * pow(clamp(dot(N, halfVector0), 0, 1), gamma);
-	result += gubo.lightColor1 * MSC0[1] * pow(clamp(dot(N, halfVector1), 0, 1), gamma);
-	result += gubo.lightColor2 * MSC0[2] * pow(clamp(dot(N, halfVector2), 0, 1), gamma);
-	result += gubo.lightColor3 * MSC1[0] * pow(clamp(dot(N, halfVector3), 0, 1), gamma);
-	result += gubo.lightColor4 * MSC1[1] * pow(clamp(dot(N, halfVector4), 0, 1), gamma);
-	result += gubo.lightColor5 * MSC1[2] * pow(clamp(dot(N, halfVector5), 0, 1), gamma);
-	result += gubo.auxLightColor0 * ASC[0] * pow(clamp(dot(N, auxHalfVector0), 0, 1), gamma);
-	result += gubo.auxLightColor1 * ASC[1] * pow(clamp(dot(N, auxHalfVector1), 0, 1), gamma);
-	result += gubo.auxLightColor2 * ASC[2] * pow(clamp(dot(N, auxHalfVector2), 0, 1), gamma);
+	result =  SC * pow(clamp(dot(N, halfVectorD), 0, 1), gamma) * lightAttenuation;
+	result +=  MSC0[0] * pow(clamp(dot(N, halfVector0), 0, 1), gamma);
+	result +=  MSC0[1] * pow(clamp(dot(N, halfVector1), 0, 1), gamma);
+	result +=  MSC0[2] * pow(clamp(dot(N, halfVector2), 0, 1), gamma);
+	result +=  MSC1[0] * pow(clamp(dot(N, halfVector3), 0, 1), gamma);
+	result +=  MSC1[1] * pow(clamp(dot(N, halfVector4), 0, 1), gamma);
+	result +=  MSC1[2] * pow(clamp(dot(N, halfVector5), 0, 1), gamma);
+	result +=  ASC[0] * pow(clamp(dot(N, auxHalfVector0), 0, 1), gamma);
+	result +=  ASC[1] * pow(clamp(dot(N, auxHalfVector1), 0, 1), gamma);
+	result +=  ASC[2] * pow(clamp(dot(N, auxHalfVector2), 0, 1), gamma);
 
 	return result;
 }
@@ -233,54 +235,54 @@ vec3 create_Toon_specular (vec3 N, vec3 eyePos, vec3 SC, mat3 MSC0, mat3 MSC1, m
 	float plightAttenuation = 0.3; //attenuation for the specular color of the point lights
 
 	vec3 refD = 2 * N * dot(gubo.dlightDirection, N) - gubo.dlightDirection;
-	float toConfront = dot(eyePos, refD);
+	float toConfront = dot(eyePos, refD); //to confront is the cosine of the angle between the reflex direction and the eye of the camera
 	if (toConfront > thr)
-		result += SC * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * dlightAttenuation;
+		result += SC * toConfront * dlightAttenuation; 
 
 	vec3 ref0 = 2 * N * dot(normalize(gubo.lightPosition0 - fragPos), N) - normalize(gubo.lightPosition0 - fragPos);
 	toConfront = dot(eyePos, ref0);
 	if (toConfront > thr)
-		result += MSC0[0] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
+		result += MSC0[0] * toConfront * plightAttenuation;
 
 	vec3 ref1 = 2 * N * dot(normalize(gubo.lightPosition1 - fragPos), N) - normalize(gubo.lightPosition1 - fragPos);
 	toConfront = dot(eyePos, ref1);
 	if (toConfront > thr)
-		result += MSC0[1] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
+		result += MSC0[1] * toConfront * plightAttenuation;
 
 	vec3 ref2 = 2 * N * dot(normalize(gubo.lightPosition2 - fragPos), N) - normalize(gubo.lightPosition2 - fragPos);
 	toConfront = dot(eyePos, ref2);
 	if (toConfront > thr)
-		result += MSC0[2] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
+		result += MSC0[2] * toConfront * plightAttenuation;
 
 	vec3 ref3 = 2 * N * dot(normalize(gubo.lightPosition3 - fragPos), N) - normalize(gubo.lightPosition3 - fragPos);
 	toConfront = dot(eyePos, ref3);
 	if (toConfront > thr)
-		result += MSC1[0] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
+		result += MSC1[0] * toConfront  * plightAttenuation;
 
 	vec3 ref4 = 2 * N * dot(normalize(gubo.lightPosition4 - fragPos), N) - normalize(gubo.lightPosition4 - fragPos);
 	toConfront = dot(eyePos, ref4);
 	if (toConfront > thr)
-		result += MSC1[1] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
+		result += MSC1[1] * toConfront * plightAttenuation;
 
 	vec3 ref5 = 2 * N * dot(normalize(gubo.lightPosition5 - fragPos), N) - normalize(gubo.lightPosition5 - fragPos);
 	toConfront = dot(eyePos, ref5);
 	if (toConfront > thr)
-		result += MSC1[2] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
+		result += MSC1[2] * toConfront * plightAttenuation;
 
 	vec3 aref0 = 2 * N * dot(normalize(gubo.auxLightPos0 - fragPos), N) - normalize(gubo.auxLightPos0 - fragPos);
 	toConfront = dot(eyePos, aref0);
 	if (toConfront > thr)
-		result += ASC[0] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
+		result += ASC[0] * toConfront * plightAttenuation;
 
 	vec3 aref1 = 2 * N * dot(normalize(gubo.auxLightPos1 - fragPos), N) - normalize(gubo.auxLightPos1 - fragPos);
 	toConfront = dot(eyePos, aref1);
 	if (toConfront > thr)
-		result += ASC[1] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
+		result += ASC[1] * toConfront * plightAttenuation;
 
 	vec3 aref2 = 2 * N * dot(normalize(gubo.auxLightPos2 - fragPos), N) - normalize(gubo.auxLightPos2 - fragPos);
 	toConfront = dot(eyePos, aref2);
 	if (toConfront > thr)
-		result += ASC[2] * toConfront * (floor(toConfront * toon_color_lvls) * toon_scale_factor) * plightAttenuation;
+		result += ASC[2] * toConfront * plightAttenuation;
 
 	return result;
 }
@@ -294,12 +296,12 @@ mat3 create_lights_decay_colors(float num) {
 		mat[1] = gubo.lightColor1 * pow((gubo.pointLightDecayFactors0to4.x/length(gubo.lightPosition1 - fragPos)), gubo.pointLightDecayFactors0to4.y);
 		mat[2] = gubo.lightColor2 * pow((gubo.pointLightDecayFactors0to4.x/length(gubo.lightPosition2 - fragPos)), gubo.pointLightDecayFactors0to4.y);
 	}
-	else if (num == 1) {
+	if (num == 1) {
 		mat[0] = gubo.lightColor3 * pow((gubo.pointLightDecayFactors0to4.x/length(gubo.lightPosition3 - fragPos)), gubo.pointLightDecayFactors0to4.y);
 		mat[1] = gubo.lightColor4 * pow((gubo.pointLightDecayFactors0to4.x/length(gubo.lightPosition4 - fragPos)), gubo.pointLightDecayFactors0to4.y);
 		mat[2] = gubo.lightColor5 * pow((gubo.pointLightDecayFactors5to8.x/length(gubo.lightPosition5 - fragPos)), gubo.pointLightDecayFactors5to8.y);
 	}
-	else {
+	if (num == 2) {
 		mat[0] = gubo.auxLightColor0 * pow((gubo.pointLightDecayFactors5to8.x/length(gubo.auxLightPos0 - fragPos)), gubo.pointLightDecayFactors5to8.y);
 		mat[1] = gubo.auxLightColor1 * pow((gubo.pointLightDecayFactors5to8.x/length(gubo.auxLightPos1 - fragPos)), gubo.pointLightDecayFactors5to8.y);
 		mat[2] = gubo.auxLightColor2 * pow((gubo.pointLightDecayFactors5to8.x/length(gubo.auxLightPos2 - fragPos)), gubo.pointLightDecayFactors5to8.y);
@@ -311,74 +313,47 @@ mat3 create_lights_decay_colors(float num) {
 // Function to create the vectors that contain the specular color for creating the reflection of each light
 mat3 create_specular_colors(float num) {
 	mat3 mat;
-
+	
 	if (num == 0) {
 		mat[0] = vec3 (0.0, 0.0, 0.0);
 		mat[1] = vec3 (0.0, 0.0, 0.0);
 		mat[2] = vec3 (0.0, 0.0, 0.0);
-		if ((gubo.lightColor0.x + gubo.lightColor0.y + gubo.lightColor0.z) > 0.0 && 
-			(gubo.lightColor0.x + gubo.lightColor0.y + gubo.lightColor0.z) < 3.0) {
+		if ((gubo.lightColor0.x + gubo.lightColor0.y + gubo.lightColor0.z) > 0.0) {
 			mat[0] = gubo.lightColor0;
-		} else if ((gubo.lightColor0.x + gubo.lightColor0.y + gubo.lightColor0.z) >= 3.0){
-			mat[0] = vec3(1.0, 1.0, 1.0);
 		}
-		if ((gubo.lightColor1.x + gubo.lightColor1.y + gubo.lightColor1.z) > 0.0 && 
-			(gubo.lightColor1.x + gubo.lightColor1.y + gubo.lightColor1.z) < 3.0) {
+		if ((gubo.lightColor1.x + gubo.lightColor1.y + gubo.lightColor1.z) > 0.0){
 			mat[1] = gubo.lightColor1;
-		} else if ((gubo.lightColor1.x + gubo.lightColor1.y + gubo.lightColor1.z) >= 3.0){
-			mat[1] = vec3(1.0, 1.0, 1.0);
 		}
-		if ((gubo.lightColor2.x + gubo.lightColor2.y + gubo.lightColor2.z) > 0.0 && 
-			(gubo.lightColor2.x + gubo.lightColor2.y + gubo.lightColor2.z) < 3.0) {
+		if ((gubo.lightColor2.x + gubo.lightColor2.y + gubo.lightColor2.z) > 0.0){
 			mat[2] = gubo.lightColor2;
-		} else if ((gubo.lightColor2.x + gubo.lightColor2.y + gubo.lightColor2.z) >= 3.0){
-			mat[2] = vec3(1.0, 1.0, 1.0);
 		}
 	}
 	else if (num == 1) {
 		mat[0] = vec3 (0.0, 0.0, 0.0);
 		mat[1] = vec3 (0.0, 0.0, 0.0);
 		mat[2] = vec3 (0.0, 0.0, 0.0);
-		if ((gubo.lightColor3.x + gubo.lightColor3.y + gubo.lightColor3.z) > 0.0 && 
-			(gubo.lightColor3.x + gubo.lightColor3.y + gubo.lightColor3.z) < 3.0) {
+		if ((gubo.lightColor3.x + gubo.lightColor3.y + gubo.lightColor3.z) > 0.0){
 			mat[0] = gubo.lightColor3;
-		} else if ((gubo.lightColor3.x + gubo.lightColor3.y + gubo.lightColor3.z) >= 3.0){
-			mat[0] = vec3(1.0, 1.0, 1.0);
 		}
-		if ((gubo.lightColor4.x + gubo.lightColor4.y + gubo.lightColor4.z) > 0.0 && 
-			(gubo.lightColor4.x + gubo.lightColor4.y + gubo.lightColor4.z) < 3.0) {
+		if ((gubo.lightColor4.x + gubo.lightColor4.y + gubo.lightColor4.z) > 0.0){
 			mat[1] = gubo.lightColor4;
-		} else if ((gubo.lightColor4.x + gubo.lightColor4.y + gubo.lightColor4.z) >= 3.0){
-			mat[1] = vec3(1.0, 1.0, 1.0);
 		}
-		if ((gubo.lightColor5.x + gubo.lightColor5.y + gubo.lightColor5.z) > 0.0 && 
-			(gubo.lightColor5.x + gubo.lightColor5.y + gubo.lightColor5.z) < 3.0) {
+		if ((gubo.lightColor5.x + gubo.lightColor5.y + gubo.lightColor5.z) > 0.0){
 			mat[2] = gubo.lightColor5;
-		} else if ((gubo.lightColor5.x + gubo.lightColor5.y + gubo.lightColor5.z) >= 3.0){
-			mat[2] = vec3(1.0, 1.0, 1.0);
 		}
 	} 
-	else {
+	else if (num == 2) {
 		mat[0] = vec3 (0.0, 0.0, 0.0);
 		mat[1] = vec3 (0.0, 0.0, 0.0);
 		mat[2] = vec3 (0.0, 0.0, 0.0);
-		if ((gubo.auxLightColor0.x + gubo.auxLightColor0.y + gubo.auxLightColor0.z) > 0.0 && 
-			(gubo.auxLightColor0.x + gubo.auxLightColor0.y + gubo.auxLightColor0.z) < 3.0) {
+		if ((gubo.auxLightColor0.x + gubo.auxLightColor0.y + gubo.auxLightColor0.z) > 0.0) {
 			mat[0] = gubo.auxLightColor0;
-		} else if ((gubo.auxLightColor0.x + gubo.auxLightColor0.y + gubo.auxLightColor0.z) >= 3.0) {
-			mat[0] = vec3(1.0, 1.0, 1.0);
 		}
-		if ((gubo.auxLightColor1.x + gubo.auxLightColor1.y + gubo.auxLightColor1.z) > 0.0 && 
-			(gubo.auxLightColor2.x + gubo.auxLightColor2.y + gubo.auxLightColor2.z) < 3.0) {
+		if ((gubo.auxLightColor1.x + gubo.auxLightColor1.y + gubo.auxLightColor1.z) > 0.0){
 			mat[1] = gubo.auxLightColor1;
-		} else if ((gubo.auxLightColor1.x + gubo.auxLightColor1.y + gubo.auxLightColor1.z) >= 3.0){
-			mat[0] = vec3(1.0, 1.0, 1.0);
 		}
-		if ((gubo.auxLightColor2.x + gubo.auxLightColor2.y + gubo.auxLightColor2.z) > 0.0 && 
-			(gubo.auxLightColor2.x + gubo.auxLightColor2.y + gubo.auxLightColor2.z) < 3.0) {
+		if ((gubo.auxLightColor2.x + gubo.auxLightColor2.y + gubo.auxLightColor2.z) > 0.0){
 			mat[2] = gubo.auxLightColor2;
-		} else if ((gubo.auxLightColor2.x + gubo.auxLightColor2.y + gubo.auxLightColor2.z) >= 3.0){
-			mat[2] = vec3(1.0, 1.0, 1.0);
 		}
 	}
 
@@ -426,15 +401,14 @@ void main() {
 	// white because not all the lights have a white reflection, plus if we turn off the lights the hardcoded color remains!
 	//vec3 specularColor = vec3(1.0, 1.0, 1.0);
 
-	vec3 directSpecularColor = vec3 (0.0, 0.0, 0.0);
+	vec3 directSpecularColor = gubo.dlightColor;/*
 	if ((gubo.dlightColor.x + gubo.dlightColor.y + gubo.dlightColor.z) > 0.0 &&
 		(gubo.dlightColor.x + gubo.dlightColor.y + gubo.dlightColor.z) < 3.0) {
 		directSpecularColor = gubo.dlightColor;
 	}
 	else if ((gubo.dlightColor.x + gubo.dlightColor.y + gubo.dlightColor.z) >= 3.0){
 		directSpecularColor = vec3(1.0, 1.0, 1.0);
-	}
-
+	}*/
 	mat3 specularColors0to2 = create_specular_colors(0);
 	mat3 specularColors3to5 = create_specular_colors(1);
 	mat3 auxSpecularColors = create_specular_colors(2);
@@ -445,10 +419,10 @@ void main() {
 		specularBRDF = create_Blinn_specular(viewDirection, normal, directSpecularColor, specularColors0to2, specularColors3to5, auxSpecularColors, blinnExponent);
 	} else if (gubo.functionDecider.y == 1.0) {
 		//	Toon specular 
-		specularBRDF = create_Toon_specular(normal, viewDirection, directSpecularColor, specularColors0to2, specularColors3to5, auxSpecularColors, 0.0f);
+		specularBRDF = create_Toon_specular(normal, viewDirection, directSpecularColor, specularColors0to2, specularColors3to5, auxSpecularColors, 0.98f);
 	} else if (gubo.functionDecider.y == 2.0) {
 		//	Phong specular
-		float phongExponent = 50.0f;
+		float phongExponent = 100.0f;
 		specularBRDF = create_Phong_specular(normal, viewDirection, specularColors0to2, specularColors3to5, directSpecularColor, auxSpecularColors, phongExponent);
 	}
 
